@@ -76,7 +76,15 @@
       "Bash(/home/casper/code/contentstudio-claude-product-pipeline/tmp-payload-s3.json:*)",
       "Bash(/home/casper/code/contentstudio-claude-product-pipeline/tmp-payload-s4.json:*)",
       "Bash(/home/casper/code/contentstudio-claude-product-pipeline/tmp-payload-design.json:*)",
-      "Bash(/home/casper/code/contentstudio-claude-product-pipeline/tmp-payload-merged.json:*)"
+      "Bash(/home/casper/code/contentstudio-claude-product-pipeline/tmp-payload-merged.json:*)",
+      "Bash(/home/casper/code/contentstudio-claude-product-pipeline/tmp-prd-doc.json:*)",
+      "Bash(/home/casper/code/contentstudio-claude-product-pipeline/tmp-s1.json:*)",
+      "Bash(/home/casper/code/contentstudio-claude-product-pipeline/tmp-s2.json:*)",
+      "Bash(/home/casper/code/contentstudio-claude-product-pipeline/tmp-s3.json:*)",
+      "Bash(/home/casper/code/contentstudio-claude-product-pipeline/tmp-s4.json:*)",
+      "Bash(__NEW_LINE_0d4b7d49dff69f34__ for:*)",
+      "Bash(__NEW_LINE_835969c2a53bc819__:*)",
+      "Bash(__NEW_LINE_48825732c5728d93__ for:*)"
     ]
   }
 }

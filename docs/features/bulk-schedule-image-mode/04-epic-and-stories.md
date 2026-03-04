@@ -104,8 +104,8 @@ As a user navigating to Bulk Schedule, I want to clearly see that I can either u
 **Empty state (no existing bulk schedules):**
 1. User navigates to Publisher → Automations → Bulk Schedule
 2. Page shows a full-page empty state with two side-by-side cards
-3. Left card: "Upload via CSV / XLSX" — for spreadsheet-based scheduling
-4. Right card: "Upload via Images" — for direct image upload with AI captions; has "NEW · AI-Powered" badge
+3. Left card: "Schedule via CSV / XLSX" — for spreadsheet-based scheduling
+4. Right card: "Schedule via Images" — for direct image upload with AI captions; has "NEW · AI-Powered" badge
 5. User clicks a card CTA → the respective wizard launches inline on the page
 6. "Learn more about Bulk Scheduling" text link retained below both cards
 
@@ -113,8 +113,8 @@ As a user navigating to Bulk Schedule, I want to clearly see that I can either u
 1. User navigates to Bulk Schedule — sees the existing listing table of past bulk schedules
 2. Top-right button changes from "Upload CSV File" to "+ Bulk Schedule"
 3. User clicks "+ Bulk Schedule" → a small dropdown menu opens with two options:
-   - "Upload via CSV / XLSX" — sub-text: "Schedule up to 500 posts from a spreadsheet"
-   - "Upload via Images" — sub-text: "Upload images and generate captions with AI — up to 100 posts" + small "NEW" badge
+   - "Schedule via CSV / XLSX" — sub-text: "Schedule up to 500 posts from a spreadsheet"
+   - "Schedule via Images" — sub-text: "Upload images and generate captions with AI — up to 100 posts" + small "NEW" badge
 4. User clicks an option → that wizard launches inline, replacing the listing table
 5. Clicking × in the wizard returns the user to the listing table
 
@@ -126,17 +126,17 @@ As a user navigating to Bulk Schedule, I want to clearly see that I can either u
 - [ ] Page heading: "Get started with Bulk Scheduling"
 - [ ] Sub-heading: "Choose how you'd like to create and schedule your posts"
 - [ ] Two cards rendered side by side; equal width
-- [ ] CSV card: icon 📄, title "Upload via CSV / XLSX", description "Schedule up to 500 posts by uploading a spreadsheet with dates, captions, and media links.", primary CTA "⬆ Upload CSV File", secondary CTA "⬇ Download Sample CSV"
-- [ ] Image card: icon 🖼️, title "Upload via Images", badge "NEW · AI-Powered" (`bg-primary-cs-500` gradient, white text), description "Upload up to 100 images and let AI generate captions instantly — then schedule in bulk.", primary CTA "⬆ Upload Images", no secondary CTA
+- [ ] CSV card: icon FileSpreadsheet (Lucide), title "Schedule via CSV / XLSX", description "Schedule up to 500 posts by uploading a spreadsheet with dates, captions, and media links.", primary CTA "Upload CSV File", secondary CTA "Download Sample CSV"
+- [ ] Image card: icon Image (Lucide), title "Schedule via Images", badge "NEW · AI-Powered" (`bg-primary-cs-500` gradient, white text), description "Upload up to 100 images and let AI generate captions instantly — then schedule in bulk.", primary CTA "Upload Images", no secondary CTA
 - [ ] "Learn more about Bulk Scheduling" text link displayed below both cards
-- [ ] Clicking "⬆ Upload CSV File" launches the CSV wizard (existing behaviour)
-- [ ] Clicking "⬆ Upload Images" launches the Image Upload wizard
+- [ ] Clicking "Upload CSV File" launches the CSV wizard (existing behaviour)
+- [ ] Clicking "Upload Images" launches the Image Upload wizard
 
 **Listing state:**
 - [ ] Existing "Upload CSV File" button replaced by "+ Bulk Schedule" button (primary, top-right)
 - [ ] Clicking "+ Bulk Schedule" opens a dropdown with two options
-- [ ] Option 1: icon 📄, main text "Upload via CSV / XLSX", sub-text "Schedule up to 500 posts from a spreadsheet"
-- [ ] Option 2: icon 🖼️, main text "Upload via Images", "NEW" badge (small, `bg-primary-cs-500`), sub-text "Upload images and generate captions with AI — up to 100 posts"
+- [ ] Option 1: icon FileSpreadsheet (Lucide), main text "Schedule via CSV / XLSX", sub-text "Schedule up to 500 posts from a spreadsheet"
+- [ ] Option 2: icon Image (Lucide), main text "Schedule via Images", "NEW" badge (small, `bg-primary-cs-500`), sub-text "Upload images and generate captions with AI — up to 100 posts"
 - [ ] Clicking option 1 launches the CSV wizard inline
 - [ ] Clicking option 2 launches the Image wizard inline
 - [ ] Dropdown closes on outside click or option selection
@@ -189,7 +189,7 @@ As a user choosing the Image Upload mode in Bulk Schedule, I want to drag and dr
 
 ### Workflow:
 
-1. User clicks "Upload via Images" from either entry point — Image wizard launches
+1. User clicks "Schedule via Images" from either entry point — Image wizard launches
 2. **Step 1 — Upload Images:**
    - User sees a dashed drop zone with instruction copy and a drag-and-drop area
    - User drags images onto the zone or clicks "Upload" to open file picker
@@ -213,7 +213,7 @@ As a user choosing the Image Upload mode in Bulk Schedule, I want to drag and dr
 - [ ] Step indicator shows 4 steps: "Upload Images", "Name & Accounts", "Scheduling", "Finalizing Posts" — Step 1 active
 - [ ] Instruction line 1: "Upload up to 100 images. Each image becomes a separate post. AI captions will be generated in the last step."
 - [ ] Instruction line 2 (grey, smaller): "Supported: JPG, PNG, GIF, WebP · Max file size: 10 MB"
-- [ ] Drop zone: dashed `border-primary-cs-200` border, centered 🖼️ icon, label "Drag & drop images here, or Upload" — "Upload" is a `text-primary-cs-500` hyperlink-styled trigger
+- [ ] Drop zone: dashed `border-primary-cs-200` border, centered image icon (Lucide Image), label "Drag & drop images here, or Upload" — "Upload" is a `text-primary-cs-500` hyperlink-styled trigger
 - [ ] Drag-over state: border becomes `border-primary-cs-500`, background becomes `bg-primary-cs-50`
 - [ ] File picker accepts: `image/jpeg, image/png, image/gif, image/webp`; multiple selection enabled
 - [ ] Files > 10 MB are skipped; per-file toast: "'{filename}' is too large. Max file size is 10 MB." — warn style, 5s
@@ -287,19 +287,19 @@ As a user who has uploaded images in the Bulk Schedule wizard, I want to see all
 
 1. User arrives at Step 4 after completing Step 3 — wizard card expands to max-width 1000px
 2. Posts table shows one row per uploaded image; all posts show "Pending" status (yellow badge)
-3. Info banner shown: "Your images are ready. Click '✨ Generate All Captions' to auto-generate captions for all posts at once, or generate individually per post."
-4. Header row shows: post count ("{N} post(s)") and "✨ Generate All Captions" button
+3. Info banner shown: "Your images are ready. Click 'Generate All Captions' to auto-generate captions for all posts at once, or generate individually per post."
+4. Header row shows: post count ("{N} post(s)") and "Generate All Captions" button
 
 **Generate All flow:**
-5. User clicks "✨ Generate All Captions" — button enters loading state ("Generating captions…" with animated dots)
+5. User clicks "Generate All Captions" — button enters loading state ("Generating captions…" with animated dots)
 6. Posts are processed sequentially — each post's thumbnail shows a pulsing `border-primary-cs-200` ring; status badge turns "Generating" (blue); content area shows animated dots + "Generating caption…"
-7. As each caption completes: caption text appears in the content area; status badge turns "Ready" (green); pulsing ring disappears; "✨ Generate caption" link disappears for that post
+7. As each caption completes: caption text appears in the content area; status badge turns "Ready" (green); pulsing ring disappears; "Generate caption" link disappears for that post
 8. Once all posts have captions: "Generate All Captions" button disappears; info banner dismissed
-9. User selects all rows → clicks "📅 Schedule Selected" in bulk actions bar → posts scheduled
+9. User selects all rows → clicks "Schedule Selected" in bulk actions bar → posts scheduled
 
 **Single-post generate flow:**
-10. User sees a post with "Pending" badge and "✨ Generate caption" link
-11. User clicks "✨ Generate caption" — that post enters generating state (ring + blue badge + animated dots)
+10. User sees a post with "Pending" badge and "Generate caption" link
+11. User clicks "Generate caption" — that post enters generating state (ring + blue badge + animated dots)
 12. Caption appears → post becomes "Ready"
 
 **Zero credits flow:**
@@ -326,11 +326,11 @@ As a user who has uploaded images in the Bulk Schedule wizard, I want to see all
 
 **Bulk select and actions:**
 27. User checks multiple rows → floating bulk actions bar appears at bottom-center of screen
-28. Bar shows: "✓ {N} Selected", "( Unselect all )" link, "⚙️ Actions ▾" button
-29. Clicking "⚙️ Actions ▾" opens dropdown above the bar
-30. User selects "✨ Generate Captions" to generate for selected pending posts only
-31. OR selects "📅 Schedule Selected" to schedule selected posts
-32. OR selects "🗑 Delete Selected" to remove posts from the batch
+28. Bar shows: "{N} Selected", "( Unselect all )" link, "Actions ▾" button
+29. Clicking "Actions ▾" opens dropdown above the bar
+30. User selects "Generate Captions" to generate for selected pending posts only
+31. OR selects "Schedule Selected" to schedule selected posts
+32. OR selects "Delete Selected" to remove posts from the batch
 
 ---
 
@@ -343,13 +343,13 @@ As a user who has uploaded images in the Bulk Schedule wizard, I want to see all
 
 **Header row:**
 - [ ] Post count shown top-left: "{N} post(s)" — bold number, `text-gray-500` label
-- [ ] "✨ Generate All Captions" button shown in header (image mode only); tooltip on hover: "Uses your AI text credits."
+- [ ] "Generate All Captions" button shown in header (image mode only); tooltip on hover: "Uses your AI text credits."
 - [ ] Generate All — active state: animated three-dot indicator + "Generating captions…" text; `bg-primary-cs-50` background, `border-primary-cs-200` border; cursor `not-allowed` (non-clickable while generating)
 - [ ] Generate All — zero credits: clicking shows toast "You've run out of AI text credits. [Upgrade your plan] to get more." — orange, 5s; button stays enabled
 - [ ] Generate All button disappears once all posts have captions (pendingCount === 0); no success message shown
 
 **Info banner:**
-- [ ] Banner shown in image mode before any captions are generated: "Your images are ready. Click '✨ Generate All Captions' to auto-generate captions for all posts at once, or generate individually per post."
+- [ ] Banner shown in image mode before any captions are generated: "Your images are ready. Click 'Generate All Captions' to auto-generate captions for all posts at once, or generate individually per post."
 - [ ] Banner style: `bg-primary-cs-50`, `border-primary-cs-200`, left-aligned icon
 - [ ] Banner auto-dismissed when generation starts or any caption is populated; does not reappear
 
@@ -360,16 +360,16 @@ As a user who has uploaded images in the Bulk Schedule wizard, I want to see all
 - [ ] Status (Pending / Generating / Ready badge)
 - [ ] Label (tag chips — same as CSV mode)
 - [ ] Campaign (campaign badge — same as CSV mode)
-- [ ] Actions (Schedule link, Edit ✏️, Delete 🗑)
+- [ ] Actions (Schedule link, Edit (pencil icon), Delete (trash icon))
 
 **Post column — thumbnail:**
 - [ ] 56×56px, `border-radius: 8px`, `1px border-gray-200`, `object-fit: cover` — shows uploaded image
-- [ ] Broken/failed image: emoji placeholder fallback (🌅, 🎨, 📸 — cycles by post index); `onError` handler
+- [ ] Broken/failed image: generic placeholder icon fallback (Lucide ImageOff — cycles by post index); `onError` handler
 - [ ] Generating state: pulsing `border-primary-cs-200` ring animation around the thumbnail
 
 **Post column — content area states:**
 - [ ] Has caption: caption text, max 2 lines with `text-ellipsis`
-- [ ] No caption (image mode): Line 1 "No caption yet." (`text-gray-400`, italic); Line 2 "✨ Generate caption" (`text-primary-cs-500`, dotted underline); hover: `text-primary-cs-700`; tooltip: "Uses your AI text credits."
+- [ ] No caption (image mode): Line 1 "No caption yet." (`text-gray-400`, italic); Line 2 "Generate caption" (`text-primary-cs-500`, dotted underline); hover: `text-primary-cs-700`; tooltip: "Uses your AI text credits."
 - [ ] No caption (CSV mode): Line 1 "No caption yet." (`text-gray-400`, italic); Line 2 "Edit manually →" (`text-gray-400`, italic) — no generate link in CSV mode
 - [ ] Generating: animated three-dot indicator + "Generating caption…" at fixed 52px height to prevent row jump
 - [ ] Generation failed: "Couldn't generate caption." + "[Try again]" link (`text-primary-cs-500`); clicking re-triggers single-post generation
@@ -381,7 +381,7 @@ As a user who has uploaded images in the Bulk Schedule wizard, I want to see all
 
 **Generation triggers:**
 - [ ] Generate All: generates captions for all posts with no caption; sequentially processed (~500ms stagger); disabled during active generation
-- [ ] Single-post "✨ Generate caption" link: visible only on posts with no caption and not currently generating; triggers generation for that post only; can be clicked while Generate All is running (post joins queue)
+- [ ] Single-post "Generate caption" link: visible only on posts with no caption and not currently generating; triggers generation for that post only; can be clicked while Generate All is running (post joins queue)
 - [ ] Bulk generate (Actions menu): only visible when ≥1 selected post has no caption; generates for selected pending posts only
 
 **Credit handling:**
@@ -391,12 +391,12 @@ As a user who has uploaded images in the Bulk Schedule wizard, I want to see all
 
 **Bulk selection & actions bar:**
 - [ ] Floating bar appears at bottom-center when ≥1 row selected; disappears when selection cleared
-- [ ] Selected count: "✓ {N} Selected" — white text on `bg-gray-800`
+- [ ] Selected count: "{N} Selected" — white text on `bg-gray-800`
 - [ ] Unselect all: "( Unselect all )" — `text-primary-cs-300`, clears selection
-- [ ] "⚙️ Actions ▾" button — `bg-gray-700`; opens dropdown above the bar
-- [ ] Dropdown — "✨ Generate Captions": image mode only; visible only when ≥1 selected post has no caption; sub-label "For {N} selected post(s) · uses AI credits"; tooltip "Uses your AI text credits."; hidden if all selected posts already have captions
-- [ ] Dropdown — "📅 Schedule Selected": available in both modes; sub-label "Schedule {N} post(s)"
-- [ ] Dropdown — "🗑 Delete Selected": red text; sub-label "Remove {N} post(s) from this batch"; clears selection after
+- [ ] "Actions ▾" button — `bg-gray-700`; opens dropdown above the bar
+- [ ] Dropdown — "Generate Captions": image mode only; visible only when ≥1 selected post has no caption; sub-label "For {N} selected post(s) · uses AI credits"; tooltip "Uses your AI text credits."; hidden if all selected posts already have captions
+- [ ] Dropdown — "Schedule Selected": available in both modes; sub-label "Schedule {N} post(s)"
+- [ ] Dropdown — "Delete Selected": red text; sub-label "Remove {N} post(s) from this batch"; clears selection after
 
 **Close-while-generating guard:**
 - [ ] Clicking × while generation is in progress triggers a blocking modal (cannot be dismissed by clicking outside)

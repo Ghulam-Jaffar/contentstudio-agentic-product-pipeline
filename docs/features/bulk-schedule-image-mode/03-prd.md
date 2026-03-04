@@ -11,7 +11,7 @@
 
 Bulk Schedule today requires a CSV/XLSX spreadsheet — users must write captions, format dates, and structure a file before they can upload anything. For social media managers who already have their visual assets ready, this is unnecessary friction.
 
-This feature adds a second mode to Bulk Schedule: **Upload via Images**. Users drag and drop up to 100 images, set their accounts and schedule, and on the final step generate AI captions for all posts at once or one at a time. The entire workflow — from raw images to fully scheduled posts — happens inside the existing Bulk Schedule wizard without leaving ContentStudio.
+This feature adds a second mode to Bulk Schedule: **Schedule via Images**. Users drag and drop up to 100 images, set their accounts and schedule, and on the final step generate AI captions for all posts at once or one at a time. The entire workflow — from raw images to fully scheduled posts — happens inside the existing Bulk Schedule wizard without leaving ContentStudio.
 
 The CSV/XLSX mode is unchanged. Both modes share the same wizard shell and reuse Steps 2 (Name & Accounts) and 3 (Scheduling). They diverge at Step 1 (CSV upload vs. image upload) and Step 4 (static review table vs. AI caption generation).
 
@@ -78,7 +78,7 @@ Free plan users without AI text credits (can still upload images and schedule wi
 
 ### 6.1 Must Have (P0)
 
-- **Mode selector landing page:** Replace the existing single-CTA landing page with a two-card layout: "Upload via CSV / XLSX" (existing) and "Upload via Images" (new)
+- **Mode selector landing page:** Replace the existing single-CTA landing page with a two-card layout: "Schedule via CSV / XLSX" (existing) and "Schedule via Images" (new)
 - **Image upload step (Step 1 — Image mode):** Drag-and-drop zone + file picker; accepts JPG, PNG, GIF, WebP; max 100 images; max 10 MB per file; thumbnail preview grid with individual remove; counter; Remove all
 - **Wizard routing:** Image mode follows the same 4-step structure; Steps 2 and 3 are shared; Step 3 removes the "Use times from CSV" tab for image mode
 - **Backend: image draft save:** Accept image files (JPG, PNG, GIF, WebP) in the draft save endpoint; validate file type and size (max 10 MB); upload to GCS; store file references in `csv_processing` document
@@ -86,7 +86,7 @@ Free plan users without AI text credits (can still upload images and schedule wi
 - **Backend: AI caption generation endpoint:** New endpoint that accepts a post reference and returns an AI-generated caption for that image; consumed by all three frontend generation triggers (Generate All, single-post, bulk-selected); uses workspace Brand Settings for tone/style; deducts AI text credits per caption generated
 - **Finalizing Posts — image mode:** Posts table shows thumbnail, caption state, and per-row status badge (Pending / Generating / Ready)
 - **Generate All Captions button:** In Step 4 header (image mode only); triggers AI caption generation for all posts with no caption; disappears when all captions are generated
-- **Single-post generate:** Inline "✨ Generate caption" link in the post content area for posts with no caption
+- **Single-post generate:** Inline "Generate caption" link in the post content area for posts with no caption
 - **Generation loading state:** Per-post thumbnail shows pulsing `border-primary-cs-200` ring animation; content area shows animated dots + "Generating caption…"
 - **Caption applied state:** Caption text appears in the post content area; Status badge updates to "Ready"; generate link disappears
 - **Pending status badge:** Yellow badge on posts with no caption yet
@@ -99,7 +99,7 @@ Free plan users without AI text credits (can still upload images and schedule wi
 
 ### 6.2 Should Have (P1)
 
-- **Generate selected (bulk):** Bulk Actions floating bar → Actions dropdown → "✨ Generate Captions" — generates for selected posts that have no caption only; hidden if all selected posts already have captions
+- **Generate selected (bulk):** Bulk Actions floating bar → Actions dropdown → "Generate Captions" — generates for selected posts that have no caption only; hidden if all selected posts already have captions
 - **File > 10 MB — inline toast:** Show toast: "'{filename}' is too large. Max file size is 10 MB." Skip the oversized file and continue with valid ones
 - **> 100 images — silent truncate:** Silently keep only the first 100; counter shows "100 / 100 images selected"
 - **Row deletion mid-generation:** Deleting a post whose generation is in progress cancels that post's generation job; row removed cleanly from table
@@ -128,30 +128,30 @@ Free plan users without AI text credits (can still upload images and schedule wi
 ### 7.1 Happy Path — Image Upload + Generate All + Schedule
 
 1. User navigates to Publisher sidebar → Automations → Bulk Schedule
-2. Landing page shows two cards: "Upload via CSV / XLSX" and "Upload via Images"
-3. User clicks "⬆ Upload Images" on the Image card
+2. Landing page shows two cards: "Schedule via CSV / XLSX" and "Schedule via Images"
+3. User clicks "Upload Images" on the Image card
 4. Wizard launches inline — Step 1: Upload Images
 5. User drags 15 JPG images onto the drop zone — thumbnail grid appears with counter "15 / 100 images selected"
 6. User clicks "Next" → Step 2: Name & Accounts
 7. User enters a campaign title and selects social accounts → clicks "Next"
 8. Step 3: Scheduling — "Use times from CSV" tab not shown; user picks Regular Intervals → clicks "Next"
 9. Warning banner: "Review your settings before proceeding…" — user confirms
-10. Step 4: Finalizing Posts — 15 rows in table, all showing "Pending" (yellow badge); info banner visible; "✨ Generate All Captions" button in header
-11. User clicks "✨ Generate All Captions"
+10. Step 4: Finalizing Posts — 15 rows in table, all showing "Pending" (yellow badge); info banner visible; "Generate All Captions" button in header
+11. User clicks "Generate All Captions"
 12. Posts generate one at a time: each shows pulsing ring + blue badge while generating → caption appears + green badge when done
 13. "Generate All Captions" button disappears once last caption is generated
-14. User selects all rows → clicks "📅 Schedule Selected" in bulk actions bar → posts scheduled
+14. User selects all rows → clicks "Schedule Selected" in bulk actions bar → posts scheduled
 
 ### 7.2 Single-Post Generation
 
 1. User is on Step 4 with some posts still showing "Pending"
-2. User clicks "✨ Generate caption" inline under a specific post
+2. User clicks "Generate caption" inline under a specific post
 3. That post's thumbnail shows pulsing ring; content area shows "Generating caption…"; badge turns blue
 4. Caption appears; badge turns green; generate link disappears
 
 ### 7.3 Zero AI Text Credits
 
-1. User clicks "✨ Generate All Captions" or any generate trigger
+1. User clicks "Generate All Captions" or any generate trigger
 2. Toast shown: "You've run out of AI text credits. [Upgrade your plan] to get more." — orange/error toast
 3. No generation starts; page state unchanged
 
@@ -195,18 +195,18 @@ When a user visits Bulk Schedule for the first time or has no existing schedules
 **Sub-heading:** "Choose how you'd like to create and schedule your posts"
 
 **CSV / XLSX card:**
-- Icon: 📄
-- Title: "Upload via CSV / XLSX"
+- Icon: FileSpreadsheet (Lucide)
+- Title: "Schedule via CSV / XLSX"
 - Description: "Schedule up to 500 posts by uploading a spreadsheet with dates, captions, and media links."
-- Primary CTA: "⬆ Upload CSV File"
-- Secondary CTA: "⬇ Download Sample CSV"
+- Primary CTA: "Upload CSV File"
+- Secondary CTA: "Download Sample CSV"
 
-**Upload via Images card (new):**
-- Icon: 🖼️
-- Title: "Upload via Images"
+**Schedule via Images card (new):**
+- Icon: Image (Lucide)
+- Title: "Schedule via Images"
 - Badge: "NEW · AI-Powered" — `bg-primary-cs-500` gradient, white text
 - Description: "Upload up to 100 images and let AI generate captions instantly — then schedule in bulk."
-- Primary CTA: "⬆ Upload Images"
+- Primary CTA: "Upload Images"
 - No secondary CTA
 
 **Below both cards:** Retain existing "Learn more about Bulk Scheduling" text link.
@@ -222,8 +222,8 @@ When the user has existing bulk schedules, the page shows the listing table (exi
 
 | Option | Icon | Main text | Sub-text |
 |---|---|---|---|
-| Option 1 | 📄 | "Upload via CSV / XLSX" | "Schedule up to 500 posts from a spreadsheet" |
-| Option 2 | 🖼️ | "Upload via Images" | "Upload images and generate captions with AI — up to 100 posts" |
+| Option 1 | FileSpreadsheet (Lucide) | "Schedule via CSV / XLSX" | "Schedule up to 500 posts from a spreadsheet" |
+| Option 2 | Image (Lucide) | "Schedule via Images" | "Upload images and generate captions with AI — up to 100 posts" |
 
 Option 2 has a "NEW" badge (small, `bg-primary-cs-500`, white text) next to its main text label.
 
@@ -241,7 +241,7 @@ Wizard header: "Bulk Schedule via Images" + "AI-Powered" badge (same style as ca
 |---|---|
 | Instruction line 1 | "Upload up to 100 images. Each image becomes a separate post. AI captions will be generated in the last step." |
 | Instruction line 2 | "Supported: JPG, PNG, GIF, WebP · Max file size: 10 MB" — grey, smaller text |
-| Drop zone | Dashed `border-primary-cs-200` border, centered 🖼️ icon; label: "Drag & drop images here, or Upload" — "Upload" is a `text-primary-cs-500` hyperlink-styled trigger |
+| Drop zone | Dashed `border-primary-cs-200` border, centered image icon (Lucide Image); label: "Drag & drop images here, or Upload" — "Upload" is a `text-primary-cs-500` hyperlink-styled trigger |
 | Drag-over state | Border turns `border-primary-cs-500`, background turns `bg-primary-cs-50` |
 | File picker | `accept="image/jpeg,image/png,image/gif,image/webp"`, `multiple` |
 | Image limit | Max 100. If user selects more, keep first 100 silently; counter shows "100 / 100 images selected" |
@@ -280,12 +280,12 @@ Wizard card expands to max-width 1000px at this step.
 | Element | Spec |
 |---|---|
 | Post count | "{N} post(s)" — bold number, `text-gray-500` label |
-| Generate All button (image mode only) | "✨ Generate All Captions" — `bg-primary-cs-500` gradient button. Tooltip: "Uses your AI text credits." Disappears once all captions are generated (pendingCount === 0) |
+| Generate All button (image mode only) | "Generate All Captions" — `bg-primary-cs-500` gradient button. Tooltip: "Uses your AI text credits." Disappears once all captions are generated (pendingCount === 0) |
 | Generate All — active state | Animated dots + "Generating captions…" — `bg-primary-cs-50` background, `border-primary-cs-200` border, non-clickable cursor |
 | Generate All — zero credits | Clicking shows toast: "You've run out of AI text credits. [Upgrade your plan] to get more." (orange toast, 5s). No modal. Button stays enabled. |
 
 **Info banner (image mode, Step 4 only):**
-> "Your images are ready. Click '✨ Generate All Captions' to auto-generate captions for all posts at once, or generate individually per post."
+> "Your images are ready. Click 'Generate All Captions' to auto-generate captions for all posts at once, or generate individually per post."
 > Style: `bg-primary-cs-50`, `border-primary-cs-200`, left-aligned icon
 > Shown only before any captions exist; auto-dismissed when generation starts or any caption is populated.
 
@@ -299,13 +299,13 @@ Wizard card expands to max-width 1000px at this step.
 | Status | Pending / Generating / Ready badge (see §8.7) |
 | Label | Tag chips |
 | Campaign | Campaign badge |
-| Actions | Schedule link, Edit (✏️), Delete (🗑) |
+| Actions | Schedule link, Edit (pencil icon), Delete (trash icon) |
 
 ### 8.6 Post Column — Content States
 
 **Thumbnail:**
 - Image post: `object-fit: cover`, `border-radius: 8px`, `1px border-gray-200`
-- Broken/failed image: emoji placeholder (🌅, 🎨, 📸, rotates by index)
+- Broken/failed image: generic placeholder icon (Lucide ImageOff, rotates by post index)
 - Generating state: pulsing `border-primary-cs-200` ring animation around the thumbnail
 
 **Content area:**
@@ -313,7 +313,7 @@ Wizard card expands to max-width 1000px at this step.
 | State | Line 1 | Line 2 |
 |---|---|---|
 | Has caption | Caption text (max 2 lines, `text-ellipsis`) | — |
-| No caption — image mode | "No caption yet." — `text-gray-400`, italic | "✨ Generate caption" — dotted underline, `text-primary-cs-500`; hover: `text-primary-cs-700`. Tooltip: "Uses your AI text credits." |
+| No caption — image mode | "No caption yet." — `text-gray-400`, italic | "Generate caption" — dotted underline, `text-primary-cs-500`; hover: `text-primary-cs-700`. Tooltip: "Uses your AI text credits." |
 | No caption — CSV mode | "No caption yet." — `text-gray-400`, italic | "Edit manually →" — `text-gray-400`, italic |
 | Generating | — | Animated three-dot indicator + "Generating caption…" — shown at fixed 52px height to keep row height stable |
 | Generation failed | — | "Couldn't generate caption." + "[Try again]" link — `text-primary-cs-500`, triggers single-post generation |
@@ -346,7 +346,7 @@ CSV mode does not use these status badges — it uses existing draft/scheduled/e
 - Visible in Actions dropdown only when ≥1 selected post has no caption
 - Hidden if all selected posts already have captions
 - Triggers generation for selected pending posts only
-- Label: "✨ Generate Captions"; sub-label: "For {N} selected post(s) · uses AI credits"
+- Label: "Generate Captions"; sub-label: "For {N} selected post(s) · uses AI credits"
 - Tooltip: "Uses your AI text credits."
 
 **Credit handling:**
@@ -359,17 +359,17 @@ Floating bar at bottom-center of screen when ≥1 row is selected. Disappears wh
 
 | Element | Spec |
 |---|---|
-| Selected count | "✓ {N} Selected" — white text on `bg-gray-800` |
+| Selected count | "{N} Selected" — white text on `bg-gray-800` |
 | Unselect all | "( Unselect all )" — `text-primary-cs-300` link, clears selection |
-| Actions button | "⚙️ Actions ▾" — `bg-gray-700`, opens dropdown above the bar |
+| Actions button | "Actions ▾" — `bg-gray-700`, opens dropdown above the bar |
 
 **Actions dropdown:**
 
 | Action | Visibility | Spec |
 |---|---|---|
-| ✨ Generate Captions | Image mode only; only when ≥1 selected post has no caption | Sub-label: "For {N} selected post(s) · uses AI credits"; tooltip: "Uses your AI text credits." |
-| 📅 Schedule Selected | Both modes | Sub-label: "Schedule {N} post(s)" |
-| 🗑 Delete Selected | Both modes | Red text; sub-label: "Remove {N} post(s) from this batch"; clears selection after |
+| Generate Captions | Image mode only; only when ≥1 selected post has no caption | Sub-label: "For {N} selected post(s) · uses AI credits"; tooltip: "Uses your AI text credits." |
+| Schedule Selected | Both modes | Sub-label: "Schedule {N} post(s)" |
+| Delete Selected | Both modes | Red text; sub-label: "Remove {N} post(s) from this batch"; clears selection after |
 
 ### 8.10 Close-While-Generating Guard Modal
 

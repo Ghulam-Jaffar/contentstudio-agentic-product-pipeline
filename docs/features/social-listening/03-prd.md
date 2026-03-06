@@ -1,36 +1,37 @@
-# PRD: Social Listening
+# PRD: Listening
 
 **Author:** Product Team
-**Last Updated:** 2026-03-02
-**Status:** Updated — Prototype Complete
+**Last Updated:** 2026-03-06
+**Status:** Approved
 **Target Release:** Q2 2026
 
 ---
 
 ## 1. Overview
 
-Social Listening is a new top-level ContentStudio module that lets users monitor the entire web — social media platforms, news, blogs, forums, and review sites — for mentions of their brand, keywords, competitors, and industry topics. Every matching mention is captured, classified by sentiment (positive/neutral/negative), and surfaced in a filterable live feed alongside volume trend charts and spike alerts. Users can respond to discovered mentions directly through ContentStudio's Inbox without switching tools, closing the full loop from discovery to engagement within one platform.
-
-This feature addresses the #1 most-requested capability missing from ContentStudio and positions the product against dedicated listening tools like Brand24 ($149–$499/mo) and Agorapulse's Mention add-on ($40/topic/mo) — while offering something neither can: a seamless workflow that connects listening to publishing, scheduling, and analytics in a single platform.
-
-The feature ships as an **add-on module** at **$99/month** (or $79/month billed annually). It is visible to all users in the sidebar, but gated behind a purchase. Non-subscribers see a polished landing page and can explore a live demo topic. A prototype has been built at `cs-prototypes/app/features/listening/`.
+Listening is a $49/month paid add-on for ContentStudio that monitors 18 social platforms, news, blogs, and discussion forums for brand mentions, competitor activity, and industry keywords — and surfaces them in a single, intelligent, feed-first inbox. Users create topics (up to 5 by default) with keywords and platform scope; the system ingests up to 10,000 mentions per month, applies AI-powered smart tagging (10 categories) and sentiment scoring, then presents everything in a unified global feed. Users can reply to mentions inline with AI-assist, save custom filtered views, set spike alerts, and export analytics reports. The feature is web-only in V1 and fully mobile-responsive.
 
 ---
 
 ## 2. Problem Statement
 
-ContentStudio users — primarily social media managers at agencies and growing brands — have no way to know what's being said about their clients' brands outside of their own managed channels. They only see comments and messages on accounts they've connected. Everything said on X/Twitter, Reddit, news sites, blogs, or competitor brand pages is completely invisible to them inside ContentStudio today.
+**What problem are we solving?**
 
-This means:
-- Brand crises form and grow before users are aware of them
-- Competitor intelligence requires manually checking competitor profiles or using a separate tool
-- Content strategy is based on internal ideas rather than real trending conversations
-- Campaign effectiveness (earned media, word-of-mouth reach) cannot be measured
-- Agencies cannot demonstrate the full brand impact of their work to clients in a single report
+Social media managers and brand owners currently have no native way inside ContentStudio to monitor what people are saying about their brand, competitors, or industry across platforms. They either use expensive standalone tools (Brandwatch, Mention, Brand24 — ranging from $49–$499/mo), manually search each platform, or simply don't monitor at all and discover PR issues after they've already spread. This is a critical gap: ContentStudio handles publishing, scheduling, inbox, and analytics but leaves brand monitoring entirely to external tools — forcing users to context-switch and duplicate their workspace setup.
 
 **Who has this problem?**
-- **Social media managers at agencies** (primary): managing 5–50 client brands; need to monitor each client independently; need to report on brand health without extra tools
-- **In-house brand managers at SMBs** (secondary): monitoring their own brand; limited budgets; currently using Brand24 ($249/mo) alongside ContentStudio
+
+- **Social media managers** (primary) — responsible for brand reputation, community engagement, and competitive intelligence. They check for mentions multiple times per day across multiple accounts.
+- **Agency account managers** — managing brand monitoring for clients, need consolidated views and scheduled reports.
+- **Founders / growth teams** — monitoring competitor activity and customer sentiment to inform product and marketing decisions.
+- Estimated 30–40% of ContentStudio's customer base actively uses a third-party listening tool today (based on competitor comparison searches, support requests, and user interviews). This represents direct churn risk to specialized tools.
+
+**What happens if we don't solve it?**
+
+- Users keep paying two subscriptions (ContentStudio + a listening tool), which weakens ContentStudio's value proposition and increases churn risk.
+- ContentStudio falls further behind Hootsuite (Streams), Buffer (Mentions), and Metricool (Mentions tab) — all of which have native listening capabilities.
+- PR crises and viral negative mentions go undetected; users blame ContentStudio for leaving them blind.
+- Agency users specifically require listening for client reporting — without it they cannot consolidate their workflow in ContentStudio.
 
 ---
 
@@ -38,355 +39,275 @@ This means:
 
 | Goal | Metric | Target | How We'll Measure |
 |---|---|---|---|
-| Drive feature adoption | % of active workspaces with ≥1 Listening topic | 30% within 90 days of launch | Product analytics |
-| Reduce churn from users citing missing listening | Churn rate among users with ≥1 active topic | < 2% quarterly | Billing data |
-| Competitive displacement | New sign-ups from Brand24/Mention switchers | Track in onboarding survey | Onboarding questionnaire |
-| Upsell | Conversion from Starter → Growth after hitting topic limit | 25% conversion rate | Billing data |
-| Core engagement | Weekly Active Users of Listening as % of total WAU | 15% within 6 months | Product analytics |
-| Alert value | % of spike alert emails resulting in click-through | > 40% email CTR | Email analytics |
+| Add-on revenue | Monthly add-on subscribers | 500 subscribers within 90 days of launch | Billing data |
+| Reduce tool fragmentation | % of subscribers who cancel a competing listening tool | 30% self-report cancellation | Post-activation survey (30-day) |
+| Engagement | DAU / MAU ratio for Listening module | ≥ 40% (i.e., users check it more than once a week) | Product analytics (feature-level) |
+| Onboarding success | % of new subscribers who complete setup + create ≥1 topic | ≥ 75% within 24h of activation | Funnel analytics |
+| Retention | 3-month add-on retention rate | ≥ 80% | Billing churn data |
+| Guard rail | No increase in overall ContentStudio churn due to pricing concerns | < 0.5% delta | Billing data |
 
 ---
 
 ## 4. Target Users
 
-**Primary Persona: Agency Social Media Manager ("Sara")**
-Sara manages 8–20 client accounts. She publishes content, tracks analytics, and manages inbox engagement for each client in ContentStudio. She also needs to report to clients on "how the brand is doing" — which currently means pulling data from multiple tools. She pays for ContentStudio ($89–$199/mo) and also pays for Brand24 ($249/mo) separately. She would immediately cancel Brand24 if ContentStudio offered equivalent listening.
+**Primary Persona:**
+Social media manager at a mid-size brand or agency — manages 3–10 social accounts across multiple platforms. Checks ContentStudio daily for scheduling and inbox. Currently uses Brand24 or Mention separately. Wants brand monitoring in the same tool they live in. Not highly technical; expects intuitive setup with smart defaults.
 
-**Secondary Persona: In-House Brand Manager ("Marcus")**
-Marcus manages one brand internally. He wants ContentStudio's listening tied into his published content performance so he can see "what we published" vs. "what people said" in one report. He uses ContentStudio ($49/mo) and a free Mention tier.
+**Secondary Persona:**
+Agency account manager — runs ContentStudio workspaces for multiple clients. Needs scheduled PDF/CSV reports to send to clients weekly. Values custom views per client segment (brand vs. competitor) and the ability to set topic types (Own Brand / Competitor / Industry) for organizational clarity.
 
----
+**Tertiary Persona:**
+Founder / head of growth — monitors competitor launches, hiring signals (from GitHub/LinkedIn), and industry conversations. Uses the Analytics tab to track share of voice trends. Power user of advanced keyword filters (include ALL, negative authors, Reddit exclusions).
 
-## 5. Pricing
-
-Social Listening is a **flat add-on** — a single tier, not a tiered plan.
-
-- **Monthly:** $99/month
-- **Annual:** $79/month (billed as $948/year, saves ~20%)
-
-The AddOnPricingBlock on the landing page shows a billing cycle toggle (Monthly / Annual). When annual is selected, it displays "$79/mo" with "Billed as $948/year" below.
+**Non-Users (explicitly out of scope):**
+- Enterprise customers requiring Salesforce/CRM integration with mentions — out of scope for V1.
+- Developers wanting API access to raw mention data — V1 is UI-only.
+- Users on trial plans — Listening is paid-only; trials see the upsell gate.
 
 ---
 
-## 6. User States
-
-Four states drive different UI experiences:
-
-| State | Who | UI |
-|---|---|---|
-| **trial** | On ContentStudio trial; no Social Listening add-on | Landing page with orange alert banner requiring Agency Unlimited plan first |
-| **locked** | Has active ContentStudio plan; no Social Listening add-on | Landing page (no alert banner) |
-| **unlocked** | Has active Social Listening add-on | Full topic list and all dashboard features |
-| **expired** | Previously had add-on, subscription lapsed | If topics exist: topic list in churned mode (dimmed cards, UpgradeModal auto-opens). If no topics: landing page |
-
-Route logic in `/features/listening/page.tsx`:
-- `unlocked` → Topic List
-- `expired` + topics → Topic List (churned mode)
-- all other states → Landing Page
-
----
-
-## 7. User Stories / Jobs to Be Done
+## 5. User Stories / Jobs to Be Done
 
 | ID | As a... | I want to... | So that... | Priority |
 |---|---|---|---|---|
-| US-1 | Social media manager | track all mentions of my client's brand across social and web | I know immediately when people talk about them | Must Have |
-| US-2 | Social media manager | see sentiment classification on each mention | I can quickly identify which need a response vs. which to celebrate | Must Have |
-| US-3 | Social media manager | receive an alert when mention volume spikes | I can respond to a potential brand crisis before it escalates | Must Have |
-| US-4 | Social media manager | reply to a negative mention from the listening feed | I don't have to switch tools | Must Have |
-| US-5 | Agency manager | track competitor brand names alongside my client's brand | I can show clients share of conversation vs. competitors | Must Have |
-| US-6 | Agency manager | export listening data as a PDF or CSV | I can include brand mention data in monthly client reports | Must Have |
-| US-7 | Brand manager | filter mentions by platform, sentiment, and date range | I can focus on what matters without scrolling through noise | Must Have |
-| US-8 | Brand manager | set up a listening topic in under 5 minutes | The tool guides me through keyword setup without Boolean syntax | Must Have |
-| US-9 | Social media manager | see AI-generated insights on every analytics chart | I get actionable takeaways without reading raw numbers | Should Have |
-| US-10 | Brand manager | see mention volume and sentiment trends over time | I can spot patterns and report on brand health progress | Must Have |
-| US-11 | Agency manager | have separate listening topics per client workspace | My clients' data never mixes | Must Have |
-| US-12 | Agency manager | preview a static report before exporting | I can verify the content before sending to clients | Should Have |
+| US-1 | Social media manager | see all mentions of my brand across platforms in one feed | I never miss a conversation I need to respond to | Must Have |
+| US-2 | Social media manager | reply to mentions directly from the feed | I don't have to open each platform separately | Must Have |
+| US-3 | Social media manager | filter mentions by sentiment, platform, and tag | I can prioritize what to act on first | Must Have |
+| US-4 | Social media manager | save custom filtered views (e.g., "Crisis Monitor", "Brand Love") | I can instantly switch to the segments that matter most to me | Must Have |
+| US-5 | Social media manager | be alerted when mention volume spikes or sentiment turns negative | I catch a PR crisis before it spreads | Must Have |
+| US-6 | Agency account manager | create separate topics for each client's brand and competitors | I can keep clients' data organized | Must Have |
+| US-7 | Agency account manager | export analytics as PDF or schedule weekly email reports | I can deliver professional reporting to clients without manual work | Must Have |
+| US-8 | Brand manager | see sentiment trends and platform breakdown over time | I can report on brand health to leadership | Should Have |
+| US-9 | Power user | configure advanced keyword rules (include ALL, negatives, exact match) | I get high-signal mentions without noise | Should Have |
+| US-10 | Social media manager | get AI-generated reply drafts when engaging with mentions | I reply faster and more consistently | Should Have |
+| US-11 | Founder | use AI smart tags (Buy Intent, Bug Report, Competitor Mention) to identify high-value mentions | I can route the right mentions to the right team without reading everything | Should Have |
+| US-12 | Agency manager | pause a topic during off-seasons or closed campaigns without deleting it | I don't lose the configuration when I restart monitoring | Should Have |
+| US-13 | Social media manager | see which subreddits to exclude | I don't get spammed by off-topic subreddit noise | Nice to Have |
+| US-14 | Power user | override AI-assigned sentiment on a mention | I can correct misclassifications and maintain accurate analytics | Nice to Have |
+| US-15 | Social media manager | bookmark important mentions to reference later | I can compile examples for presentations or client reviews | Nice to Have |
 
 ---
 
-## 8. Feature Requirements
+## 6. Requirements
 
-### 8.1 Topic Management (P0)
+### 6.1 Must Have (P0)
 
-- Users create a Listening Topic via a 4-step wizard: Basic Info → Keywords → Sources → Alerts
-- Topics are workspace-scoped
-- Plan limits: Starter=3, Growth/Pro=10, Agency/Scale=unlimited
-- Users can edit topic keywords, sources, alert settings after creation
-- Users can pause or delete a topic
+**Topics & Monitoring**
+- Users can create up to 5 topics (default limit). Each topic requires a name, ≥1 keyword, and ≥1 platform.
+- Topics can be assigned a type: Own Brand, Competitor, Industry Term, or custom user-defined types.
+- Topics can be paused (stops new ingestion, retains historical mentions) and resumed at any time.
+- Topics can be deleted immediately; paused topics show confirmation modal before pausing.
+- Monitoring covers all 18 platforms: Twitter/X, Instagram, Facebook, LinkedIn, TikTok, YouTube, Reddit, Bluesky, Pinterest, Threads, Hacker News, GitHub, DEV.to, Stack Overflow, Podcasts, Newsletters, News, Blogs.
 
-### 8.2 Keyword Setup — Query Builder (P0)
+**Feed**
+- All mentions across all active topics surface in a single global feed ("All Mentions" view).
+- Feed is filterable by: topic(s), sentiment, AI smart tags, minimum follower count, date range, and sort order.
+- Each mention card shows: platform icon, author name, time, topic label, sentiment badge, AI tags, engagement count, and 3-line content preview with matched keyword highlighted.
+- Unread mentions are visually distinguished; "Mark all read" clears all unread indicators.
+- Hover reveals action pill: Reply, Bookmark, Open original, Mark as read, Mark as irrelevant, Copy link.
 
-Three keyword groups with AND/OR/NOT logic:
-- **Include Keywords** (required, OR logic) — typed tags with type selector: Text / Hashtag / Mention
-- **Required Keywords** (optional, AND logic) — every mention must also contain these
-- **Excluded Keywords** (optional, NOT logic) — excludes matching mentions
+**Reply**
+- Inline reply panel expands from the mention card (no page navigation).
+- Account selector shows connected accounts for that platform (using existing CS OAuth tokens).
+- If no accounts connected for that platform: orange banner with "Connect an account →" link; Reply button disabled.
+- If account token expired: warning icon on account in dropdown, error message on send attempt.
+- Reply is supported on: Twitter/X, Instagram, Facebook, LinkedIn, TikTok, YouTube, Reddit, Bluesky, Threads (9 platforms). Non-supported platform icons shown at reduced opacity with tooltip.
 
-Real-time conflict detection: include+exclude conflict, duplicate detection, short keyword warnings, volume estimation.
+**Smart Tagging + Sentiment**
+- AI automatically assigns ≥0 tags from 10 categories to each mention: Own Brand Mention, Competitor Mention, Industry Insight, Buy Intent, Bug Report, User Feedback, Promotional Post, Product Question, Event, Hiring.
+- AI automatically assigns sentiment: Positive, Neutral, or Negative.
+- User can override AI-assigned sentiment from the mention card (dropdown).
 
-**AI Assist**: Users describe in plain English what to monitor → system generates Include/Required/Exclusions suggestions.
+**Views**
+- 2 system views (read-only): "All Mentions", "High Relevance" (Buy Intent + Own Brand Mention tagged).
+- Users can create, rename, and delete custom views; each view is a saved combination of topic / platform / language / sentiment / tag / author reach filters.
+- Active view is preserved across navigation.
+- Deleting the active view falls back to the next available view.
 
-### 8.3 Source Coverage — V1 (P0)
+**Alerts**
+- Users can create alerts per view for: Volume Spike (% above 7-day rolling average, configurable) and/or Sentiment Spike (% negative exceeding threshold, configurable).
+- At least 1 trigger type must be active and at least 1 email recipient must be added before an alert can be saved.
+- Alerts can be toggled active/paused without deleting.
+- Alert emails sent to specified recipients (workspace team members or manually entered email addresses).
 
-Social: X/Twitter, Instagram, Facebook, LinkedIn, TikTok, YouTube, Reddit, Bluesky, Pinterest, Threads
+**Analytics**
+- Date range filter: All time, Last 24h, Last 7 days, Last 30 days, Last 90 days, Custom range.
+- Topic filter: multi-select (defaults to all topics).
+- KPI cards: Total Mentions, Positive Sentiment %, Avg. Daily Mentions, Topics Tracked.
+- Charts: Mentions Over Time (line, per topic), Sentiment Trend (stacked area), Sentiment Distribution (donut), By Platform (donut + ranked list), By Tag (horizontal bar).
+- Each chart has an "AI Insights" button showing 3 AI-generated contextual bullet points.
 
-Web & Media: News Sites, Blogs & Websites, Forums, Review Sites, Podcasts
+**Export**
+- Download: PDF report or CSV data with date range selector. Immediate download on button click.
+- Schedule: Weekly or monthly recurring reports emailed to specified recipients.
+- Share: Read-only analytics link (30-day expiry).
 
-Additional controls: Language filter (170+ languages), hide reshares toggle, verified-only toggle.
+**Settings**
+- Global Filters tab: negative terms (exclude from all topics), blocked authors, excluded subreddits, language filter.
+- Topic Types tab: view built-in types; create, edit, delete custom types.
+- Global filter summary shown as read-only block inside TopicFormModal.
 
-### 8.4 Mention Data & Feed (P0)
+**Subscription / Pricing**
+- Listening is a $49/month add-on billed to existing ContentStudio subscription.
+- Default limits: 5 topics, 10,000 mentions/month.
+- Usage bars visible in PrimaryNav (bottom) when subscribed: shows topics X/5 (red at limit) and mentions X.Xk/10k (amber at ≥90%, red at limit).
+- "Need more? Add-ons available →" CTA in usage bar.
+- Trial users see upsell gate; paid CS plan users see enable CTA; expired subscribers see re-enable CTA.
 
-Every mention stores: platform, author, follower count, date/time, text, sentiment, URL, engagement counts, topic_id, workspace_id.
+**Onboarding**
+- Two-step setup wizard on first activation: (1) website URL input → AI brand/competitor detection → topic suggestions; (2) topic review → "Start Monitoring".
+- Skip option if user prefers to add topics manually.
 
-Feed features:
-- Filters: Platform (multi-select), Sentiment (multi-select), Source Type, Date Range
-- Sort: Newest First, Most Engaged, Most Influential
-- Each mention card: platform icon, author, timestamp, text snippet, sentiment pill, engagement count, Reply button, Save button
-- Clicking Reply → Inbox composer pre-loaded with mention
-- Mentions retained: 30 days (Starter), 90 days (Growth/Pro), 365 days (Agency/Scale)
+**Mobile Responsiveness**
+- Full mobile support (<768px): PrimaryNav as hamburger Drawer, ViewsSidebar as Drawer, horizontally scrollable filter bars, stacked chart layouts.
 
-### 8.5 Analytics Dashboard (P0)
+### 6.2 Should Have (P1)
 
-The Analytics tab has two sub-tabs: **Performance** and **Insights**.
+- Bookmarks: saved mentions with search + platform / sentiment / tag / date filters. Empty states for zero bookmarks and no-match states.
+- AI-powered reply drafting: "Write with AI" generates a context-aware reply draft; "Rephrase", "Improve", "Shorten", "Lengthen", "Grammar Fix" transform existing draft text.
+- Advanced keyword configuration per topic: Include ANY of these terms, Include ALL of these terms, Negative terms (topic-level), Negative authors (topic-level), Exact match toggle, Case sensitive toggle.
+- Keyword conflict detection: surface errors when a keyword appears in both Keywords and Negative Terms (or other conflicting combinations); auto-open Advanced accordion to highlight the conflict.
+- AI Context Hint per topic (200 chars): free-text field helping the AI understand ambiguous brand names.
+- View icons: 7 icon options per custom view.
+- View duplication and "Manage alerts" shortcut from view context menu.
+- Sentiment override persistence to database (session-only is acceptable for V1 prototype, production must persist).
 
-#### KPI Grid (always visible)
-7 metrics shown as cards: Total Mentions, Reach, Impressions, Engagements, Sentiment Score, Net Reach, Avg Sentiment Velocity. AI Insights button visible above the KPI grid.
+### 6.3 Nice to Have (P2)
 
-#### Performance Sub-tab
-- Mention Volume Chart (area chart, line + bar toggle)
-- Reach Chart (area chart)
-- Engagement Chart (bar/line)
-- Impressions Chart (area chart)
-- Sentiment Trend Chart (stacked area)
-- Sentiment Distribution Donut (with sentiment score)
-- Network Breakdown Table (sortable: Mentions, Followers, Reach, Engagement, Impressions)
+- Platform-level exclusions per topic (beyond global subreddit filter).
+- In-app spike notifications (currently alert is email-only).
+- "Open in Inbox" from mention card to create a full Inbox thread.
+- Share link revocation from Settings UI.
+- Webhook delivery for alerts (email-only in V1).
+- Custom topic color picker (8 swatches available in prototype).
 
-#### Insights Sub-tab
-- Sentiment by Platform (grouped bar)
-- Geographic Distribution (choropleth map + bar chart)
-- Influencer/Top Authors Panel (top voices by reach)
-- Word Cloud (keyword frequency visualization)
-- Context charts (hashtags, content types, etc.)
+### 6.4 Explicitly Out of Scope (V1)
 
-#### AI Insights on Every Widget
-Every chart and table widget has a violet Sparkles (✨) ActionIcon button in its header. Clicking it opens a Mantine Popover showing 2–3 AI-generated insight bullets specific to that widget's data. The button is visible in both interactive and static (report preview) modes.
-
-#### Metric Data Availability Indicators (P0)
-Not every platform exposes every metric. Reach is estimated from domain traffic for web/blog sources. Impressions are unavailable on LinkedIn, Reddit, Bluesky, Threads, and all web sources. Engagement is unavailable for web/blog/news/forums.
-
-The UI surfaces this transparently in three places:
-
-**KPI card tooltips** — hovering the info (ℹ) icon on Reach, Engagement, or Impressions shows a platform legend grouped into three sections:
-- *Included sources* — colored dot + platform label (full data)
-- *Estimated (domain traffic)* — outline dot + `~platform` label (web sources for Reach)
-- *Not available* — dimmed dot + label (e.g. LinkedIn/Reddit/web for Impressions)
-
-**Chart info tooltips** — the Reach, Engagement, and Impressions charts show the same platform legend when the chart's info icon is hovered.
-
-**Network Breakdown Table** — individual cells show platform-specific availability:
-- `—` (dimmed, 35% opacity) for unavailable metrics on a given platform (e.g. Impressions for LinkedIn row)
-- `~value` with dotted underline for estimated values (e.g. Reach for News Sites row) — hover shows "Estimated from domain traffic data"
-- Column totals exclude unavailable rows; totals that include estimated values are prefixed with `~`
-- Column headers for Reach, Engagement, and Impressions each have their own info icon opening the platform legend
-
-**Platform availability matrix:**
-
-| Platform | Reach | Engagement | Impressions |
-|---|---|---|---|
-| X/Twitter, Instagram, Facebook, TikTok, YouTube, Pinterest | full | full | full |
-| LinkedIn | full | full | **unavailable** |
-| Reddit | **estimated** | full | **unavailable** |
-| Bluesky, Threads | full | full | **unavailable** |
-| News, Blogs, Forums, Reviews, Podcasts | **estimated** | **unavailable** | **unavailable** |
-
-### 8.6 Spike Alerts (P0)
-
-- Per-topic threshold: 25% / 50% / 100% / custom % above 7-day rolling average
-- Minimum mention floor: N mentions in a 6-hour window
-- Alert delivery: email to configured recipients + in-app notification
-- Alert email: topic name, threshold triggered, volume comparison, 3 sample mentions, deep link to mentions feed
-- Alerts activate only after 7 days of data collection (baseline requirement)
-
-### 8.7 Export & Reports (P1)
-
-#### Export Modal (3 tabs)
-Available from the layout header across all tabs via "Export" button.
-
-1. **Download** — PDF summary report or CSV raw data; choose report type:
-   - Performance & Mentions (always available)
-   - Compare Topics (enabled only when competitor topics exist)
-   - Compare Periods (always available)
-
-2. **Schedule** — configure recurring report delivery (daily/weekly/monthly, day/time, email recipients)
-
-3. **Share** — generate a shareable link to a read-only web view of the report
-
-#### Reports Tab
-Separate tab with two sub-tabs:
-
-**Downloaded Reports sub-tab:**
-- Table of all generated reports with: name, type, date range, status (generating/ready/failed), actions
-- Each ready report row has a Download button and a **View button (eye icon)**
-- Clicking View opens the Report Preview Drawer
-
-**Scheduled Reports sub-tab:**
-- Table of configured recurring reports with: name, frequency, next delivery date, recipients, toggle
-
-#### Report Preview Drawer
-A right-side drawer (Mantine Drawer, position="right", size="xl") triggered by the View (eye) button.
-
-Contents — static, non-interactive analytics snapshot:
-1. Key Metrics — 7 KPI cards (values only)
-2. Mention Volume — AreaChart (day granularity, no controls)
-3. Sentiment Overview — 2-col: SentimentDonut | Platform BarChart
-4. Geographic Distribution — BarChart by country
-5. Top Hashtags — horizontal BarChart
-
-All sections use `ChartCard isStatic={true}` — hides all dropdown controls while keeping AI Insights button visible.
-
-### 8.8 Competitor Comparison (P1)
-
-The Compare tab allows side-by-side comparison of up to 3 competitor topics:
-- Mention volume bar chart (side by side)
-- Sentiment comparison
-- Share of Voice donut chart (% of total conversation among all tracked brands)
-
-### 8.9 Settings Tab (P1)
-
-Per-topic settings editable after creation:
-- **Keywords** — same 3-group keyword editor (Include / Required / Exclude) with conflict detection and AI Assist
-- **Platforms** — same platform toggle grid as wizard Step 3
-- **Members** — team member MultiSelect for topic visibility/access
+- Share of Voice calculations (requires complex cross-brand aggregation).
+- Predictive trend forecasting (ML dependency).
+- Influencer discovery / author ranking by reach.
+- Historical data tiers (30d / 90d / 1yr) — V1 ingests forward from activation.
+- Competitor benchmarking charts (Compare tab from v1 architecture).
+- AI weekly narrative digest email.
+- Saved dashboards per brand/client (agency multi-workspace).
+- Spam / bot auto-detection.
+- Mobile app (iOS/Android) — web-only for V1.
+- API access to raw mention data.
+- CRM or Slack integration for mention routing.
 
 ---
 
-## 9. User Flows
+## 7. User Flow (High Level)
 
-### Setup Flow
-1. User navigates to Listening in sidebar
-2. Non-subscriber → Landing Page → "Add to My Plan" or "Open Demo Topic"
-3. Subscriber → Topic list → "+ Create Topic" → 4-step wizard
-4. Wizard completes → topic dashboard (Analytics tab, default)
-5. Initial data appears within minutes for social, up to 1 hour for web
+**First-time activation (paid plan, not yet subscribed):**
+1. User clicks "Listening" in the ContentStudio global top nav.
+2. Landing page shown: feature highlights, $49/mo pricing card, "Enable Listening" + "Preview Demo" CTAs.
+3. User clicks "Enable Listening" → billing confirmation (handled by existing billing flow) → redirected to Setup Wizard.
+4. Step 1: User enters their website URL → clicks "Analyze Website" → AI detects brand + competitors (2-second animation) → pre-populates topic suggestions.
+5. Step 2: User reviews suggested topics, edits types/keywords if needed, adds more topics via TopicFormModal, then clicks "Start Monitoring."
+6. User lands in the main Feed with "All Mentions" selected in ViewsSidebar.
 
-### Non-Subscriber Preview Flow
-1. Non-subscriber navigates to `/features/listening/new`
-2. Completes wizard → lands on Preview page
-3. Preview shows sample KPI bar, mention volume chart, sentiment donut, 10 mock mention cards (labeled "Sample mention")
-4. Upgrade CTA prominently shown with pricing
+**Daily usage (active subscriber):**
+1. User navigates to Listening → lands in Feed, last-used view active.
+2. Scans mention cards — new unread mentions visible.
+3. Clicks "Reply" on a high-priority mention → inline panel → AI drafts a reply → user edits → sends.
+4. Clicks sentiment badge on a mislabelled mention → overrides to correct value.
+5. Switches to Analytics → checks 30-day sentiment trend → AI Insights highlight a spike.
+6. Exports weekly PDF report.
 
-### Daily Use Flow
-1. User opens ContentStudio → Listening in sidebar → topic list
-2. Clicks into a topic → Analytics tab shows current volume and sentiment at a glance
-3. Switches to Mentions tab → filters to "Negative" sentiment
-4. Clicks "Reply" → Inbox composer opens pre-loaded → user responds
-5. Mention is marked "Replied" in the feed
-
-### Alert Response Flow
-1. User receives spike alert email with 3 sample mentions
-2. Clicks "View Mentions" → deep link opens the mentions feed filtered to last 24 hours
-3. User reviews spike, responds to key mentions, monitors the volume chart
-
-### Report Preview Flow
-1. User navigates to Reports tab
-2. Clicks View (eye icon) on a ready report row
-3. Report Preview Drawer opens from the right
-4. Reads static analytics snapshot — no interactions available on charts
-5. Closes drawer or downloads the report
+**Alert fired (email):**
+1. Volume spike detected on "Brand Monitoring" view.
+2. Alert email sent to configured recipients.
+3. User clicks link in email → lands in Listening Feed with that view pre-selected.
 
 ---
 
-## 10. Business Rules & Constraints
+## 8. Business Rules & Constraints
 
 | Rule ID | Rule | Rationale |
 |---|---|---|
-| BR-1 | A topic must have at least one Include keyword | Prevents empty topics generating meaningless noise |
-| BR-2 | Topic names must be unique within a workspace | Prevents duplicate topic confusion |
-| BR-3 | Mention history: 30 days (Starter), 90 days (Growth/Pro), 365 days (Agency/Scale) | Storage cost management; plan upgrade incentive |
-| BR-4 | Max topics: Starter=3, Growth/Pro=10, Agency/Scale=unlimited | Plan tiering |
-| BR-5 | Spike alert fires when 6-hour rolling count exceeds (7-day avg × threshold) | 6-hour window avoids false alerts; 7-day rolling baseline |
-| BR-6 | Minimum 7 days of history before spike alerts can fire | Prevents false positives on new topics |
-| BR-7 | Sentiment classification runs before mention is shown in feed | Unclassified mentions are not surfaced |
-| BR-8 | Same URL deduplicated within 24-hour ingestion window | Prevents same mention appearing multiple times |
-| BR-9 | Topics are workspace-scoped — no cross-workspace visibility | Agency data isolation |
-| BR-10 | Reply action requires the platform account to be connected in the workspace | Cannot reply to Instagram mention without a connected Instagram account |
-| BR-11 | "Compare Topics" export is disabled when no competitor topics exist in the workspace | Prevents empty comparison reports |
-| BR-12 | AI Insights button is visible in both interactive and static (report preview) modes | AI value should be available even in exported/shared contexts |
+| BR-1 | Each topic requires ≥1 keyword and ≥1 platform to be saved | A topic with no keywords or platforms would match nothing |
+| BR-2 | A keyword cannot appear in both the keyword list and the negative terms list for the same topic | These filters would cancel each other out, matching nothing |
+| BR-3 | An include term cannot also appear in the negative terms list | Same cancellation conflict |
+| BR-4 | A term cannot appear in both Include ANY and Include ALL | Include ALL already implies Include ANY; this is a configuration error |
+| BR-5 | Default topic limit is 5 per workspace | Controlled limit enables predictable pricing; add-on available for more |
+| BR-6 | Default mention limit is 10,000/month per workspace | Ingestion stops at limit; user must purchase add-on to resume |
+| BR-7 | Alerts require ≥1 trigger type active AND ≥1 recipient | An alert with no trigger or no recipient cannot fire usefully |
+| BR-8 | Replies can only be sent from connected accounts for the matching platform | OAuth scope is platform-specific; cross-platform reply is technically impossible |
+| BR-9 | Reply is not available on: Hacker News, GitHub, DEV.to, Stack Overflow, Podcasts, Newsletters, News, Blogs | These platforms do not expose write APIs accessible via OAuth |
+| BR-10 | System views ("All Mentions", "High Relevance") cannot be edited or deleted | They are global defaults required for the product to function correctly |
+| BR-11 | Custom topic types can be deleted, but built-in types (Own Brand, Competitor, Industry Term) cannot | Built-in types are referenced by the AI tagging engine |
+| BR-12 | Trial plan users cannot enable Listening | Listening is paid-only; trial upgrade required |
+| BR-13 | Topics can be paused without losing configuration or historical mentions | Pause is a billing/monitoring state, not destructive |
+| BR-14 | Share links expire after 30 days | Prevents indefinite exposure of analytics data |
+| BR-15 | Global filters apply to all topics; per-topic filters apply only to that topic | Two-level hierarchy; global filters always run first |
 
 ---
 
-## 11. Open Questions
+## 9. Open Questions
 
-| Question | Options | Owner | Status |
-|---|---|---|---|
-| Which NLP provider for sentiment classification? | Google Natural Language API, OpenAI GPT-4o mini, AWS Comprehend | Engineering Lead | Pending — cost/accuracy evaluation |
-| Twitter/X API tier? | Basic ($100/mo), Pro ($5,000/mo) | Platform Partnerships | Pending — determines X/Twitter monitoring volume |
-| Reddit API developer app registered? | Yes / No | Engineering | Pending |
-| Web/news monitoring: build vs. buy? | In-house crawler vs. NewsAPI ($449/mo) | Engineering/Product | Pending |
-| Spike alert threshold basis? | % above rolling average (recommended) vs. absolute count | Product | Leaning % with absolute floor option |
-| Platform-only listening (Reddit/news) — Reply button behavior? | Disabled + external link vs. hidden | Product/UX | Leaning: show external link for platforms where ContentStudio cannot publish |
+| Question | Options | Owner | Due Date | Decision |
+|---|---|---|---|---|
+| What happens at the mention limit — hard stop or grace period? | Hard stop (new mentions discarded) / Grace period (keep ingesting, notify) / Soft limit (overage billing) | Product / Engineering | Before dev start | Pending |
+| How far back does historical data go on activation? | From activation only / Last 7 days backfill / Last 30 days backfill | Product / Data | Before dev start | Pending |
+| Should keyword conflict detection block save or warn? | Block (current prototype) / Warn but allow | Product | Before dev start | Block (current) |
+| Are topic limits per workspace or per user? | Per workspace (current assumption) / Per user seat | Product | Before dev start | Per workspace (assumed) |
+| What is the retry/fallback behavior if a platform API is down? | Queue and retry / Discard / Show partial results | Engineering | Before dev start | Pending |
+| Does the AI Context Hint field need moderation? | No (trust user input) / Character limit only (current: 200) / Content filter | Product | Before dev start | 200-char limit only (current) |
+| Should deleting a topic with associated views cascade-delete those views? | Yes / No (views become "all topics" scoped) / Warn user | Product / Engineering | Before dev start | Pending |
 
 ---
 
-## 12. Risks & Mitigations
+## 10. Risks & Mitigations
 
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
-| Twitter/X API cost escalation | High | High | Conservative rate limits; gate X depth behind higher plan tiers; fallback to web mentions if cost-prohibitive |
-| Sentiment accuracy complaints | Medium | High | Use capable NLP model; accuracy benchmarks before launch; user feedback button for incorrect sentiment |
-| High mention volume from broad keywords | Medium | Medium | Estimate volume in wizard before saving; warn if keyword too broad; ingestion caps per workspace |
-| Platform API deprecations | Medium | Medium | Abstract each platform behind PlatformListenerAdapter interface |
-| GDPR/CCPA compliance | Medium | High | Store only publicly accessible mentions; 30/90/365 day auto-deletion; legal review before launch |
+| Platform API rate limits cause incomplete mention ingestion | High | High | Per-platform rate limit management, queue/retry with exponential backoff; surface "partial data" warning in UI when a platform is throttled |
+| AI tagging accuracy too low → users lose trust | Medium | High | Show confidence scores in later versions; allow manual override (already in V1); include user feedback loop on tag corrections |
+| Mention spam / low-quality sources overwhelm feed | Medium | Medium | Global filters (negative terms, blocked authors); per-topic negative terms; "Mark as irrelevant" action that trains filters over time |
+| Users hit the 10,000 mention limit before month end | Medium | Medium | Amber warning at 90%; red warning at 95%; email notification at 100%; upsell modal with add-on purchase flow |
+| Reply from expired OAuth token creates silent failure | Medium | High | Token expiry detection at account selection time (⚠ icon + tooltip); hard error on send attempt; link to reconnect flow |
+| Webhook feature promised on landing page but not in V1 | Low | Medium | Landing page copy already says "email or webhook alerts" — update to "email alerts" for V1 launch to avoid expectation mismatch |
+| Data privacy: monitoring mentions of individuals without their knowledge | Low | High | Monitor only public content; add Privacy Policy note in onboarding; comply with platform Terms of Service for each API |
+| Latency: mentions appear hours after they're posted | Medium | Medium | Set clear expectations in UI ("mentions typically appear within 30–60 minutes"); for Twitter/X, aim for near-real-time via streaming API |
 
 ---
 
-## 13. Dependencies
+## 11. Dependencies
 
 **Internal:**
-- **Inbox module** — Reply from Listening routes through the existing Inbox composer
-- **Authentication / Workspace module** — topics and mentions respect workspace_id scoping
-- **Notification system** — spike alerts use the existing email pipeline (Laravel Mailable) and in-app notifications (Pusher)
-- **Billing / Plan management** — topic limits and history windows gated by plan tier
-- **Frontend routing** — new top-level route `/listening` in main navigation
-- **Redis / Kafka** — new Kafka topics (`contentstudio.mentions.ingest`, `contentstudio.mentions.sentiment`) and Redis cache keys
+- **Connected Accounts (OAuth):** Reply panel requires existing connected account tokens. Expired token detection reuses the same `isExpired` flag used by Publisher and Inbox.
+- **Team Members directory:** Alert email recipients and export recipients are drawn from the existing workspace team member API.
+- **Billing / Subscription system:** "Enable Listening" and "Add-on" purchase flows must integrate with ContentStudio's existing billing infrastructure.
+- **AI / Content Generation pipeline:** "Write with AI" reply drafts + "AI Insights" per chart use ContentStudio's existing AI generation layer (see `contentstudio-ai-agents/`). Reuse the same caption generation prompts pattern for reply drafts.
+- **Notification system:** Alert emails use existing transactional email infrastructure.
 
 **External:**
-- NLP sentiment API — provider TBD; required before Sentiment Classification story begins
-- Twitter/X Developer API — existing app may need tier upgrade for search/streaming
-- Reddit API — registered developer app required
-- NewsAPI or equivalent for web/news/blog monitoring
-- Instagram Webhooks — existing webhook already subscribes to `mentions` field; must be activated for Listening
+- Platform APIs for 18 data sources. Each has its own rate limits, ToS, and data freshness characteristics:
+  - Twitter/X: Streaming API (fast) — requires approved developer access.
+  - Reddit: PRAW / Reddit API — rate-limited, ToS requires attribution.
+  - Instagram / Facebook / LinkedIn / TikTok: Business API or scraping (platform-dependent availability).
+  - Hacker News, GitHub, DEV.to, Stack Overflow: Public APIs, generally permissive.
+  - Podcasts, Newsletters, News, Blogs: RSS + web crawling.
+- **PDF generation library:** For PDF export (wkhtmltopdf, Puppeteer, or server-side PDF service).
+- **Email delivery service:** Transactional email for alerts and scheduled reports (already in use for other CS notifications).
+
+**Blockers:**
+- Twitter/X developer API access must be secured before backend implementation begins.
+- Billing system must support add-on SKUs (if not already).
+- AI topic suggestion (website analysis in onboarding) requires the AI agent pipeline to be extended with a brand detection prompt.
 
 ---
 
-## 14. Prototype Reference
+## 12. Appendix
 
-A fully functional interactive prototype is available at `cs-prototypes/app/features/listening/`.
-
-All routes compile and build clean. The prototype implements:
-- All 4 user states (trial/locked/unlocked/expired) via the DebugToggle (bottom-right floating panel)
-- Full landing page with AddOnPricingBlock ($99/mo, $79/mo annual)
-- Demo topic at `/features/listening/demo` (redirects to `/features/listening/topic-demo/analytics`)
-- 4-step topic creation wizard
-- Topic dashboard with Analytics, Mentions, Compare, Reports, Settings tabs
-- Full analytics with 2 sub-tabs (Performance + Insights) and KPI grid
-- AI Insights Sparkles button on every chart widget and table
-- Report Preview Drawer with static non-interactive analytics snapshot
-- Export Modal with 3 tabs (Download / Schedule / Share)
-- Settings tab with keyword editor, platform toggles, member access
-
-Spec: `docs/features/social-listening/04-spec.md`
-
----
-
-## 15. Appendix
-
-- **Research Report:** `docs/features/social-listening/01-research.md`
-- **Workflow Design:** `docs/features/social-listening/02-workflow.md`
-- **Feature Spec:** `docs/features/social-listening/04-spec.md`
-- **Shortcut Research Doc:** [Social Listening — Research](https://app.shortcut.com/contentstudio-team/write/IkRvYyI6I3V1aWQgIjY5OWMwYTljLTNlMzAtNDRkYy04MDU0LTA5NmQ5MTVhNTkyMiI=)
-- **Shortcut PRD Doc:** [Social Listening — PRD](https://app.shortcut.com/contentstudio-team/write/IkRvYyI6I3V1aWQgIjY5OWMxODI0LWUyYTYtNDE3Yi1hZTU0LWUwYTFiOTQwOGI1YSI=)
-- **Competitor tools studied:** Hootsuite (Talkwalker), Sprout Social, Agorapulse (Mention), Brand24, Brandwatch, Keyhole, Buffer, Metricool, Sendible, Later
+- **Prototype:** `cs-prototypes/app/features/listening2/` (Next.js 15 / Mantine UI 8 / Zustand)
+- **Live prototype:** https://cs-prototypes.vercel.app/features/listening2
+- **Prototype inventory:** `docs/features/social-listening/01-prototype-inventory.md`
+- **Workflow document:** `docs/features/social-listening/02-workflow.md`
+- **Shortcut Docs:**
+  - Prototype Inventory: https://app.shortcut.com/contentstudio-team/write/IkRvYyI6I3V1aWQgIjY5YWEyMjZhLTFjNWQtNDBkNC1hMzNlLTJkNzk4YzljYTEyMyI=
+  - Workflow Design: https://app.shortcut.com/contentstudio-team/write/IkRvYyI6I3V1aWQgIjY5YWEyMjdhLWY5N2YtNDQxMy04OTdlLTlhMmU1NTgzYTEyOCI=
 
 ---
 
@@ -394,6 +315,4 @@ Spec: `docs/features/social-listening/04-spec.md`
 
 | Date | Author | Changes |
 |---|---|---|
-| 2026-02-23 | Product Team | Initial draft via ContentStudio Claude pipeline |
-| 2026-03-02 | Product Team | Updated: pricing ($99/mo, $79/mo annual), user states (trial/locked/unlocked/expired), AI Insights on every widget, Report Preview Drawer, Reports tab sub-tabs, export modal 3-tab structure, settings keyword editor, prototype reference added, sections restructured to 15 |
-| 2026-03-03 | Product Team | Added: metric data availability indicators — platform support grid in KPI tooltips, chart tooltips, and NetworkBreakdownTable cells (unavailable = —, estimated = ~value) |
+| 2026-03-06 | Product Team | Full rewrite based on completed listening2 prototype — replaces v1 PRD |

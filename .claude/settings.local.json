@@ -87,7 +87,11 @@
       "Bash(__NEW_LINE_48825732c5728d93__ for:*)",
       "Bash(__NEW_LINE_2674b87cf88a9ea4__:*)",
       "Bash(cp:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "WebFetch(domain:developers.facebook.com)",
+      "Bash(TOKEN=\"sct_rw_contentstudio-team_NWUwYzU2MjUtODNmMS00YzRmLWI5YTMtYWM3OWUwMmUxZjA3OjYyZWNlYTIzLWZmNWUtNDQ0YS04ZmZkLWY1MmYwNzViNmVhYTo3YTFhNzE5OTEwMjc4ZWM4YzliMzc2ZGViMTllZTBmZQ\")",
+      "WebFetch(domain:engineering.teknasyon.com)",
+      "WebFetch(domain:gurusup.com)"
     ]
   }
 }

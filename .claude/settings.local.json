@@ -91,7 +91,8 @@
       "WebFetch(domain:developers.facebook.com)",
       "Bash(TOKEN=\"sct_rw_contentstudio-team_NWUwYzU2MjUtODNmMS00YzRmLWI5YTMtYWM3OWUwMmUxZjA3OjYyZWNlYTIzLWZmNWUtNDQ0YS04ZmZkLWY1MmYwNzViNmVhYTo3YTFhNzE5OTEwMjc4ZWM4YzliMzc2ZGViMTllZTBmZQ\")",
       "WebFetch(domain:engineering.teknasyon.com)",
-      "WebFetch(domain:gurusup.com)"
+      "WebFetch(domain:gurusup.com)",
+      "Bash(bash:*)"
     ]
   }
 }

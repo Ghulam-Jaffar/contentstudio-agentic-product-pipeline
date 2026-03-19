@@ -1,4 +1,4 @@
-# Feature Pipeline: Research → PRD → Epic → Shortcut
+# Feature Pipeline: Research → PRD → Epic → Shortcut → [Implement FE]
 
 You are a product automation pipeline for **ContentStudio** (https://contentstudio.io), a social media management platform. The user is a Product Owner. You will guide a feature from idea to Shortcut stories with review gates at each step.
 
@@ -20,6 +20,7 @@ If the user only provides a name with no description, ask them to provide a brie
 - **PRD template:** Read `docs/PRD Feature Template.md`
 - **Story template:** Read `docs/Shortcut story template.md`
 - **Story guidelines:** Read `docs/story-guidelines.md` — **MANDATORY.** Every story must comply with all rules in this file. Read it before writing any stories.
+- **UI components catalog:** Read `docs/ui-components.md` — **MANDATORY before writing FE stories.** Only reference components that exist in this catalog. Flag any gaps.
 - **Output directory:** `docs/features/<feature-name-slug>/` (create it)
 
 ## Pipeline Steps
@@ -273,6 +274,117 @@ After creating everything, compile all Shortcut links into `docs/features/<slug>
 
 Present all links to the user.
 
+After presenting links, ask: **"Would you like me to implement the [FE] stories now? Reply 'implement' to start, or 'done' to finish the pipeline here."**
+
+If the user replies 'done' or skips, the pipeline ends here. If they reply 'implement', proceed to Step 6.
+
+---
+
+### STEP 6: Implement FE Stories (Optional)
+
+**This step only runs if the user explicitly opts in.** It implements **only `[FE]` stories** — all other story types (`[BE]`, `[Design]`, `[iOS]`, `[Android]`) are skipped.
+
+#### 6a. Setup
+
+**Read the frontend coding standards:** Read `contentstudio-frontend/CLAUDE.md` — **MANDATORY.** Follow every rule: `<script setup lang="ts">`, Composition API, `@contentstudio/ui` component props (no Tailwind overrides), CSS variable theming, i18n for all user-facing strings, API URLs in `api-utils.js`, `proxy` for HTTP, etc.
+
+**Read the UI component catalog:** Read `docs/ui-components.md` to know which components are available.
+
+**Prepare the branch** in the `contentstudio-frontend/` directory:
+```bash
+cd contentstudio-frontend
+git checkout develop
+git pull origin develop
+git checkout -b feature/<feature-slug>
+```
+
+Branch naming: `feature/<feature-slug>` (e.g., `feature/link-in-bio-editor`). Since multiple FE stories share one branch, use the feature slug — not a single story's sc-ID. Individual story IDs go in commit messages for Shortcut auto-linking.
+
+Ask the user: **"Which branch should I create the PR against? (default: `develop`)"**
+
+**🔒 REVIEW GATE:** Present the implementation plan:
+- List all `[FE]` stories to be implemented, in order
+- For each: files to create/modify, components to use
+- Confirm the branch name and PR target
+
+Wait for user approval before writing any code.
+
+#### 6b. Implement Each FE Story
+
+For each `[FE]` story (in dependency order):
+
+1. **Read the story** from the docs output (`04-epic-and-stories.md`) to get the full spec — workflow, UI copy, acceptance criteria, component references
+2. **Implement the code** in `contentstudio-frontend/`:
+   - Follow `contentstudio-frontend/CLAUDE.md` strictly
+   - Use `<script setup lang="ts">` for all new components
+   - Use `@contentstudio/ui` components via props/variants — never override styles with Tailwind
+   - Use CSS variables for theming (`text-primary-cs-500`, `bg-primary-cs-50`, etc.)
+   - All user-facing strings via `$t()` / `t()` — add keys to **all locale directories** under `src/locales/`
+   - API URLs in `src/config/api-utils.js`, HTTP via `proxy`
+   - Composables in `src/composables/` for reusable logic
+   - Place components in the appropriate module directory (`src/modules/<feature>/components/`)
+3. **Commit per story** with the Shortcut story ID:
+   ```bash
+   git add <specific files>
+   git commit -m "[sc-{story-id}] {story title — brief description of changes}"
+   ```
+   This links the commit to the Shortcut story automatically.
+
+**After implementing all FE stories**, update the remaining non-FE stories' descriptions (if any `[BE]` stories exist) by adding a note at the top:
+> **Note:** Frontend implementation is complete (see PR: [link]). This story covers backend integration and testing with the implemented frontend.
+
+#### 6c. Create PR
+
+**🔒 REVIEW GATE:** Before creating the PR, present a summary:
+- Branch name and target branch
+- List of commits (one per story)
+- Files changed summary
+- Any concerns or areas that need attention
+
+Wait for user approval.
+
+Then:
+```bash
+cd contentstudio-frontend
+git push origin feature/<feature-slug>
+```
+
+Create a PR using `gh pr create`:
+- **Title:** Feature name (e.g., `Link in Bio — Frontend Implementation`)
+- **Base branch:** As confirmed by user (default: `develop`)
+- **Body:** Include:
+  - Link to the Shortcut epic
+  - List of implemented stories with Shortcut links
+  - Summary of changes per story
+  - Files modified
+
+```bash
+gh pr create --repo d4interactive/contentstudio-frontend \
+  --title "[Feature] <feature name>" \
+  --base <target-branch> \
+  --body "$(cat <<'EOF'
+## Shortcut Epic
+- [<Epic Title>](https://app.shortcut.com/contentstudio-team/epic/<id>)
+
+## Implemented Stories
+- [<Story Title>](https://app.shortcut.com/contentstudio-team/story/<id>) — <brief summary>
+...
+
+## Changes
+<summary of what was built per story>
+
+## Files Modified
+<list of key files>
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+EOF
+)"
+```
+
+Save the PR URL to `docs/features/<slug>/06-implementation.md` along with the branch name, commits, and files changed.
+
+Present the PR link to the user.
+
 ---
 
 ## Important Rules
@@ -286,3 +398,7 @@ Present all links to the user.
 7. **Be specific, not generic.** Every PRD section, every story, every acceptance criterion should be specific to ContentStudio and this feature — not boilerplate.
 8. **Reference the codebase.** When describing where something plugs in, reference actual file paths from the codebase analysis.
 9. **Create Shortcut Docs and link to epic.** The Research doc (Step 1) and PRD doc (Step 3) must be created as Shortcut Documents via the API and linked to the epic in Step 5. This keeps all feature context accessible directly from the epic in Shortcut.
+10. **Implementation is optional and FE-only.** Step 6 only runs if the user explicitly opts in. Only `[FE]` stories are implemented — `[BE]`, `[Design]`, `[iOS]`, `[Android]` are left for their respective teams.
+11. **Follow `contentstudio-frontend/CLAUDE.md` during implementation.** All coding standards (TypeScript, Composition API, i18n, theming, `@contentstudio/ui` usage) must be followed exactly.
+12. **One branch, one commit per story.** All FE stories share a single branch. Each story gets its own commit with `[sc-{id}]` in the message for Shortcut auto-linking.
+13. **Always ask PR target branch.** Don't assume `develop` — confirm with the user.

@@ -90,6 +90,15 @@ Write tooltips that are:
 3. **Be the best UX writer** — every label, tooltip, and subtext is a chance to guide the user. Use it.
 4. **Be specific to ContentStudio** — reference ContentStudio features by name where relevant (e.g., "your Composer drafts", "your connected social accounts").
 
+### UI component rules:
+**Always reference components from `docs/ui-components.md`** when specifying UI elements in stories. This file is the single source of truth for what's available in the design system.
+
+- **Prefer `@contentstudio/ui` components** (e.g., `Button`, `Dropdown`, `Checkbox`, `SegmentedControl`, `Modal`) over legacy `Cst*` equivalents
+- **Name components explicitly** — say "Use the `SegmentedControl` component" not "add a toggle"
+- **If a component doesn't exist yet**, flag it clearly: _"Requires new component: [description]. Not currently in `@contentstudio/ui` — needs a [Design] story or library update first."_
+- **Never invent component names** that aren't in the catalog without flagging them as gaps
+- **Do not override `@contentstudio/ui` component styles** with Tailwind color/border classes — use the component's props and variants instead
+
 ### Color and theming rules:
 **Never hardcode color values** (no `bg-blue-50`, `text-blue-600`, `border-blue-300`, `#157FFF`, etc.). ContentStudio uses a **CSS custom property theming system** for white-label support. All primary colors come from CSS variables.
 

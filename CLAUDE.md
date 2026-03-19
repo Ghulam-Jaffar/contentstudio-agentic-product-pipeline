@@ -10,25 +10,27 @@ This is **not** a code project. There's no package.json or composer.json at root
 
 ## Two Pipeline Commands
 
-### `/feature` — Full Feature Pipeline (5 steps)
+### `/feature` — Full Feature Pipeline (5+1 steps)
 For major features requiring PRDs and dedicated epics.
 
-**Research → Workflow Design → PRD → Epic + Stories → Push to Shortcut**
+**Research → Workflow Design → PRD → Epic + Stories → Push to Shortcut → [Optional] Implement FE**
 
 - Runs parallel competitor research (WebSearch) + codebase analysis (Explore agent) in Step 1
 - Creates **Shortcut Docs** for both research (Step 1) and PRD (Step 3), then links them to the epic in Step 5
 - Creates a dedicated Shortcut epic for the feature
-- Outputs saved to `docs/features/<slug>/` (01-research.md through 05-shortcut-links.md)
+- Outputs saved to `docs/features/<slug>/` (01-research.md through 05-shortcut-links.md, optionally 06-implementation.md)
+- After Shortcut push, optionally implements `[FE]` stories: branches from `develop` in `contentstudio-frontend/`, one commit per story with `[sc-{id}]`, creates PR
 - Review gate after every step — never proceed without explicit user approval
 
-### `/story` — Quick Story Pipeline (3 steps)
+### `/story` — Quick Story Pipeline (3+1 steps)
 For small improvements that don't need a full PRD. Max 4 stories; if 5+, redirect to `/feature`.
 
-**Research → Stories → Push to Shortcut**
+**Research → Stories → Push to Shortcut → [Optional] Implement FE**
 
 - Lean codebase research using direct Grep/Read (not Explore agents)
 - Stories link to the miscellaneous quarterly epic (currently Q1 2026, id: 107163)
-- Outputs saved to `docs/stories/<slug>/` (01-research.md through 03-shortcut-links.md)
+- Outputs saved to `docs/stories/<slug>/` (01-research.md through 03-shortcut-links.md, optionally 04-implementation.md)
+- After Shortcut push, optionally implements `[FE]` stories: branches from `develop` in `contentstudio-frontend/`, one commit per story with `[sc-{id}]`, creates PR
 
 ## Key Files
 
@@ -38,6 +40,7 @@ For small improvements that don't need a full PRD. Max 4 stories; if 5+, redirec
 | `.claude/commands/feature.md` | `/feature` pipeline definition |
 | `.claude/commands/story.md` | `/story` pipeline definition |
 | `docs/story-guidelines.md` | **Mandatory** 15-section rulebook — read before writing any story |
+| `docs/ui-components.md` | **Mandatory** catalog of available UI components — read before writing FE stories. Update when `@contentstudio/ui` changes. |
 | `docs/PRD Feature Template.md` | 12-section PRD template used by `/feature` Step 3 |
 | `docs/Shortcut story template.md` | Story body structure (Description, Workflow, AC, Mock-ups, Impact, Dependencies, Quality checklist) |
 
@@ -54,6 +57,7 @@ The full rules are in `docs/story-guidelines.md`. Key points:
 - **Always assign custom fields:** `priority`, `product_area`, and `skill_set` — IDs in `.claude/shortcut-config.json`
 - **No dark mode, no RTL** — ContentStudio doesn't support either
 - **AI features are web-only** — no mobile AI stories
+- **UI components:** FE stories must reference components from `docs/ui-components.md` by name. Prefer `@contentstudio/ui` components over legacy `Cst*`. Flag any component gaps explicitly.
 - **Color theming:** Use `text-primary-cs-500`, `bg-primary-cs-50`, etc. (CSS variable-backed) — never hardcode colors like `text-blue-600`
 - **Reference stories by full title**, never by number
 - **Create separate iOS/Android stories** when mobile apps are impacted
@@ -67,7 +71,7 @@ The full rules are in `docs/story-guidelines.md`. Key points:
 - Epics default to `to_do` state (id: 500000002)
 
 ### Windows curl requirement
-Write JSON payloads to a project-local temp file (e.g., `D:/code/office/contentstudio-claude-product-pipeline/tmp-payload.json`), then pass with `curl --data @filename`. Save API responses to a file with `-o`, then parse with `node` (not `python`). Clean up temp files after. Never use `/tmp/` or `/dev/stdin` — they don't work on Windows.
+Write JSON payloads to a project-local temp file (e.g., `D:/code/office/contentstudio-agentic-product-pipeline/tmp-payload.json`), then pass with `curl --data @filename`. Save API responses to a file with `-o`, then parse with `node` (not `python`). Clean up temp files after. Never use `/tmp/` or `/dev/stdin` — they don't work on Windows.
 
 ### Checklist tasks (critical gotcha)
 `story_template_id` does **not** auto-create checklist tasks via the API. After creating each story, manually POST all 5 tasks to `POST /stories/{story_id}/tasks`:

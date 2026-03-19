@@ -1,4 +1,4 @@
-# Quick Story Pipeline: Research → Story → Shortcut
+# Quick Story Pipeline: Research → Story → Shortcut → [Implement FE]
 
 You are a story creation pipeline for **ContentStudio** (https://contentstudio.io). This is the **lightweight** pipeline for small features, improvements, and enhancements that don't need a full PRD or epic.
 
@@ -15,6 +15,7 @@ This contains a description of the change/improvement. It may include context ab
 - **Shortcut config:** Read `.claude/shortcut-config.json` for all Shortcut API IDs (workflows, states, groups, custom fields, projects, miscellaneous epic)
 - **Story template:** Read `docs/Shortcut story template.md`
 - **Story guidelines:** Read `docs/story-guidelines.md` — **MANDATORY.** Read this before writing any story.
+- **UI components catalog:** Read `docs/ui-components.md` — **MANDATORY before writing FE stories.** Only reference components that exist in this catalog. Flag any gaps.
 - **Output directory:** `docs/stories/<story-name-slug>/` (create it)
 
 ## Pipeline Steps
@@ -151,6 +152,110 @@ The "New Feature Template" includes these 5 checklist tasks (create all 5 for ev
 
 Present all Shortcut links to the user.
 
+After presenting links, ask: **"Would you like me to implement the [FE] stories now? Reply 'implement' to start, or 'done' to finish the pipeline here."**
+
+If the user replies 'done' or skips, the pipeline ends here. If they reply 'implement', proceed to Step 4.
+
+---
+
+### STEP 4: Implement FE Stories (Optional)
+
+**This step only runs if the user explicitly opts in.** It implements **only `[FE]` stories** — all other story types (`[BE]`, `[Design]`, `[iOS]`, `[Android]`) are skipped.
+
+#### 4a. Setup
+
+**Read the frontend coding standards:** Read `contentstudio-frontend/CLAUDE.md` — **MANDATORY.** Follow every rule: `<script setup lang="ts">`, Composition API, `@contentstudio/ui` component props (no Tailwind overrides), CSS variable theming, i18n for all user-facing strings, API URLs in `api-utils.js`, `proxy` for HTTP, etc.
+
+**Read the UI component catalog:** Read `docs/ui-components.md` to know which components are available.
+
+**Prepare the branch** in the `contentstudio-frontend/` directory:
+```bash
+cd contentstudio-frontend
+git checkout develop
+git pull origin develop
+git checkout -b feature/sc-{first-fe-story-id}/<story-slug>
+```
+
+Branch naming for `/story` pipeline: `feature/sc-{story-id}/<story-title-slug>` — use the primary FE story's sc-ID. If there are multiple FE stories, use the first one's ID. Individual story IDs go in commit messages for Shortcut auto-linking.
+
+Ask the user: **"Which branch should I create the PR against? (default: `develop`)"**
+
+**🔒 REVIEW GATE:** Present the implementation plan:
+- List all `[FE]` stories to be implemented, in order
+- For each: files to create/modify, components to use
+- Confirm the branch name and PR target
+
+Wait for user approval before writing any code.
+
+#### 4b. Implement Each FE Story
+
+For each `[FE]` story (in dependency order):
+
+1. **Read the story** from the docs output (`02-stories.md`) to get the full spec — workflow, UI copy, acceptance criteria, component references
+2. **Implement the code** in `contentstudio-frontend/`:
+   - Follow `contentstudio-frontend/CLAUDE.md` strictly
+   - Use `<script setup lang="ts">` for all new components
+   - Use `@contentstudio/ui` components via props/variants — never override styles with Tailwind
+   - Use CSS variables for theming (`text-primary-cs-500`, `bg-primary-cs-50`, etc.)
+   - All user-facing strings via `$t()` / `t()` — add keys to **all locale directories** under `src/locales/`
+   - API URLs in `src/config/api-utils.js`, HTTP via `proxy`
+   - Composables in `src/composables/` for reusable logic
+   - Place components in the appropriate module directory (`src/modules/<feature>/components/`)
+3. **Commit per story** with the Shortcut story ID:
+   ```bash
+   git add <specific files>
+   git commit -m "[sc-{story-id}] {story title — brief description of changes}"
+   ```
+   This links the commit to the Shortcut story automatically.
+
+**After implementing all FE stories**, if any `[BE]` stories exist for this task, update their descriptions by adding a note at the top:
+> **Note:** Frontend implementation is complete (see PR: [link]). This story covers backend integration and testing with the implemented frontend.
+
+#### 4c. Create PR
+
+**🔒 REVIEW GATE:** Before creating the PR, present a summary:
+- Branch name and target branch
+- List of commits (one per story)
+- Files changed summary
+- Any concerns or areas that need attention
+
+Wait for user approval.
+
+Then:
+```bash
+cd contentstudio-frontend
+git push origin feature/sc-{id}/<slug>
+```
+
+Create a PR using `gh pr create`:
+- **Title:** Story title (or combined title if multiple FE stories)
+- **Base branch:** As confirmed by user (default: `develop`)
+- **Body:**
+
+```bash
+gh pr create --repo d4interactive/contentstudio-frontend \
+  --title "<story title or combined title>" \
+  --base <target-branch> \
+  --body "$(cat <<'EOF'
+## Shortcut Stories
+- [<Story Title>](https://app.shortcut.com/contentstudio-team/story/<id>) — <brief summary>
+...
+
+## Changes
+<summary of what was built per story>
+
+## Files Modified
+<list of key files>
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+EOF
+)"
+```
+
+Save the PR URL to `docs/stories/<slug>/04-implementation.md` along with the branch name, commits, and files changed.
+
+Present the PR link to the user.
+
 ---
 
 ## Important Rules
@@ -166,3 +271,7 @@ Present all Shortcut links to the user.
 9. **Always assign a project** (Web App, Mobile, etc.) and **always link to an epic** (miscellaneous if none specified).
 10. **Create mobile stories** when the change impacts iOS/Android apps.
 11. **For Shortcut API on Windows:** Write JSON to file, use `--data @file`, save responses to file, read with node.
+12. **Implementation is optional and FE-only.** Step 4 only runs if the user explicitly opts in. Only `[FE]` stories are implemented — `[BE]`, `[Design]`, `[iOS]`, `[Android]` are left for their respective teams.
+13. **Follow `contentstudio-frontend/CLAUDE.md` during implementation.** All coding standards (TypeScript, Composition API, i18n, theming, `@contentstudio/ui` usage) must be followed exactly.
+14. **One branch, one commit per story.** All FE stories share a single branch. Each story gets its own commit with `[sc-{id}]` in the message for Shortcut auto-linking.
+15. **Always ask PR target branch.** Don't assume `develop` — confirm with the user.

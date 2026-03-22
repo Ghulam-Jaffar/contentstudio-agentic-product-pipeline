@@ -97,7 +97,11 @@
       "Bash(sleep 3 && xdg-open \"http://localhost:3000/features/listening2#figmacapture=09ab7f5c-d4b8-4bfd-9792-e6262081d0d5&figmaendpoint=https%3A%2F%2Fmcp.figma.com%2Fmcp%2Fcapture%2F09ab7f5c-d4b8-4bfd-9792-e6262081d0d5%2Fsubmit&figmadelay=3000\")",
       "Bash(sleep 6 && xdg-open \"http://localhost:3000/features/listening2#figmacapture=ec75b53a-50f8-4586-abec-4a0b9ba65a64&figmaendpoint=https%3A%2F%2Fmcp.figma.com%2Fmcp%2Fcapture%2Fec75b53a-50f8-4586-abec-4a0b9ba65a64%2Fsubmit&figmadelay=3000\")",
       "Bash(xdg-open \"http://localhost:3000/features/listening2#figmacapture=bd88d3e7-4325-46e1-9788-1d1b3af40225&figmaendpoint=https%3A%2F%2Fmcp.figma.com%2Fmcp%2Fcapture%2Fbd88d3e7-4325-46e1-9788-1d1b3af40225%2Fsubmit&figmadelay=10000\")",
-      "Bash(xdg-open \"http://localhost:3000/features/listening2#figmacapture=0be3911b-0c87-4db8-a6dd-39b5ebfd89da&figmaendpoint=https%3A%2F%2Fmcp.figma.com%2Fmcp%2Fcapture%2F0be3911b-0c87-4db8-a6dd-39b5ebfd89da%2Fsubmit&figmadelay=10000\")"
+      "Bash(xdg-open \"http://localhost:3000/features/listening2#figmacapture=0be3911b-0c87-4db8-a6dd-39b5ebfd89da&figmaendpoint=https%3A%2F%2Fmcp.figma.com%2Fmcp%2Fcapture%2F0be3911b-0c87-4db8-a6dd-39b5ebfd89da%2Fsubmit&figmadelay=10000\")",
+      "Bash(pandoc 'ContentStudio-API-Plan-Proposal \\(2\\).docx' -t markdown)",
+      "Bash(libreoffice --headless --convert-to txt 'ContentStudio-API-Plan-Proposal \\(2\\).docx' --outdir /tmp)",
+      "Read(//tmp/**)",
+      "Bash(python3 -c \":*)"
     ]
   }
 }

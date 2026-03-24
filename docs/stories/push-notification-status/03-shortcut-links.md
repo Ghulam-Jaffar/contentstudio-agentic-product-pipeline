@@ -15,6 +15,13 @@ Epic: https://app.shortcut.com/contentstudio-team/epic/93708
 | sc-109140 | [iOS] Confirm push notification publishing outcome on iOS | https://app.shortcut.com/contentstudio-team/story/109140 |
 | sc-112183 | [Android] Confirm push notification publishing outcome on Android | https://app.shortcut.com/contentstudio-team/story/112183 |
 | sc-109141 | [FE] Allow manual resolution of push notification posts from web app | https://app.shortcut.com/contentstudio-team/story/109141 |
+| sc-114526 | [iOS] Display notification statuses and manual resolution in iOS planner | https://app.shortcut.com/contentstudio-team/story/114526 |
+| sc-114527 | [Android] Display notification statuses and manual resolution in Android planner | https://app.shortcut.com/contentstudio-team/story/114527 |
+
+## Changes made (2026-03-24)
+
+- **114526** — NEW [iOS] story: notification status badges, filters, and manual resolution buttons in iOS planner (mirrors sc-109141 for iOS)
+- **114527** — NEW [Android] story: notification status badges, filters, and manual resolution buttons in Android planner (mirrors sc-109141 for Android)
 
 ## Changes made (2026-02-23)
 

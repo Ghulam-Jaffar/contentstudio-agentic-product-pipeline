@@ -101,7 +101,8 @@
       "Bash(pandoc 'ContentStudio-API-Plan-Proposal \\(2\\).docx' -t markdown)",
       "Bash(libreoffice --headless --convert-to txt 'ContentStudio-API-Plan-Proposal \\(2\\).docx' --outdir /tmp)",
       "Read(//tmp/**)",
-      "Bash(python3 -c \":*)"
+      "Bash(python3 -c \":*)",
+      "Bash(xargs basename:*)"
     ]
   }
 }

@@ -104,7 +104,8 @@
       "Bash(python3 -c \":*)",
       "Bash(xargs basename:*)",
       "Bash(gh api:*)",
-      "Bash(node -e \"const d=JSON.parse\\(require\\(''fs''\\).readFileSync\\(''/tmp/iterations.json'',''utf8''\\)\\); const now=new Date\\(\\); const upcoming=d.filter\\(i=>i.status===''started''||i.status===''unstarted''\\).sort\\(\\(a,b\\)=>new Date\\(a.start_date\\)-new Date\\(b.start_date\\)\\); upcoming.slice\\(0,5\\).forEach\\(i=>console.log\\(i.id, i.name, i.status, i.start_date, ''-'', i.end_date\\)\\)\")"
+      "Bash(node -e \"const d=JSON.parse\\(require\\(''fs''\\).readFileSync\\(''/tmp/iterations.json'',''utf8''\\)\\); const now=new Date\\(\\); const upcoming=d.filter\\(i=>i.status===''started''||i.status===''unstarted''\\).sort\\(\\(a,b\\)=>new Date\\(a.start_date\\)-new Date\\(b.start_date\\)\\); upcoming.slice\\(0,5\\).forEach\\(i=>console.log\\(i.id, i.name, i.status, i.start_date, ''-'', i.end_date\\)\\)\")",
+      "Bash(/dev/null curl:*)"
     ]
   }
 }

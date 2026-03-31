@@ -260,7 +260,7 @@ As an approver or content creator, I want to receive precise notifications at th
 
 **Updated existing notifications:**
 - [ ] `pending_approval`: In-app description updated to append `(Level :level_number: :level_title)` for workflow submissions
-- [ ] `pending_approval`: Email CTA text updated from "Please review the post and choose to approve, reject, or request changes." to "Please review the post and approve or reject it."
+- [ ] `pending_approval`: Email CTA text is "Please review the post and approve or reject it."
 - [ ] `approve_approval`: In-app and email updated to include level completion info for workflows: "Level :level_number (:level_title) is complete."
 - [ ] `reject_approval`: No copy changes needed; channel additions for mobile push confirmed
 

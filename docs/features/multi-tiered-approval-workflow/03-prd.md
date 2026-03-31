@@ -6,6 +6,7 @@
 **Target Release:** Q2 2026
 **Shortcut Epic:** https://app.shortcut.com/contentstudio-team/epic/47607
 **Design:** https://www.figma.com/file/zJEk0csU8yeDNKhUR7DIEo/ContentStudio-WebApp?node-id=9006%3A21034
+**Implementation Docs:** `06-frontend-data-contract.md`, `07-final-qa-checklist.md`, `08-frontend-implementation-map.md`
 
 ---
 
@@ -143,7 +144,7 @@ Receives content for review. Needs clear notifications, simple approve/reject ac
 - Member removed (no post): removed cleanly
 - Member removed (post pending): assignment cancelled, member notified
 - Member removed (post completed): greyed out, tooltip shown, not removed
-- Level removed while in progress: blocked with error
+- Level removed while in progress: posts at that level auto-advance to the next level; if it was the last level, those posts become fully approved
 - Approval rule "Everyone"→"Anyone" on active level with existing approvals: auto-completes and advances
 - Approval rule "Anyone"→"Everyone" on completed level: no retroactive invalidation
 - Workflow/level name rename: reflects live on all in-flight posts
@@ -306,15 +307,15 @@ New notification types extend the existing `notifications.php` localization file
 
 #### `pending_approval` — Post Sent for Approval (Single-User or Workflow Level 1)
 
-**Updated CTA text:** Remove "request changes" reference (no such action exists).
+**Updated CTA text:** Approval emails reference approve/reject actions only.
 
-| Field | Current | Updated |
+| Field | Value | Notes |
 |---|---|---|
-| In-app title | `:requested_by_name has sent you content to review` | `:requested_by_name has sent you content to review` *(unchanged)* |
-| In-app description | `<strong>:requested_by_name</strong> has sent you :post_text for review in <strong>:workspace_name</strong>` | Same + for workflow: append `(Level :level_number: :level_title)` |
-| Email subject | `Approval required for :post_text – :workspace_name` | Same |
-| Email CTA text | `Please review the post and choose to approve, reject, or request changes.` | **`Please review the post and approve or reject it.`** |
-| Email button | `Review Post in App` | `Review Post` |
+| In-app title | `:requested_by_name has sent you content to review` | Unchanged |
+| In-app description | `<strong>:requested_by_name</strong> has sent you :post_text for review in <strong>:workspace_name</strong>` | For workflow: append `(Level :level_number: :level_title)` |
+| Email subject | `Approval required for :post_text – :workspace_name` | Unchanged |
+| Email CTA text | `Please review the post and approve or reject it.` | Applies to single-user and workflow approvals |
+| Email button | `Review Post` | Updated label |
 | Channels | In-app, email, mobile push | Same |
 | Who is notified | All selected approvers (single-user) or Level 1 approvers (workflow) | Same |
 
@@ -631,7 +632,7 @@ The conditional CTA button behavior in `request_approval.blade.php` (lines 49-52
 | Level 3-dot menu: duplicate | `Duplicate Level` |
 | Level 3-dot menu: delete | `Delete Level` |
 | Delete level confirmation title | `Delete this level?` |
-| Delete level confirmation body | `This will remove Level [N] and all its assigned members. Posts in progress will not be affected.` |
+| Delete level confirmation body | `This will remove Level [N] and all its assigned members. If any in-flight posts are currently at this level, they'll automatically advance to the next level. If this was the last level, those posts will be fully approved.` |
 | Delete level confirmation buttons | `Delete Level` / `Cancel` |
 | "Post needs approval from:" label | `Post needs approval from:` |
 | "Everyone" radio label | `Everyone` |
@@ -647,7 +648,6 @@ The conditional CTA button behavior in `request_approval.blade.php` (lines 49-52
 | Member drag placeholder in level | `Drag and drop people from Members` |
 | Member overflow badge | `+[N] more` |
 | Duplicate workflow creates | `[Workflow Name] (Copy)` |
-| Cannot delete in-progress level error | `This level is currently active on [N] post(s) and can't be removed right now.` |
 
 **Workflow Deletion Confirmations:**
 

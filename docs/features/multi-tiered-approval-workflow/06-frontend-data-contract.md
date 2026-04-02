@@ -283,6 +283,21 @@ level_status: [
 
 The FE still has some fallback support for `levels_count`, but backend should prefer `total_levels` for post approval objects.
 
+### Planner compact-status note
+
+For compact planner rendering, FE now supports both:
+
+- workflow approvals via `workflow_levels` + `level_status`
+- ad-hoc approvals via `approvers`
+
+The compact approval popup is intentionally shown only for approval-related planner states:
+
+- `review` / `reviewed`
+- `missedReview` / `missed_review`
+- `rejected`
+
+FE normalizes underscores/spaces/casing in those state checks, but backend should still prefer one consistent canonical shape.
+
 ## 3. Approval Assignment Payloads
 
 ### Ad-hoc approval assignment
@@ -349,6 +364,12 @@ The save/update response should return the **full updated `approval` object**, n
 
 This matters because the composer, planner preview, and approval panels all rely on the post-save approval state being immediately renderable.
 
+### Success-state note
+
+The first-time "Send for Approval" flow is now expected to close composer normally without a blocking success modal.
+
+The blocking success confirmation is reserved for edit-save flows where the user explicitly chose an approval-handling action from the approval edit dialog.
+
 ## 5. Bulk Send-for-Approval Contract
 
 The bulk planner flow currently sends:
@@ -384,15 +405,18 @@ List/calendar/feed planner views need enough approval data to show:
 - total levels
 - per-level status
 - current-level pending/approved users
+- ad-hoc approver list and statuses when no workflow levels exist
 
 Required minimum fields:
 
 - `status`
+- `post_state`
 - `workflow_name`
 - `current_level`
 - `total_levels`
 - `workflow_levels`
 - `level_status`
+- `approvers` for ad-hoc approval rows/cards
 
 ### Full preview panel
 
@@ -555,4 +579,3 @@ These files are the main source of truth for the current FE contract:
 - `contentstudio-frontend/src/modules/approval-workflows/components/ApprovalNotificationsPanel.vue`
 - `contentstudio-frontend/src/modules/composer_v2/views/SocialModal.vue`
 - `contentstudio-frontend/src/modules/composer_v2/components/MainComposer.vue`
-

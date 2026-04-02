@@ -118,6 +118,7 @@ These files are the core of the feature:
   - mounts `ApprovalEditConfirmationDialog`
   - listens to `open-approval-sidebar`
   - owns save interception logic for approval edit scenarios
+  - first-time send-for-approval closes composer normally; blocking success confirmation is reserved for explicit edit-approval actions
 - `contentstudio-frontend/src/modules/composer_v2/components/MainComposer.vue`
   - shows approval summary/status block
   - `Change approval`
@@ -156,6 +157,7 @@ These files are the core of the feature:
 - remove approval confirmation
 - workflow preselection on change flow
 - send disabled until actual change is made
+- first-time send-for-approval should not show the blocking success modal
 
 ---
 
@@ -200,6 +202,21 @@ These files are the core of the feature:
   - `PlanApprovalStatus.vue`
 - text badge/status label:
   - `usePlanStatusDisplay.ts`
+
+### Current compact badge rules
+
+- compact approval popup is shown for both:
+  - workflow approvals (`workflow_levels`)
+  - ad-hoc approvals (`approvers`)
+- popup is intentionally limited to approval-related planner states:
+  - `review` / `reviewed`
+  - `missedReview` / `missed_review`
+  - `rejected`
+- when the compact popup is shown in list/compact-list, the duplicate plain-text status is hidden
+- the closed pill uses planner-facing labels/colors:
+  - `In Review`
+  - `Missed Review`
+  - `Rejected`
 
 ### Planner mock behavior
 

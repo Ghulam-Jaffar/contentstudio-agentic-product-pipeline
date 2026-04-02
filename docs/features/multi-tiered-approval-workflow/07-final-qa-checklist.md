@@ -57,20 +57,31 @@ Use this in `yarn run dev` before backend integration starts.
   - rejected approval
   - missed review
 - Confirm canceling the edit-confirmation dialog preserves unsaved composer state.
+- Confirm first-time `Send for Approval` closes composer normally without a blocking success modal.
+- Confirm blocking success confirmation remains limited to the explicit edit-approval action flow.
 
 ## 3. Planner: List / Calendar / Feed / Preview
 
-- In list view, confirm workflow posts show:
-  - enriched status text
+- In list view, confirm approval posts show:
+  - one approval status control, not duplicated plain text + pill
   - compact approval badge under status
-- In calendar view, confirm workflow posts show the compact approval badge.
-- In feed view, confirm workflow posts show the compact approval badge.
+- In list view, confirm both workflow and ad-hoc approval posts use the compact approval badge.
+- In calendar view, confirm approval posts show the compact approval badge.
+- In feed view, confirm approval posts show the compact approval badge.
 - Decide whether the current grid treatment is acceptable or should stay lighter than feed/list/calendar.
 - Click the compact badge and confirm the popup shows:
-  - workflow name
-  - current level
-  - per-level summary
+  - workflow name / current level / per-level summary for workflow approvals
+  - flat approver list for ad-hoc approvals
   - approver states
+- Confirm the compact badge is shown only on approval-related states:
+  - `In Review`
+  - `Missed Review`
+  - `Rejected`
+- Confirm the compact badge pill uses the planner-facing labels/colors:
+  - `In Review`
+  - `Missed Review`
+  - `Rejected`
+- Confirm the compact badge tooltip shows progress detail, not only the approval rule.
 - Click the post and confirm full preview shows the detailed approval status panel.
 - In preview/aside, confirm workflow mode shows workflow levels as the primary UI, without the redundant activity block above them.
 - In preview/aside, confirm ad-hoc approvals still use the legacy user-list renderer.

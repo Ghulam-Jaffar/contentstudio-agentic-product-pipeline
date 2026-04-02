@@ -120,7 +120,8 @@
       "Bash(file=\"/home/casper/code/contentstudio-agentic-product-pipeline/contentstudio-frontend/src/locales/$locale/settings.json\")",
       "Bash(sort -t: -k2 -n)",
       "Bash(sort -t: -k2 -rn)",
-      "Bash(node_modules/.bin/vue-tsc --noEmit)"
+      "Bash(node_modules/.bin/vue-tsc --noEmit)",
+      "Bash(for task:*)"
     ]
   }
 }

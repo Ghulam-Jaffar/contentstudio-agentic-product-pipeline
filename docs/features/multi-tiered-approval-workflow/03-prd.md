@@ -12,7 +12,7 @@
 
 ## 1. Overview
 
-Multi-tiered approval workflow allows ContentStudio workspaces to define named, reusable approval workflows with up to 5 sequential levels. Each level contains one or more approvers and an approval rule (everyone must approve, or anyone can approve). Posts can be submitted via a predefined workflow or ad-hoc user selection. The workflow progresses level by level, notifying each tier only when the previous one is complete. This replaces the current single-level approval modal with a right-sidebar panel, adds a dedicated approval notification icon in the top bar, extends approval tracking across all planner views, and brings parity to mobile apps.
+Multi-tiered approval workflow allows ContentStudio workspaces to define named, reusable approval workflows with up to 5 sequential levels. Each level contains one or more approvers and an approval rule (everyone must approve, or anyone can approve). Posts can be submitted via a predefined workflow or custom user selection. The workflow progresses level by level, notifying each tier only when the previous one is complete. This replaces the current single-level approval modal with a right-sidebar panel, adds a dedicated approval notification icon in the top bar, extends approval tracking across all planner views, and brings parity to mobile apps.
 
 The backend will implement this as a new parallel system alongside the existing single-level approval — not modifying existing approval logic. The frontend interacts entirely through new API endpoints. Backend architecture and implementation details are owned by the backend team in a separate technical spec.
 
@@ -52,7 +52,7 @@ Additionally:
 |---|---|---|---|
 | Increase approval feature adoption | % of workspaces using approval per month | +40% vs baseline | Product analytics |
 | Reduce approval-related support tickets | Support ticket volume tagged "approval" | -30% in 60 days post-launch | Intercom |
-| Drive workflow adoption | % of approval submissions using a saved workflow (vs ad-hoc users) | 50% within 90 days | Product analytics |
+| Drive workflow adoption | % of approval submissions using a saved workflow (vs custom approval) | 50% within 90 days | Product analytics |
 | Fix rejection edit bug | Zero reports of rejected posts auto-moving to draft/scheduled | 0 recurrences | Bug tracker / support |
 | Mobile parity | % of mobile approval actions (approve/reject) using workflow tab | 30% within 60 days | Mobile analytics |
 
@@ -81,7 +81,7 @@ Receives content for review. Needs clear notifications, simple approve/reject ac
 |---|---|---|---|---|
 | US-1 | Workspace Admin | create a named approval workflow with multiple levels and assign team members to each | I don't have to re-select approvers every time I send a post | P0 |
 | US-2 | Content Creator | send a post through a saved workflow with one click | I don't manually coordinate who reviews in what order | P0 |
-| US-3 | Content Creator | send a post to ad-hoc users (without a workflow) as before | I retain flexibility for one-off approvals | P0 |
+| US-3 | Content Creator | send a post to custom approvers (without a workflow) as before | I retain flexibility for one-off approvals | P0 |
 | US-4 | Approver | get notified only when the previous level has approved | I'm not interrupted before it's my turn | P0 |
 | US-5 | Content Creator | see exactly which level a post is at and who has/hasn't approved | I can follow up or re-notify specific people | P0 |
 | US-6 | Content Creator | edit a post mid-approval and choose whether to restart, re-notify the current level, or keep approvals | I control the approval state after making changes | P0 |
@@ -110,11 +110,11 @@ Receives content for review. Needs clear notifications, simple approve/reject ac
 - Delete a level (confirmation dialog if members assigned)
 - Fixed right panel with all eligible workspace members; search + drag & drop to assign to levels
 - Save workflow as draft (incomplete, not visible in composer until published/completed)
-- Workflow deletion: if in-flight posts exist, show confirmation and convert those posts to single-user ad-hoc approval
+- Workflow deletion: if in-flight posts exist, show confirmation and convert those posts to single-user custom approval
 
 **Send for Approval — Sidebar Panel (replacing current center modal)**
 - Right sidebar replaces existing `ApprovalModal.vue` center modal in: Composer, Planner bulk actions, Automations
-- Two tabs: "Users" (existing ad-hoc, updated UI) and "Approval Workflows" (new)
+- Two tabs: "Users" (existing custom approval mode, updated UI) and "Approval Workflows" (new)
 - Users tab: search, alphabetical list, checkbox select, Everyone/Anyone rule, notes field, Send button
 - Approval Workflows tab: workflow cards (collapsed/expanded), default pre-selected, notes field, Send button
 - Collapsed card: workflow name, level count, member avatars grouped by level with connecting visual indicator
@@ -241,7 +241,7 @@ Receives content for review. Needs clear notifications, simple approve/reject ac
 | BR-04 | Same team member can appear in multiple levels | Agencies often have one PM reviewing at every stage |
 | BR-05 | Only one workflow can be marked as Default per workspace | Clear default selection |
 | BR-06 | Default workflow is pre-selected in composer but not auto-submitted | User always confirms before sending |
-| BR-07 | Workflow tabs (Users / Approval Workflows) are mutually exclusive per post submission | A post is either ad-hoc or workflow-based, never both |
+| BR-07 | Workflow tabs (Users / Approval Workflows) are mutually exclusive per post submission | A post is either custom approval or workflow-based, never both |
 | BR-08 | Approval and scheduling are independent: editing schedule date during approval requires no re-approval | Approval is about content, not timing |
 | BR-09 | Editing content during active approval triggers a confirmation dialog; no silent status changes | User always controls approval state |
 | BR-10 | Editing a rejected post: save triggers confirmation dialog (bug fix — currently silently changes status) | Critical bug fix |
@@ -254,7 +254,7 @@ Receives content for review. Needs clear notifications, simple approve/reject ac
 | BR-17 | Post deletion during approval notifies ONLY current active level approvers | Past/future levels have no action to take |
 | BR-18 | Missed Review: only current active level approvers are notified of missed status | Same reasoning as BR-17 |
 | BR-19 | Fully approved post rescheduled: no re-approval required, no notifications | Time change is not a content change |
-| BR-20 | Workflow deleted with in-flight posts: posts converted to single-user ad-hoc approval using current level's approvers | Preserves pending reviews |
+| BR-20 | Workflow deleted with in-flight posts: posts converted to single-user custom approval using current level's approvers | Preserves pending reviews |
 | BR-21 | New member added to completed level: NOT added retroactively to in-flight posts | Completed levels are sealed |
 | BR-22 | Member removed from workflow while post assigned and pending: their assignment cancelled, they are notified | Immediate effect on in-flight posts |
 | BR-23 | Member removed while already approved: greyed out with tooltip, not removed | Preserves approval record |
@@ -273,7 +273,7 @@ Receives content for review. Needs clear notifications, simple approve/reject ac
 | BR-36 | Draft workflows (incomplete) are NOT shown in the composer's Approval Workflows tab | Prevents users from sending to broken/empty workflows |
 | BR-37 | Super Admins and Admins always have workflow management access regardless of permission settings | Admins own workspace configuration |
 | BR-38 | Approval notification icon counts ONLY approval-related events; general notifications remain separate | Dedicated channel for time-sensitive approval activity |
-| BR-39 | A post can only have ONE active approval at a time — internal workflow, internal ad-hoc, or external share-link approval. These are mutually exclusive. | Prevents conflicting approval states and notification loops |
+| BR-39 | A post can only have ONE active approval at a time — internal workflow, internal custom approval, or external share-link approval. These are mutually exclusive. | Prevents conflicting approval states and notification loops |
 | BR-40 | Starting any new approval (any type, any entry point) on a post with an existing active approval replaces the previous approval entirely | Verified current behavior in `ApprovalBuilder.php` and `ShareLinkController::setupPlansForExternalApproval` — new approval always overwrites |
 | BR-41 | Before any override takes effect, the user must see a warning. For single post: an Alert banner in the sidebar. For bulk: a confirmation Dialog before the sidebar opens. For external share link: an Alert in the share modal. | No silent cancellations — user is always informed |
 | BR-42 | On override: cancellation notifications are sent to current active level approvers only (same scope as post-deletion) — in-app + email | Mirrors the post-deletion notification rule (BR-17); past and future levels are not notified |
@@ -731,7 +731,7 @@ With level deletion(s):
 | Element | Copy |
 |---|---|
 | Popup header (workflow) | `[Workflow Name]` |
-| Popup header (ad-hoc) | `Approval Status` |
+| Popup header (custom approval) | `Approval Status` |
 | Level row header | `Level [N]: [Title]` |
 | Level status badge: completed | `Completed` |
 | Level status badge: in progress | `In Progress` |
@@ -751,7 +751,7 @@ With level deletion(s):
 |---|---|
 | Panel title | `Approval Status` |
 | Workflow name subheading | `[Workflow Name]` |
-| Ad-hoc subheading | `Ad-hoc Approval` |
+| Custom approval subheading | `Custom Approval` |
 | Creator's note label | `Request note from [Creator name]:` |
 | Approve button | `Approve` |
 | Reject button | `Reject` |
@@ -830,7 +830,7 @@ Shown as an `Alert` (warning variant) at the top of the Send for Approval sideba
 
 | Scenario | Alert copy |
 |---|---|
-| Post in internal ad-hoc approval | `"This post is already in an approval process. Starting a new one will cancel it — currently assigned approvers will be notified."` |
+| Post in internal custom approval | `"This post is already in an approval process. Starting a new one will cancel it — currently assigned approvers will be notified."` |
 | Post in internal workflow approval | `"This post is in [Workflow Name] (Level [N]). Starting a new approval will cancel it — Level [N] approvers will be notified."` |
 | Post in external share-link approval | `"This post has an active external approval via share link. Starting an internal approval will cancel it."` |
 

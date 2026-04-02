@@ -80,7 +80,7 @@
 If a workflow has **posts currently in approval**:
 1. Show confirmation dialog listing the number of pending posts
 2. Inform: "These posts will be converted to single-user approval (existing approvers at the current level will remain assigned). You will need to manage them manually."
-3. On confirm: convert in-flight posts to single-user ad-hoc approval, delete workflow
+3. On confirm: convert in-flight posts to single-user custom approval, delete workflow
 4. On cancel: no action
 
 #### Default Workflow
@@ -98,7 +98,7 @@ If a workflow has **posts currently in approval**:
 
 When user clicks "Send for Approval", a **right sidebar** opens (replacing the current center modal) with two tabs:
 
-**Tab 1: Users (existing ad-hoc mode, updated UI)**
+**Tab 1: Users (existing custom approval mode, updated UI)**
 - No hotlist/quick-select row
 - Search bar at top
 - List of all eligible team members (alphabetical)
@@ -211,7 +211,7 @@ When a level uses "Anyone can approve" and User A approves (advancing the workfl
 
 - Posts in approval show a **status badge** on the card
 - **Hover/click** the badge → popup showing:
-  - Workflow name (or "Ad-hoc Approval")
+  - Workflow name (or "Custom Approval")
   - Each level with status (Completed / In Progress / Not Started)
   - Per-user status within each level (approved/pending/rejected)
   - **"Re-notify"** button for pending approvers whose feedback is delayed
@@ -233,7 +233,7 @@ When an approver receives a notification and clicks it:
 
 - Posts in approval show a **status badge** on the card
 - **Hover/click** the badge → popup showing:
-  - Workflow name (or "Ad-hoc Approval")
+  - Workflow name (or "Custom Approval")
   - Each level with status (Completed / In Progress / Not Started)
   - Per-user status within each level (approved/pending/rejected)
   - **"Re-notify"** button for pending approvers whose feedback is delayed
@@ -502,7 +502,7 @@ Posts sitting in the Planner (Draft or Scheduled) can be sent for approval direc
 
 ### L. Approval Override Rules (All Entry Points)
 
-**Core principle:** A post can only have one active approval at a time — internal workflow, internal ad-hoc, or external share-link approval. A new approval always replaces the previous one. The user is always warned before this happens.
+**Core principle:** A post can only have one active approval at a time — internal workflow, internal custom approval, or external share-link approval. A new approval always replaces the previous one. The user is always warned before this happens.
 
 **This applies to every entry point that initiates an approval:**
 - Composer → Send for Approval
@@ -515,7 +515,7 @@ Posts sitting in the Planner (Draft or Scheduled) can be sent for approval direc
 When the Send for Approval sidebar opens for a post that already has an active approval process:
 
 - An `Alert` (warning variant) is shown at the top of the sidebar:
-  - For internal ad-hoc: `"This post is already in an approval process. Starting a new one will cancel it — currently assigned approvers will be notified."`
+  - For internal custom approval: `"This post is already in an approval process. Starting a new one will cancel it — currently assigned approvers will be notified."`
   - For internal workflow: `"This post is in [Workflow Name] (Level [N]). Starting a new approval will cancel it — Level [N] approvers will be notified."`
   - For external approval: `"This post has an active external approval via share link. Starting an internal approval will cancel it."`
 - User can still proceed: fill in the sidebar and click Send — the warning is informational, not a blocker

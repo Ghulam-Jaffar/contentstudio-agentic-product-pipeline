@@ -43,13 +43,13 @@ Use this in `yarn run dev` before backend integration starts.
   - confirm the current workflow is preselected
   - confirm `Send for Approval` stays disabled until an actual change is made
   - change workflow and confirm override confirmation appears before applying
-- On a post already using ad-hoc approval:
+- On a post already using custom approval:
   - click `Change approval`
   - confirm sidebar opens on `Users`
   - confirm existing users/rule/note are prefilled
 - Click `Remove approval` and confirm:
   - a standard confirm box appears
-  - the warning copy matches workflow vs ad-hoc context
+  - the warning copy matches workflow vs custom approval context
   - approval is not silently removed without confirmation
 - Edit a post in approval and save. Confirm the edit-confirmation flow works for:
   - active approval
@@ -65,13 +65,13 @@ Use this in `yarn run dev` before backend integration starts.
 - In list view, confirm approval posts show:
   - one approval status control, not duplicated plain text + pill
   - compact approval badge under status
-- In list view, confirm both workflow and ad-hoc approval posts use the compact approval badge.
+- In list view, confirm both workflow and custom approval posts use the compact approval badge.
 - In calendar view, confirm approval posts show the compact approval badge.
 - In feed view, confirm approval posts show the compact approval badge.
 - Decide whether the current grid treatment is acceptable or should stay lighter than feed/list/calendar.
 - Click the compact badge and confirm the popup shows:
   - workflow name / current level / per-level summary for workflow approvals
-  - flat approver list for ad-hoc approvals
+  - flat approver list for custom approvals
   - approver states
 - Confirm the compact badge is shown only on approval-related states:
   - `In Review`
@@ -84,7 +84,7 @@ Use this in `yarn run dev` before backend integration starts.
 - Confirm the compact badge tooltip shows progress detail, not only the approval rule.
 - Click the post and confirm full preview shows the detailed approval status panel.
 - In preview/aside, confirm workflow mode shows workflow levels as the primary UI, without the redundant activity block above them.
-- In preview/aside, confirm ad-hoc approvals still use the legacy user-list renderer.
+- In preview/aside, confirm custom approvals still use the legacy user-list renderer.
 - Confirm planner actions work visually and semantically for:
   - Change Approval / Send for Approval
   - Re-notify
@@ -105,7 +105,7 @@ Use this in `yarn run dev` before backend integration starts.
 - Mark a single notification as read.
 - Use `Mark all read`.
 - Click a notification and confirm it routes into planner and opens the relevant post context.
-- Confirm workflow and ad-hoc notifications are visually distinguishable.
+- Confirm workflow and custom approval notifications are visually distinguishable.
 
 ## 6. Visual / Interaction Consistency
 

@@ -207,7 +207,7 @@ These files are the core of the feature:
 
 - compact approval popup is shown for both:
   - workflow approvals (`workflow_levels`)
-  - ad-hoc approvals (`approvers`)
+  - custom approvals (`approvers`)
 - popup is intentionally limited to approval-related planner states:
   - `review` / `reviewed`
   - `missedReview` / `missed_review`
@@ -368,7 +368,7 @@ If cleanup is wanted before backend integration, the next refactor should be:
 
 ### Key approval payload builders
 
-- ad-hoc approval payload built in:
+- custom approval payload built in:
   - `SendForApprovalSidebar.vue`
 - workflow approval payload built in:
   - `SendForApprovalSidebar.vue`
@@ -470,6 +470,14 @@ Backend integration will likely need:
 - `contentstudio-frontend/src/modules/composer_v2/components/MainComposer.vue`
 - `contentstudio-frontend/src/modules/composer_v2/components/MainComposerFooter.vue`
 - `contentstudio-frontend/src/modules/composer_v2/components/SendForApprovalModal/ApprovalModal.vue`
+
+### Mobile scope note
+
+- current native stories cover:
+  - workflow selection in send-for-approval
+  - pending approvals views
+- current native stories do **not** cover the web-only approval edit-confirmation dialog flow for editing a post already in approval
+- if iOS/Android need parity for that edit-save decision flow, it should be tracked as a separate mobile follow-up
 
 ### Planner integration
 

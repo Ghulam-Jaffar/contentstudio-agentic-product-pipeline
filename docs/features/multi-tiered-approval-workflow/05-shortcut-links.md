@@ -57,3 +57,5 @@
 | S-19 | [sc-114930](https://app.shortcut.com/contentstudio-team/story/114930) | [iOS] Add "Pending Approvals" bottom navigation item and view |
 | S-20 | [sc-114936](https://app.shortcut.com/contentstudio-team/story/114936) | [Android] Add Approval Workflows tab to Send for Approval in Composer |
 | S-21 | [sc-114942](https://app.shortcut.com/contentstudio-team/story/114942) | [Android] Add "Pending Approvals" bottom navigation item and view |
+| S-25 | [sc-115429](https://app.shortcut.com/contentstudio-team/story/115429) | [iOS] Handle editing posts already in approval |
+| S-26 | [sc-115430](https://app.shortcut.com/contentstudio-team/story/115430) | [Android] Handle editing posts already in approval |

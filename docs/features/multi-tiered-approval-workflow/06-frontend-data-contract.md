@@ -21,7 +21,7 @@ This contract currently covers:
 - workspace approval workflow CRUD
 - assigning approval to a post
 - workflow-based approval status
-- ad-hoc user approval status
+- custom approval status
 - planner compact badge + full approval panel
 - composer change/remove approval flows
 - approval notifications bell/panel
@@ -31,6 +31,11 @@ This does **not** define:
 - mobile native payload specifics
 - final backend persistence model
 - permissions/auth implementation details
+
+Important scope note:
+
+- the current mobile story set covers workflow selection and pending-approvals views
+- it does **not** define mobile parity for the web-only composer edit-confirmation flow when editing a post already in approval
 
 ## 1. Workflow Settings Contract
 
@@ -136,7 +141,7 @@ The post-level approval object is the most important backend handoff item.
 The FE currently has two modes:
 
 - workflow approval
-- ad-hoc user approval
+- custom approval
 
 ### Canonical approval object
 
@@ -288,7 +293,7 @@ The FE still has some fallback support for `levels_count`, but backend should pr
 For compact planner rendering, FE now supports both:
 
 - workflow approvals via `workflow_levels` + `level_status`
-- ad-hoc approvals via `approvers`
+- custom approvals via `approvers`
 
 The compact approval popup is intentionally shown only for approval-related planner states:
 
@@ -300,13 +305,13 @@ FE normalizes underscores/spaces/casing in those state checks, but backend shoul
 
 ## 3. Approval Assignment Payloads
 
-### Ad-hoc approval assignment
+### Custom approval assignment
 
 When FE sends selected users:
 
 ```ts
 {
-  type: 'adhoc',
+  type: 'custom',
   members: string[],
   approvers: Array<{
     user_id: string
@@ -405,7 +410,7 @@ List/calendar/feed planner views need enough approval data to show:
 - total levels
 - per-level status
 - current-level pending/approved users
-- ad-hoc approver list and statuses when no workflow levels exist
+- custom approval approver list and statuses when no workflow levels exist
 
 Required minimum fields:
 
@@ -416,7 +421,7 @@ Required minimum fields:
 - `total_levels`
 - `workflow_levels`
 - `level_status`
-- `approvers` for ad-hoc approval rows/cards
+- `approvers` for custom approval rows/cards
 
 ### Full preview panel
 

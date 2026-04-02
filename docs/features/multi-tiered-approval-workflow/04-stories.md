@@ -34,6 +34,8 @@
 | S-22 | [BE] Implement approval override cleanup and cancellation notification dispatch | backend | P0 | throughout_product |
 | S-23 | [FE] Add "Send for Approval" to single Planner post card and post detail view | frontend | P1 | planner |
 | S-24 | [FE] Add approval override warning to Send for Approval sidebar, bulk Planner send, and external share link | frontend | P0 | throughout_product |
+| S-25 | [iOS] Handle editing posts already in approval | mobile | P1 | composer |
+| S-26 | [Android] Handle editing posts already in approval | mobile | P1 | composer |
 
 ---
 
@@ -50,7 +52,7 @@ As a workspace admin, I want to create, edit, duplicate, and delete named approv
 3. Admin can edit any existing workflow, duplicate it (creates "[Name] (Copy)"), or delete it
 4. Admin can mark one workflow as Default — it will be pre-selected in the Send for Approval sidebar
 5. A workflow saved without all levels having at least 1 member is saved as "Draft" and hidden from the composer
-6. Deleting a workflow with in-flight posts converts those posts to single-user ad-hoc approval before deleting
+6. Deleting a workflow with in-flight posts converts those posts to single-user custom approval before deleting
 
 ---
 
@@ -60,7 +62,7 @@ As a workspace admin, I want to create, edit, duplicate, and delete named approv
 - [ ] `POST /workspaces/{workspace_id}/approval-workflows` creates a new workflow; validates name is required; validates max 5 levels; validates each published (non-draft) level has at least 1 member
 - [ ] `GET /approval-workflows/{id}` returns single workflow with all levels and member details
 - [ ] `PUT /approval-workflows/{id}` updates workflow; applies mid-flight modification rules for in-flight posts (see S-05)
-- [ ] `DELETE /approval-workflows/{id}` — if no in-flight posts: deletes immediately; if in-flight posts exist: returns `in_flight_count` and `affected_posts[]` for confirmation; on `?force=true`: converts in-flight posts to ad-hoc single-level approval using current active level's members, then deletes
+- [ ] `DELETE /approval-workflows/{id}` — if no in-flight posts: deletes immediately; if in-flight posts exist: returns `in_flight_count` and `affected_posts[]` for confirmation; on `?force=true`: converts in-flight posts to custom single-level approval using current active level's members, then deletes
 - [ ] `POST /approval-workflows/{id}/duplicate` creates a copy named "[Name] (Copy)" with `is_default=false`
 - [ ] `PUT /approval-workflows/{id}/set-default` sets this workflow as default and unsets any previous default in the workspace (only one default per workspace)
 - [ ] `PUT /approval-workflows/{id}/remove-default` removes default flag
@@ -109,7 +111,7 @@ Figma: https://www.figma.com/file/zJEk0csU8yeDNKhUR7DIEo/ContentStudio-WebApp?no
 ## S-02: [BE] Extend plans.approval schema for multi-level workflow state
 
 ### Description:
-As a backend developer, I want the `plans.approval` data structure to support multi-level workflow state tracking so that the system can persist the full progression of a workflow-based approval alongside the existing single-level ad-hoc approval without breaking backwards compatibility.
+As a backend developer, I want the `plans.approval` data structure to support multi-level workflow state tracking so that the system can persist the full progression of a workflow-based approval alongside the existing single-level custom approval without breaking backwards compatibility.
 
 ---
 
@@ -117,20 +119,20 @@ As a backend developer, I want the `plans.approval` data structure to support mu
 1. When a post is sent for approval via a workflow, the system stores the workflow snapshot (workflow_id, all levels, all members) in `plans.approval` alongside the current approval state
 2. As approvers act, the system updates per-level, per-member approval statuses
 3. The `current_level` index tracks which level is active
-4. The existing single-level approval fields remain unchanged for ad-hoc approvals
+4. The existing single-level approval fields remain unchanged for custom approvals
 5. Approval history is permanently stored — it is never deleted, even after the post is published
 
 ---
 
 ### Acceptance criteria:
-- [ ] The plan detail API must return the following new optional fields on `plans.approval` (backwards-compatible; single-level ad-hoc approval continues to use existing fields unchanged):
-  - `workflow_id` (string|null) — reference to the approval workflow (null for ad-hoc)
+- [ ] The plan detail API must return the following new optional fields on `plans.approval` (backwards-compatible; single-level custom approval continues to use existing fields unchanged):
+  - `workflow_id` (string|null) — reference to the approval workflow (null for custom approval)
   - `workflow_name` (string|null) — snapshot of workflow name at time of submission (for history if workflow is renamed/deleted)
-  - `current_level` (int|null) — 1-based index of the currently active level (null for ad-hoc)
+  - `current_level` (int|null) — 1-based index of the currently active level (null for custom approval)
   - `total_levels` (int|null) — total number of levels in the workflow at time of submission
   - `workflow_levels[]` (array|null) — snapshot array of all levels at time of submission, each with: `level_number`, `title`, `rule`, `members[]` (each with: `member_id`, `status` ["pending"|"approved"|"rejected"|"no_action_needed"], `actioned_at`, `comment`)
   - `level_status[]` (array|null) — per-level aggregate status: ["not_started"|"in_progress"|"completed"|"rejected"]
-- [ ] Existing `plans.approval.approvers[]` and `plans.approval.status` fields remain intact for ad-hoc approvals; they are populated for workflow approvals too (flattened list of current-level members) to maintain backwards compatibility with existing queries
+- [ ] Existing `plans.approval.approvers[]` and `plans.approval.status` fields remain intact for custom approvals; they are populated for workflow approvals too (flattened list of current-level members) to maintain backwards compatibility with existing queries
 - [ ] When a workflow post is fully approved, `plans.status` transitions appropriately (Scheduled stays Scheduled; Draft stays Draft — approval is an overlay)
 - [ ] When a workflow post is rejected, `plans.status` is set to the existing `rejected` approval status value
 - [ ] `plans.approval` records are never deleted — full history is preserved after publish
@@ -146,7 +148,7 @@ N/A (backend schema change)
 ---
 
 ### Impact on existing data:
-- Additive change — existing `plans.approval` records without new fields are treated as ad-hoc (null workflow_id); no migration required
+- Additive change — existing `plans.approval` records without new fields are treated as custom approval (null workflow_id); no migration required
 - Existing approval status values and queries remain functional
 
 ---
@@ -193,7 +195,7 @@ As a content creator, I want posts to progress automatically through workflow le
 ---
 
 ### Acceptance criteria:
-- [ ] Multi-level approval progression is handled server-side; the existing single-level ad-hoc approval flow is not modified (backwards-compatible)
+- [ ] Multi-level approval progression is handled server-side; the existing single-level custom approval flow is not modified (backwards-compatible)
 - [ ] `POST /plans/{id}/approve` — records the approver's approval on the current level; if "Everyone" rule and all members approved → advances level; if "Anyone" rule → advances immediately, sets remaining members to `no_action_needed`; triggers appropriate notifications
 - [ ] `POST /plans/{id}/reject` — records rejection with optional comment; terminates workflow at current level; sets remaining pending same-level members to `no_action_needed`; sets `plans.status = rejected`
 - [ ] `POST /plans/{id}/revoke-approval` — resets approver's status to `pending`; only succeeds if: (a) approver's level is currently active, (b) post is not fully approved, (c) for "Anyone" rule: their approval did NOT advance the level (if it did, return 422 with message "This level has already advanced — your approval can no longer be revoked"); triggers `approval_revoked_creator` and `approval_revoked_approvers` notifications
@@ -216,7 +218,7 @@ N/A (business logic)
 ---
 
 ### Impact on existing data:
-- Single-level ad-hoc approval flow is unchanged
+- Single-level custom approval flow is unchanged
 
 ---
 
@@ -817,7 +819,7 @@ Figma: https://www.figma.com/file/zJEk0csU8yeDNKhUR7DIEo/ContentStudio-WebApp?no
 ## S-11: [FE] Migrate Send for Approval from center modal to right sidebar with Users and Approval Workflows tabs
 
 ### Description:
-As a content creator, I want to send a post for approval using a right sidebar panel with two tabs — one for selecting individual users (the existing ad-hoc mode) and one for choosing a saved approval workflow — so that I can either use a pre-configured workflow with one click or still pick approvers manually when needed.
+As a content creator, I want to send a post for approval using a right sidebar panel with two tabs — one for selecting individual users (the existing custom approval mode) and one for choosing a saved approval workflow — so that I can either use a pre-configured workflow with one click or still pick approvers manually when needed.
 
 ---
 
@@ -826,7 +828,7 @@ As a content creator, I want to send a post for approval using a right sidebar p
 **Via Composer:**
 1. Creator finishes composing a post and clicks "Send for Approval"
 2. A right sidebar panel slides in — titled "Send for Approval"
-3. "Users" tab is shown first (existing ad-hoc mode, updated UI)
+3. "Users" tab is shown first (existing custom approval mode, updated UI)
 4. Creator can switch to "Approval Workflows" tab
 5. On "Approval Workflows" tab: saved workflows shown as cards; default workflow is pre-selected; creator clicks a different card to switch selection
 6. Creator optionally types a note in the Notes field at the bottom
@@ -849,7 +851,7 @@ As a content creator, I want to send a post for approval using a right sidebar p
 - [ ] Two tabs using `Tabs` component: "Users" (tab 1) and "Approval Workflows" (tab 2)
 - [ ] "Send" `Button` (primary) and "Cancel" `Button` (secondary/ghost) — fixed at bottom of sidebar
 
-**Tab 1 — Users (ad-hoc mode, updated UI):**
+**Tab 1 — Users (custom approval mode, updated UI):**
 - [ ] `SearchInput` at top with placeholder: "Search by name..."
 - [ ] No "hotlist" row (removed per design decision)
 - [ ] Member list using `ListItem` components: `Avatar` + name + role; ordered alphabetically
@@ -897,7 +899,7 @@ As a content creator, I want to send a post for approval using a right sidebar p
 
 **Override warning (when post already has active approval):**
 - [ ] When the sidebar opens for a post that already has an active approval, an `Alert` (warning variant) is shown at the top — before the tabs — with context-specific copy:
-  - Ad-hoc internal: `"This post is already in an approval process. Starting a new one will cancel it — currently assigned approvers will be notified."`
+  - Custom approval: `"This post is already in an approval process. Starting a new one will cancel it — currently assigned approvers will be notified."`
   - Workflow internal: `"This post is in [Workflow Name] (Level [N]). Starting a new approval will cancel it — Level [N] approvers will be notified."`
   - External share link: `"This post has an active external approval via share link. Starting an internal approval will cancel it."`
 - [ ] The warning is informational — the user can still proceed by filling in the sidebar and clicking Send; no extra confirmation step is needed for single-post override
@@ -916,7 +918,7 @@ Figma: https://www.figma.com/file/zJEk0csU8yeDNKhUR7DIEo/ContentStudio-WebApp?no
 ---
 
 ### Impact on existing data:
-- Existing ad-hoc approval logic is preserved in the Users tab; no behavioral change for existing single-level approvals
+- Existing custom approval logic is preserved in the Users tab; no behavioral change for existing single-level approvals
 
 ---
 
@@ -968,7 +970,7 @@ As a content creator or approver, I want to see the full real-time approval stat
 - [ ] Hover/click on badge opens a `CstPopup` popup (not a full modal) showing the compact approval status
 
 **Planner hover popup:**
-- [ ] Popup header: workflow name (if workflow-based) or "Approval Status" (if ad-hoc)
+- [ ] Popup header: workflow name (if workflow-based) or "Approval Status" (if custom approval)
 - [ ] Each level shown as a row: "Level [N]: [Title]" label + status badge ("Completed" in green, "In Progress" in orange, "Not Started" in gray) — use `Badge` component for each
 - [ ] Per-user row under each level: `Avatar` + name + status chip: "Approved on [date]" (green), "Rejected on [date]" (red), "Awaiting approval" (gray)
 - [ ] "Re-notify" `Button` (secondary small) per pending approver
@@ -976,7 +978,7 @@ As a content creator or approver, I want to see the full real-time approval stat
 - [ ] Popup is dismissible by clicking outside or pressing Escape
 
 **Post Preview Modal — Approval Status panel:**
-- [ ] Panel title: "Approval Status"; workflow name subheading below (if workflow-based) or "Ad-hoc Approval"
+- [ ] Panel title: "Approval Status"; workflow name subheading below (if workflow-based) or "Custom Approval"
 - [ ] Creator's note section (if note was provided): "Request note from [Creator name]:" label, followed by the note text in a styled block
 - [ ] Same level-by-level breakdown as hover popup but with more detail: per-user statuses, timestamps, and comments
 - [ ] **Approve `Button`** (primary/success): visible to the current user if they are a pending approver at the current active level
@@ -1031,7 +1033,7 @@ Figma: https://www.figma.com/file/zJEk0csU8yeDNKhUR7DIEo/ContentStudio-WebApp?no
 
 ### Impact on existing data:
 - Extends existing `PlanApprovalStatus.vue` and `FeedViewApprovalStatus.vue` components
-- Existing single-level ad-hoc approval status display must continue to work unchanged
+- Existing single-level custom approval status display must continue to work unchanged
 
 ---
 
@@ -1765,7 +1767,7 @@ As a content creator, I want starting a new approval on a post that already has 
 ---
 
 ### Workflow:
-1. User initiates a new approval (any type: internal ad-hoc, internal workflow, or external share link) on a post that already has an active approval
+1. User initiates a new approval (any type: internal custom approval, internal workflow, or external share link) on a post that already has an active approval
 2. Frontend has shown the appropriate warning (handled in S-24); user proceeds
 3. API call to send for approval fires
 4. Backend detects an existing active approval on the plan
@@ -1821,6 +1823,159 @@ N/A (backend)
 - [ ] UI theming support — N/A
 - [ ] White-label domains impact review — email uses existing white-label template; no changes needed
 - [ ] Cross-product impact assessment — all clients (web, iOS, Android) that trigger send-for-approval are affected; notification dispatch is server-side
+
+---
+
+## S-25: [iOS] Handle editing posts already in approval
+
+### Description:
+As an iOS user editing a post that is already in approval, I want the app to explain what will happen to the current approval before my changes are saved, so that approval is never silently restarted, resumed, or removed without my intent.
+
+---
+
+### Workflow:
+1. iOS user opens an existing post that is already in approval
+2. User edits the content and taps Save Draft / Save / Update
+3. If the post is in an approval-related state, the app intercepts the save and shows a decision sheet/dialog before continuing
+4. For active approval, the user can choose to keep the current approval, re-notify, restart, or remove approval
+5. For rejected workflow approval, the user can choose to restart from level 1, resume from the rejected level, or remove approval
+6. For rejected custom approval, the user can choose to resend approval or remove approval
+7. For missed review, the user sees the same approval decision flow using the current approval context
+8. After choosing an option, the app completes the save and applies the selected approval action
+
+---
+
+### Acceptance criteria:
+- [ ] Saving an edited post that is already in approval no longer silently continues on iOS
+- [ ] If the post is in active workflow approval, the app shows a native blocking confirmation UI with actions equivalent to web:
+  - Keep current approval
+  - Re-notify current level
+  - Restart from level 1
+  - Remove approval
+- [ ] If the post is in active custom approval, the app shows a native blocking confirmation UI with actions equivalent to web:
+  - Keep current approval
+  - Re-notify approvers
+  - Remove approval
+- [ ] If the post is in rejected workflow approval, the app shows actions equivalent to web:
+  - Restart from level 1
+  - Resume from rejected level
+  - Remove approval
+- [ ] If the post is in rejected custom approval, the app shows actions equivalent to web:
+  - Resend approval
+  - Remove approval
+- [ ] If the post is in missed review, the app still intercepts save and routes through the approval decision flow
+- [ ] Save request payload includes the same approval action flags expected by backend/web contract (`remove_approval`, `renotify_current_level`, `renotify_approvers`, `reset_workflow`, `resume_workflow`, `resume_from_level`, `resend_approval`, etc.)
+- [ ] First-time "Send for Approval" does NOT show this dialog; it remains a normal send flow
+- [ ] Canceling the dialog keeps the composer/editor open with unsaved user changes intact
+- [ ] Success/error handling after the chosen action matches existing iOS save behavior
+- [ ] All strings are localized in iOS Localizable.strings
+
+---
+
+### Mock-ups:
+Mobile designer to provide iOS-specific edit-confirmation decision UI. Use web S-13 dialog as behavior reference, not visual reference.
+
+---
+
+### Impact on existing data:
+- No new data model; additive use of existing approval action flags and approval response payloads
+
+---
+
+### Impact on other products:
+- Aligns iOS editor behavior with web composer approval-edit handling
+
+---
+
+### Dependencies:
+- Depends on: [BE] Extend plans.approval schema (for approval state in edit payloads/responses)
+- Depends on: [BE] Implement WorkflowApprovalBuilder (for restart/resume/re-notify behavior)
+- Depends on: [iOS] Add Approval Workflows tab to Send for Approval in Composer
+
+---
+
+### Global quality & compliance (wherever applicable)
+- [ ] Mobile responsiveness — N/A (native iOS)
+- [ ] Multilingual support — iOS Localizable.strings; copy aligned with web S-13 behavior
+- [ ] UI theming support — native iOS confirmation/action-sheet patterns; matches existing app design
+- [ ] White-label domains impact review — N/A
+- [ ] Cross-product impact assessment — keeps iOS composer behavior aligned with web; no Android or Chrome extension impact
+
+---
+
+## S-26: [Android] Handle editing posts already in approval
+
+### Description:
+As an Android user editing a post that is already in approval, I want the app to ask what should happen to the current approval before saving my changes, so that approval state is never changed silently.
+
+---
+
+### Workflow:
+1. Android user opens an existing post that is already in approval
+2. User edits the content and taps Save Draft / Save / Update
+3. If the post is in an approval-related state, the app intercepts the save and shows a blocking native confirmation UI
+4. For active approval, the user can keep approval, re-notify, restart, or remove approval
+5. For rejected approval, the user can resend, resume, restart, or remove approval depending on workflow vs custom approval case
+6. For missed review, the user still gets the approval decision flow before save continues
+7. After selection, save proceeds with the chosen approval action
+
+---
+
+### Acceptance criteria:
+- [ ] Saving an edited post that is already in approval no longer silently continues on Android
+- [ ] If the post is in active workflow approval, the app shows a native blocking confirmation UI with actions equivalent to web:
+  - Keep current approval
+  - Re-notify current level
+  - Restart from level 1
+  - Remove approval
+- [ ] If the post is in active custom approval, the app shows a native blocking confirmation UI with actions equivalent to web:
+  - Keep current approval
+  - Re-notify approvers
+  - Remove approval
+- [ ] If the post is in rejected workflow approval, the app shows actions equivalent to web:
+  - Restart from level 1
+  - Resume from rejected level
+  - Remove approval
+- [ ] If the post is in rejected custom approval, the app shows actions equivalent to web:
+  - Resend approval
+  - Remove approval
+- [ ] If the post is in missed review, the app still intercepts save and routes through the approval decision flow
+- [ ] Save request payload includes the same approval action flags expected by backend/web contract (`remove_approval`, `renotify_current_level`, `renotify_approvers`, `reset_workflow`, `resume_workflow`, `resume_from_level`, `resend_approval`, etc.)
+- [ ] First-time "Send for Approval" does NOT show this dialog; it remains a normal send flow
+- [ ] Canceling the dialog keeps the composer/editor open with unsaved user changes intact
+- [ ] Success/error handling after the chosen action matches existing Android save behavior
+- [ ] All strings are localized in Android `strings.xml`
+
+---
+
+### Mock-ups:
+Mobile designer to provide Android-specific edit-confirmation decision UI. Use web S-13 dialog as behavior reference, not visual reference.
+
+---
+
+### Impact on existing data:
+- No new data model; additive use of existing approval action flags and approval response payloads
+
+---
+
+### Impact on other products:
+- Aligns Android editor behavior with web composer approval-edit handling
+
+---
+
+### Dependencies:
+- Depends on: [BE] Extend plans.approval schema (for approval state in edit payloads/responses)
+- Depends on: [BE] Implement WorkflowApprovalBuilder (for restart/resume/re-notify behavior)
+- Depends on: [Android] Add Approval Workflows tab to Send for Approval in Composer
+
+---
+
+### Global quality & compliance (wherever applicable)
+- [ ] Mobile responsiveness — N/A (native Android)
+- [ ] Multilingual support — Android `strings.xml`; copy aligned with web S-13 behavior
+- [ ] UI theming support — native Android confirmation/dialog patterns; matches existing app design
+- [ ] White-label domains impact review — N/A
+- [ ] Cross-product impact assessment — keeps Android composer behavior aligned with web; no iOS or Chrome extension impact
 
 ---
 
@@ -1917,7 +2072,7 @@ As a content creator, I want to see a clear warning whenever I'm about to start 
 **Single post override warning (inside `SendForApprovalSidebar.vue`):**
 - [ ] Sidebar accepts an `existingApproval` prop (object or null); when non-null, an `Alert` (warning variant) is rendered at the top of the sidebar above the tabs
 - [ ] Copy varies by existing approval type:
-  - Ad-hoc internal: `"This post is already in an approval process. Starting a new one will cancel it — currently assigned approvers will be notified."`
+  - Custom approval: `"This post is already in an approval process. Starting a new one will cancel it — currently assigned approvers will be notified."`
   - Workflow internal: `"This post is in [Workflow Name] (Level [N]). Starting a new approval will cancel it — Level [N] approvers will be notified."`
   - External share-link: `"This post has an active external approval via share link. Starting an internal approval will cancel it."`
 - [ ] Alert is informational — Send button remains enabled; no additional confirmation step for single post

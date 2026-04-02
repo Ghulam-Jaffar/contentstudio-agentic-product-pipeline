@@ -105,6 +105,9 @@ Use this in `yarn run dev` before backend integration starts.
 - Mark a single notification as read.
 - Use `Mark all read`.
 - Click a notification and confirm it routes into planner and opens the relevant post context.
+- Click `View in planner` and confirm it routes to Planner feed view with the current user preselected in both filters:
+  - `Approval Requested By`
+  - `Approval Assigned To`
 - Confirm workflow and custom approval notifications are visually distinguishable.
 
 ## 6. Visual / Interaction Consistency

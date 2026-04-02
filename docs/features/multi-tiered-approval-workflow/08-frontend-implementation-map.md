@@ -248,6 +248,21 @@ That second fallback is important: it means planner demo is **not fully centrali
 - `level_passed`
 - `reminder`
 
+### Current panel behavior
+
+- notification row click:
+  - marks the notification as read
+  - closes the panel
+  - routes to Planner list view
+  - emits post preview/focus when `plan_id` is available
+- `View in planner` CTA:
+  - closes the panel
+  - routes to `planner_feed_v2`
+  - preselects the current user in both planner filters:
+    - `Approval Requested By`
+    - `Approval Assigned To`
+  - does not auto-open a specific post preview
+
 ### Important note
 
 Spec includes more backend notification scenarios than current FE mock support.

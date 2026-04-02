@@ -1183,7 +1183,8 @@ As a content creator or approver, I want a dedicated approval notification area 
 4. User can filter by: All / Pending / Rejected / Updated / Comments tabs
 5. Clicking a notification navigates to the relevant post in Planner
 6. User can mark all as read
-7. Cross-workspace: workspace switcher and workspace tiles show notification counts for approval activity in other workspaces
+7. User can also click `View in planner` to open Planner feed with approval-related filters for themselves
+8. Cross-workspace: workspace switcher and workspace tiles show notification counts for approval activity in other workspaces
 
 ---
 
@@ -1201,8 +1202,12 @@ As a content creator or approver, I want a dedicated approval notification area 
 - [ ] `Tabs` component (or `SegmentedControl`) with filter tabs: "All" / "Pending" / "Rejected" / "Updated" / "Comments"
 - [ ] "Mark all as read" `Button` (secondary ghost, small) at top right of panel
 - [ ] Each notification item shows: icon (Approved/Pending/Rejected/Comment), actor avatar (`Avatar`), notification text (dynamic, from backend), timestamp (relative time e.g. "2h ago"), unread indicator dot
-- [ ] Clicking a notification item: navigates to Planner with the relevant post focused/highlighted; closes the panel; marks notification as read
-- [ ] "View post →" link text on each notification item (secondary link style)
+- [ ] Clicking a notification item: navigates to Planner list view with the relevant post focused/highlighted or previewed; closes the panel; marks notification as read
+- [ ] Each notification item includes a `View in planner` CTA
+- [ ] Clicking `View in planner`: routes to Planner feed view with the current workspace active and the current user preselected in both filters:
+  - `Approval Requested By`
+  - `Approval Assigned To`
+- [ ] `View in planner` is navigation-only; it does not auto-open a specific post preview
 - [ ] Filter tabs: "Pending" shows only unresolved approval requests assigned to the current user; "Rejected" shows rejected posts; "Updated" shows posts modified during approval; "Comments" shows new comments on posts in approval
 - [ ] Clicking a category filter → navigates to Planner with the appropriate filter applied (the panel closes)
 

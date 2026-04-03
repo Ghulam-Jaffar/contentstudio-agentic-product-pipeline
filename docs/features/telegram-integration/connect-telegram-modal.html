@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connect Telegram Modal · ContentStudio</title>
+  <style>
+    :root {
+      --cs-primary:     #157FFF;
+      --cs-primary-50:  #eef5ff;
+      --cs-primary-100: #d9eaff;
+      --cs-primary-600: #0f6fdf;
+      --telegram:       #229ED9;
+      --gray-50:  #f9fafb;
+      --gray-100: #f2f3f8;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-400: #9ca3af;
+      --gray-500: #6b7280;
+      --gray-600: #4b5563;
+      --gray-700: #374151;
+      --gray-800: #1f2937;
+      --gray-900: #111827;
+      --red-50:   #fef2f2;
+      --red-400:  #f87171;
+      --red-500:  #ef4444;
+      --yellow-50:  #fffbeb;
+      --yellow-400: #fbbf24;
+      --yellow-600: #d97706;
+      --green-50:  #f0fdf4;
+      --green-500: #22c55e;
+      --green-600: #16a34a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+      background: #eef0f5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      padding: 40px 20px;
+      color: var(--gray-900);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── State switcher ── */
+    .switcher {
+      display: flex;
+      gap: 8px;
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      padding: 6px;
+    }
+    .switcher button {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      background: transparent;
+      color: var(--gray-500);
+      transition: all .15s;
+    }
+    .switcher button.active {
+      background: var(--cs-primary-50);
+      color: var(--cs-primary);
+      font-weight: 600;
+    }
+
+    /* ── Modal shell ── */
+    .modal {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.06);
+      width: 420px;
+      overflow: hidden;
+    }
+
+    /* ── Modal header ── */
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px 16px;
+      border-bottom: 1px solid var(--gray-200);
+    }
+    .modal-header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .telegram-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--telegram);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .telegram-icon svg { width: 18px; height: 18px; }
+    .modal-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--gray-900);
+    }
+    .close-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      border: 1px solid var(--gray-200);
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--gray-500);
+      transition: all .15s;
+      flex-shrink: 0;
+    }
+    .close-btn:hover { background: var(--gray-100); color: var(--gray-700); }
+
+    /* ── Modal body ── */
+    .modal-body { padding: 20px; }
+
+    /* ── Form state ── */
+    .state { display: none; }
+    .state.visible { display: block; }
+
+    /* Field */
+    .field { margin-bottom: 16px; }
+    .field-label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-700);
+      margin-bottom: 6px;
+    }
+    .info-icon {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+    .info-icon svg {
+      width: 14px;
+      height: 14px;
+      color: var(--gray-400);
+      cursor: pointer;
+    }
+    .info-icon:hover svg { color: var(--cs-primary); }
+    .tooltip {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--gray-800);
+      color: #fff;
+      font-size: 11.5px;
+      font-weight: 400;
+      line-height: 1.5;
+      padding: 8px 10px;
+      border-radius: 7px;
+      width: 240px;
+      z-index: 10;
+      white-space: normal;
+      box-shadow: 0 4px 12px rgba(0,0,0,.2);
+    }
+    .tooltip::before {
+      content: '';
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-bottom-color: var(--gray-800);
+    }
+    .info-icon:hover .tooltip { display: block; }
+
+    .input-wrap { position: relative; }
+    .input-wrap input {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--gray-300);
+      border-radius: 8px;
+      font-size: 13.5px;
+      color: var(--gray-900);
+      background: #fff;
+      transition: border-color .15s, box-shadow .15s;
+      outline: none;
+    }
+    .input-wrap input::placeholder { color: var(--gray-400); }
+    .input-wrap input:focus {
+      border-color: var(--cs-primary);
+      box-shadow: 0 0 0 3px rgba(21,127,255,.12);
+    }
+    .input-wrap input.error {
+      border-color: var(--red-500);
+      box-shadow: 0 0 0 3px rgba(239,68,68,.10);
+    }
+
+    /* Inline error */
+    .inline-error {
+      display: none;
+      margin-top: 6px;
+      padding: 8px 10px;
+      background: var(--red-50);
+      border: 1px solid #fecaca;
+      border-radius: 7px;
+      font-size: 12px;
+      color: #b91c1c;
+      line-height: 1.5;
+    }
+    .inline-error.visible { display: flex; gap: 7px; align-items: flex-start; }
+    .inline-error svg { flex-shrink: 0; margin-top: 1px; }
+
+    /* Toggle row */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      margin-bottom: 20px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .toggle-row:hover { background: var(--cs-primary-50); border-color: var(--cs-primary-100); }
+    .toggle-label {
+      font-size: 13px;
+      color: var(--gray-700);
+      font-weight: 500;
+      flex: 1;
+    }
+    .toggle-label span { color: var(--cs-primary); font-weight: 600; }
+
+    /* Switch */
+    .switch {
+      position: relative;
+      width: 36px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .slider {
+      position: absolute;
+      inset: 0;
+      background: var(--gray-300);
+      border-radius: 20px;
+      transition: .2s;
+      cursor: pointer;
+    }
+    .slider::before {
+      content: '';
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      left: 3px;
+      top: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: .2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    }
+    .switch input:checked + .slider { background: var(--cs-primary); }
+    .switch input:checked + .slider::before { transform: translateX(16px); }
+
+    /* Buttons */
+    .modal-footer {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .btn {
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .btn-secondary {
+      background: #fff;
+      color: var(--gray-600);
+      border: 1px solid var(--gray-300);
+    }
+    .btn-secondary:hover { background: var(--gray-100); border-color: var(--gray-400); }
+    .btn-primary {
+      background: var(--cs-primary);
+      color: #fff;
+    }
+    .btn-primary:hover { background: var(--cs-primary-600); }
+    .btn-primary:disabled {
+      background: var(--cs-primary-100);
+      color: #93c5fd;
+      cursor: not-allowed;
+    }
+    .btn-primary.loading {
+      background: var(--cs-primary);
+      cursor: not-allowed;
+      opacity: .85;
+    }
+
+    /* Spinner */
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Success state ── */
+    .success-body {
+      padding: 28px 20px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .success-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background: var(--telegram);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .success-avatar svg { width: 34px; height: 34px; }
+    .check-badge {
+      position: absolute;
+      bottom: -5px;
+      right: -5px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--green-500);
+      border: 2px solid #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .check-badge svg { width: 11px; height: 11px; }
+    .success-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 6px;
+    }
+    .success-sub {
+      font-size: 13px;
+      color: var(--gray-500);
+      line-height: 1.6;
+      max-width: 280px;
+      margin-bottom: 24px;
+    }
+    .success-footer {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      justify-content: center;
+    }
+
+    /* ── Error state hint (bot_not_admin example) ── */
+    /* shown via JS */
+
+    /* ── Caption ── */
+    .state-caption {
+      text-align: center;
+      font-size: 11.5px;
+      color: var(--gray-400);
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- State switcher -->
+  <div class="switcher">
+    <button class="active" onclick="showState('default', this)">Default</button>
+    <button onclick="showState('loading', this)">Loading</button>
+    <button onclick="showState('error-bot', this)">Error: Bot not admin</button>
+    <button onclick="showState('error-notfound', this)">Error: Not found</button>
+    <button onclick="showState('error-private', this)">Error: Private not found</button>
+    <button onclick="showState('success', this)">Success</button>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal">
+
+    <!-- Header (shared) -->
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <div class="telegram-icon">
+          <!-- Telegram paper plane -->
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21.198 2.433a2.242 2.242 0 0 0-1.022.215l-17.5 7.25a2.25 2.25 0 0 0 .265 4.267l3.329.985 1.936 5.754a1.125 1.125 0 0 0 1.96.302l2.492-3.074 4.044 2.978a2.25 2.25 0 0 0 3.484-1.384l2.5-14.75a2.25 2.25 0 0 0-2.488-2.543z" fill="white"/>
+          </svg>
+        </div>
+        <span class="modal-title">Connect Telegram</span>
+      </div>
+      <button class="close-btn" title="Close">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- ── State: Default / Loading / Errors ── -->
+    <div id="state-form" class="state visible">
+      <div class="modal-body">
+
+        <!-- Field -->
+        <div class="field">
+          <div class="field-label">
+            Telegram Group or Channel
+            <span class="info-icon">
+              <svg viewBox="0 0 16 16" fill="currentColor">
+                <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm.75-10.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0zM7.25 7a.75.75 0 0 1 1.5 0v3.5a.75.75 0 0 1-1.5 0V7z" clip-rule="evenodd"/>
+              </svg>
+              <div class="tooltip">For public channels or groups, enter the @username (e.g. @mychannel). For private groups, paste the invite link from Telegram (e.g. https://t.me/+xxxx). Make sure you've added @contentstudio_bot as an admin first.</div>
+            </span>
+          </div>
+          <div class="input-wrap">
+            <input id="channel-input" type="text" placeholder="@username or invite link" />
+          </div>
+
+          <!-- Inline errors (one shown at a time) -->
+          <div id="err-bot" class="inline-error">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="#b91c1c"><path fill-rule="evenodd" d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm-.75 4a.75.75 0 0 1 1.5 0v3.5a.75.75 0 0 1-1.5 0V5zm.75 6.5a.875.875 0 1 1 0-1.75.875.875 0 0 1 0 1.75z" clip-rule="evenodd"/></svg>
+            It looks like @contentstudio_bot isn't an admin of this channel yet. Please add it as an administrator in Telegram and try again.
+          </div>
+          <div id="err-notfound" class="inline-error">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="#b91c1c"><path fill-rule="evenodd" d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm-.75 4a.75.75 0 0 1 1.5 0v3.5a.75.75 0 0 1-1.5 0V5zm.75 6.5a.875.875 0 1 1 0-1.75.875.875 0 0 1 0 1.75z" clip-rule="evenodd"/></svg>
+            We couldn't find this channel or group. Please check the @username and try again.
+          </div>
+          <div id="err-private" class="inline-error">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="#b91c1c"><path fill-rule="evenodd" d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm-.75 4a.75.75 0 0 1 1.5 0v3.5a.75.75 0 0 1-1.5 0V5zm.75 6.5a.875.875 0 1 1 0-1.75.875.875 0 0 1 0 1.75z" clip-rule="evenodd"/></svg>
+            We couldn't find this group. Make sure you've added @contentstudio_bot as an admin in Telegram first, then try again.
+          </div>
+        </div>
+
+        <!-- Confirmation toggle -->
+        <label class="toggle-row" for="confirm-toggle">
+          <span class="toggle-label">I confirm to have added <span>@contentstudio_bot</span> as an admin</span>
+          <label class="switch">
+            <input type="checkbox" id="confirm-toggle" />
+            <span class="slider"></span>
+          </label>
+        </label>
+
+        <!-- Footer buttons -->
+        <div class="modal-footer">
+          <button class="btn btn-secondary">Cancel</button>
+          <button id="add-btn" class="btn btn-primary" disabled>Add</button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── State: Success ── -->
+    <div id="state-success" class="state">
+      <div class="success-body">
+        <div class="success-avatar">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M21.198 2.433a2.242 2.242 0 0 0-1.022.215l-17.5 7.25a2.25 2.25 0 0 0 .265 4.267l3.329.985 1.936 5.754a1.125 1.125 0 0 0 1.96.302l2.492-3.074 4.044 2.978a2.25 2.25 0 0 0 3.484-1.384l2.5-14.75a2.25 2.25 0 0 0-2.488-2.543z" fill="white"/>
+          </svg>
+          <div class="check-badge">
+            <svg viewBox="0 0 12 12" fill="none">
+              <path d="M2 6l3 3 5-5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="success-title">✓ Channel Connected!</div>
+        <div class="success-sub">My Tech Channel is now connected to ContentStudio. You can select it in the Composer when creating posts.</div>
+        <div class="success-footer">
+          <button class="btn btn-secondary" onclick="showState('default', null)">Connect Another</button>
+          <button class="btn btn-primary">Done</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="state-caption" id="state-caption">Default state — input empty, Add button disabled</div>
+
+  <script>
+    const input = document.getElementById('channel-input');
+    const toggle = document.getElementById('confirm-toggle');
+    const addBtn = document.getElementById('add-btn');
+
+    function updateAddBtn() {
+      const filled = input.value.trim().length > 0 && toggle.checked;
+      addBtn.disabled = !filled;
+    }
+
+    input.addEventListener('input', updateAddBtn);
+    toggle.addEventListener('change', updateAddBtn);
+
+    const captions = {
+      'default':        'Default state — input empty, Add button disabled until input + toggle filled',
+      'loading':        'Loading state — Add button shows spinner while API call is in-flight',
+      'error-bot':      'Error: bot_not_admin — inline error below input, modal stays open',
+      'error-notfound': 'Error: channel_not_found — for invalid @username',
+      'error-private':  'Error: private_group_not_found — invite link submitted before bot was added',
+      'success':        'Success state — channel connected, two CTA buttons',
+    };
+
+    function showState(state, btn) {
+      // Update switcher buttons
+      if (btn) {
+        document.querySelectorAll('.switcher button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      }
+
+      // Reset all errors
+      document.querySelectorAll('.inline-error').forEach(e => e.classList.remove('visible'));
+      input.classList.remove('error');
+
+      // Show/hide form vs success
+      document.getElementById('state-form').classList.toggle('visible', state !== 'success');
+      document.getElementById('state-success').classList.toggle('visible', state === 'success');
+
+      // Reset input for clean states
+      if (state === 'default') {
+        input.value = '';
+        toggle.checked = false;
+        addBtn.disabled = true;
+        addBtn.classList.remove('loading');
+        addBtn.innerHTML = 'Add';
+      }
+
+      if (state === 'loading') {
+        input.value = '@mytechchannel';
+        toggle.checked = true;
+        addBtn.disabled = true;
+        addBtn.classList.add('loading');
+        addBtn.innerHTML = '<div class="spinner"></div> Adding…';
+      }
+
+      if (state === 'error-bot') {
+        input.value = '@mytechchannel';
+        toggle.checked = true;
+        input.classList.add('error');
+        document.getElementById('err-bot').classList.add('visible');
+        addBtn.disabled = false;
+        addBtn.classList.remove('loading');
+        addBtn.innerHTML = 'Add';
+      }
+
+      if (state === 'error-notfound') {
+        input.value = '@nonexistentchannel';
+        toggle.checked = true;
+        input.classList.add('error');
+        document.getElementById('err-notfound').classList.add('visible');
+        addBtn.disabled = false;
+        addBtn.classList.remove('loading');
+        addBtn.innerHTML = 'Add';
+      }
+
+      if (state === 'error-private') {
+        input.value = 'https://t.me/+aBcXyZ123456';
+        toggle.checked = true;
+        input.classList.add('error');
+        document.getElementById('err-private').classList.add('visible');
+        addBtn.disabled = false;
+        addBtn.classList.remove('loading');
+        addBtn.innerHTML = 'Add';
+      }
+
+      document.getElementById('state-caption').textContent = captions[state] || '';
+    }
+  </script>
+</body>
+</html>

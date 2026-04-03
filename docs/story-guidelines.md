@@ -228,7 +228,7 @@ See `.claude/shortcut-config.json` → `projects` for IDs.
 ## 14. Default Epic for Standalone Stories
 
 If stories are **not** part of a dedicated epic (i.e., created via the `/story` pipeline), assign them to the current **Miscellaneous** epic:
-- **Miscellaneous - Q1 - 2026** (id: `107163`)
+- **Q2 - 2026: Miscellaneous** (id: `115078`)
 
 Update the epic ID each quarter. See `.claude/shortcut-config.json` → `miscellaneous_epics`.
 

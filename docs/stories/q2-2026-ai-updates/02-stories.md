@@ -629,3 +629,207 @@ Depends on the underlying model capability mappings staying current for supporte
 - [ ] UI theming support (reuse current themed form controls)
 - [ ] White-label domains impact review
 - [ ] Cross-product impact assessment (web, mobile apps, Chrome extension)
+
+---
+
+## Story 10: [BE] Add Kling 3.0 video generation model via fal.ai
+
+### Description:
+
+As an AI Studio user, I want Kling 3.0 available as a video generation model so that I can use one of the latest and most capable video generation options directly from ContentStudio.
+
+This story adds Kling 3.0 as a new video model in the AI agents platform, integrated through fal.ai. It covers model registration, capability mapping, option handling, and request building so Kling 3.0 works end-to-end in AI Studio video generation flows.
+
+---
+
+### Workflow:
+
+1. User opens AI video generation in AI Studio
+2. User selects Kling 3.0 from the model list
+3. The system shows all supported options and settings for Kling 3.0
+4. User configures their preferences and generates a video
+5. The request is built correctly against the fal.ai Kling 3.0 endpoint and the result is returned
+
+---
+
+### Acceptance criteria:
+
+- [ ] Kling 3.0 is registered as an available video generation model in the AI agents platform
+- [ ] Model capability mappings correctly reflect all options and settings supported by Kling 3.0 via fal.ai
+- [ ] All supported generation options (resolution, duration, aspect ratio, etc.) are handled and passed through correctly in requests
+- [ ] Request payloads are built correctly against the fal.ai Kling 3.0 endpoint
+- [ ] Unsupported or invalid option combinations are handled gracefully
+- [ ] Generated video results are returned and displayed correctly in the existing AI Studio video flow
+- [ ] Adding this model does not break existing video model flows
+
+---
+
+### Mock-ups:
+
+N/A — backend integration story.
+
+---
+
+### Impact on existing data:
+
+No schema change expected. New model entry added to existing model configuration.
+
+---
+
+### Impact on other products:
+
+- Web App: AI Studio video generation
+- Mobile apps: No impact
+- Chrome extension: No impact
+
+---
+
+### Dependencies:
+
+fal.ai Kling 3.0 endpoint availability.
+
+---
+
+### Global quality & compliance (wherever applicable)
+
+- [ ] Mobile responsiveness — N/A, backend story
+- [ ] Multilingual support — N/A, no new UI copy in scope
+- [ ] UI theming support — N/A, no UI changes in scope
+- [ ] White-label domains impact review
+- [ ] Cross-product impact assessment (web, mobile apps, Chrome extension)
+
+---
+
+## Story 11: [BE] Add Wan video generation model via fal.ai
+
+### Description:
+
+As an AI Studio user, I want Wan available as a video generation model so that I have access to another high-quality video generation option directly from ContentStudio.
+
+This story adds Wan as a new video model in the AI agents platform, integrated through fal.ai. It covers model registration, capability mapping, option handling, and request building so Wan works end-to-end in AI Studio video generation flows.
+
+---
+
+### Workflow:
+
+1. User opens AI video generation in AI Studio
+2. User selects Wan from the model list
+3. The system shows all supported options and settings for Wan
+4. User configures their preferences and generates a video
+5. The request is built correctly against the fal.ai Wan endpoint and the result is returned
+
+---
+
+### Acceptance criteria:
+
+- [ ] Wan is registered as an available video generation model in the AI agents platform
+- [ ] Model capability mappings correctly reflect all options and settings supported by Wan via fal.ai
+- [ ] All supported generation options (resolution, duration, aspect ratio, etc.) are handled and passed through correctly in requests
+- [ ] Request payloads are built correctly against the fal.ai Wan endpoint
+- [ ] Unsupported or invalid option combinations are handled gracefully
+- [ ] Generated video results are returned and displayed correctly in the existing AI Studio video flow
+- [ ] Adding this model does not break existing video model flows
+
+---
+
+### Mock-ups:
+
+N/A — backend integration story.
+
+---
+
+### Impact on existing data:
+
+No schema change expected. New model entry added to existing model configuration.
+
+---
+
+### Impact on other products:
+
+- Web App: AI Studio video generation
+- Mobile apps: No impact
+- Chrome extension: No impact
+
+---
+
+### Dependencies:
+
+fal.ai Wan endpoint availability.
+
+---
+
+### Global quality & compliance (wherever applicable)
+
+- [ ] Mobile responsiveness — N/A, backend story
+- [ ] Multilingual support — N/A, no new UI copy in scope
+- [ ] UI theming support — N/A, no UI changes in scope
+- [ ] White-label domains impact review
+- [ ] Cross-product impact assessment (web, mobile apps, Chrome extension)
+
+---
+
+## Story 12: [BE] Add Veo 3.1 Lite video generation model via fal.ai
+
+### Description:
+
+As an AI Studio user, I want Veo 3.1 Lite available as a video generation model so that I can use Google's latest lightweight video generation option directly from ContentStudio.
+
+This story adds Veo 3.1 Lite as a new video model in the AI agents platform, integrated through fal.ai. It covers model registration, capability mapping, option handling, and request building so Veo 3.1 Lite works end-to-end in AI Studio video generation flows.
+
+---
+
+### Workflow:
+
+1. User opens AI video generation in AI Studio
+2. User selects Veo 3.1 Lite from the model list
+3. The system shows all supported options and settings for Veo 3.1 Lite
+4. User configures their preferences and generates a video
+5. The request is built correctly against the fal.ai Veo 3.1 Lite endpoint and the result is returned
+
+---
+
+### Acceptance criteria:
+
+- [ ] Veo 3.1 Lite is registered as an available video generation model in the AI agents platform
+- [ ] Model capability mappings correctly reflect all options and settings supported by Veo 3.1 Lite via fal.ai
+- [ ] All supported generation options (resolution, duration, aspect ratio, etc.) are handled and passed through correctly in requests
+- [ ] Request payloads are built correctly against the fal.ai Veo 3.1 Lite endpoint
+- [ ] Unsupported or invalid option combinations are handled gracefully
+- [ ] Generated video results are returned and displayed correctly in the existing AI Studio video flow
+- [ ] Adding this model does not break existing video model flows
+
+---
+
+### Mock-ups:
+
+N/A — backend integration story.
+
+---
+
+### Impact on existing data:
+
+No schema change expected. New model entry added to existing model configuration.
+
+---
+
+### Impact on other products:
+
+- Web App: AI Studio video generation
+- Mobile apps: No impact
+- Chrome extension: No impact
+
+---
+
+### Dependencies:
+
+fal.ai Veo 3.1 Lite endpoint availability.
+
+---
+
+### Global quality & compliance (wherever applicable)
+
+- [ ] Mobile responsiveness — N/A, backend story
+- [ ] Multilingual support — N/A, no new UI copy in scope
+- [ ] UI theming support — N/A, no UI changes in scope
+- [ ] White-label domains impact review
+- [ ] Cross-product impact assessment (web, mobile apps, Chrome extension)

@@ -24,3 +24,4 @@
 - [[BE] Add WhatsApp message status tracking (sent, delivered, read)](https://app.shortcut.com/contentstudio-team/story/113642) — BE — Web App
 - [[FE] Display WhatsApp message status ticks in chat view](https://app.shortcut.com/contentstudio-team/story/113648) — FE — Web App
 - [[Design] Create WhatsApp integration design assets and UI specifications](https://app.shortcut.com/contentstudio-team/story/113654) — Design — Web App
+- [[FE] Redesign WhatsApp post-connection modal to show all phone numbers in a single view](https://app.shortcut.com/contentstudio-team/story/115890) — FE — Web App

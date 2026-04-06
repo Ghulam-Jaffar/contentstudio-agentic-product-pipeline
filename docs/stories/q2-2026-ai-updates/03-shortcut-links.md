@@ -13,6 +13,9 @@
 | [BE] Update existing AI image model option mappings for newly available settings | https://app.shortcut.com/contentstudio-team/story/115700 |
 | [BE] Update existing AI video model option mappings for newly available settings | https://app.shortcut.com/contentstudio-team/story/115706 |
 | [FE] Add resolution and variations controls for supported AI image models | https://app.shortcut.com/contentstudio-team/story/115712 |
+| [BE] Add Kling 3.0 video generation model via fal.ai | https://app.shortcut.com/contentstudio-team/story/115859 |
+| [BE] Add Wan video generation model via fal.ai | https://app.shortcut.com/contentstudio-team/story/115861 |
+| [BE] Add Veo 3.1 Lite video generation model via fal.ai | https://app.shortcut.com/contentstudio-team/story/115862 |
 
 ## Details
 

@@ -1597,7 +1597,7 @@ CTA bar pinned to bottom if list scrolls.
 - [ ] Clicking the primary CTA connects only the numbers that have a channel name filled in
 - [ ] Numbers with empty channel name inputs are skipped — not connected
 - [ ] Channel name validation: max 50 characters — shows inline error "Channel name must be 50 characters or less." if exceeded
-- [ ] If the same phone number is already connected in the workspace, that row shows "This number is already connected to your workspace." with the input disabled
+- [ ] If a phone number is already connected in the workspace, naming it again reconnects it (token refresh) — no blocked/disabled state
 - [ ] Success toast shows dynamic count: "3 WhatsApp accounts connected successfully!"
 - [ ] The modal is scrollable if more than 4-5 numbers are returned, with the CTA bar pinned to the bottom
 - [ ] Single phone number scenario: same layout, just one row — no special UX

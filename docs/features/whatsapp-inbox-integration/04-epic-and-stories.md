@@ -1485,7 +1485,7 @@ As a social media manager connecting my WhatsApp Business account, I want to see
 
 This story replaces the current sequential wizard approach in the post-redirect modal (from **[FE] Build WhatsApp account connection UI and channel name modal**) with a single-view list layout. The wizard shows one phone number at a time with Skip/Continue buttons, which is a poor experience when Meta returns multiple numbers — the user has no visibility into how many numbers remain, can't go back, can't jump to a specific number, and must step through all numbers even if they only care about the last one.
 
-The new design shows all returned phone numbers in one scrollable list. The user types a channel name for each number they want to connect and leaves the rest blank. No checkboxes, no wizard steps — the name input itself is the selection mechanism. If a name is filled in, that number gets connected. Empty = skipped.
+The new design shows all returned phone numbers in one scrollable list with pre-filled channel names from Meta. Each row has a checkbox on the right — the user checks the numbers they want to connect, edits names if needed, and clicks Connect. All rows start unchecked by default so the user explicitly opts in.
 
 **Reference patterns:**
 - `contentstudio-frontend/src/modules/integration/components/dialogs/SaveSocialAccounts.vue` — multi-account list layout
@@ -1495,22 +1495,23 @@ The new design shows all returned phone numbers in one scrollable list. The user
 - `Modal` from `@contentstudio/ui` — modal container
 - `TextInput` from `@contentstudio/ui` — channel name input per row
 - `Button` from `@contentstudio/ui` — primary and secondary CTAs
-- `Icon` from `@contentstudio/ui` — WhatsApp icon, green checkmark indicator
-- `Alert` from `@contentstudio/ui` — inline info message at top (if needed)
+- `Checkbox` from `@contentstudio/ui` — selection checkbox per row
+- `Icon` from `@contentstudio/ui` — WhatsApp icon
+
 
 ---
 
 #### Workflow:
 1. User completes Meta's Embedded Signup and is redirected back to ContentStudio
 2. The connection modal opens showing all phone numbers returned from Meta in a single scrollable list
-3. Each row displays the phone number (with country code) on the left and a channel name input on the right
-4. Empty inputs show a placeholder suggesting a name (e.g., "e.g., Support Line")
-5. User types a channel name into the input for any number they want to connect
-6. As soon as a name is entered, a green checkmark appears on that row confirming it will be connected
-7. If the user clears a previously entered name, the checkmark disappears — that number will be skipped
-8. The primary CTA at the bottom updates dynamically to reflect how many numbers will be connected (e.g., "Connect 3 numbers")
+3. Each row displays: WhatsApp icon + phone number (with country code) on the left, a pre-filled channel name input in the middle, and a checkbox on the right
+4. Channel names are pre-filled from Meta (e.g., display name or business name) — the user can edit any name before connecting
+5. All checkboxes start unchecked by default
+6. User checks the checkbox on the rows they want to connect
+7. User edits channel names if needed (inputs are always editable regardless of checkbox state)
+8. The primary CTA at the bottom updates dynamically to reflect how many rows are checked (e.g., "Connect 3 numbers")
 9. User clicks the primary CTA
-10. All named numbers are connected; unnamed numbers are skipped
+10. All checked numbers are connected with their current channel name; unchecked numbers are skipped
 11. Success toast confirms how many accounts were connected
 12. If only one phone number was returned from Meta, the modal shows just that single row — same layout, no wizard difference
 
@@ -1520,22 +1521,24 @@ The new design shows all returned phone numbers in one scrollable list. The user
 
 **Modal Header:**
 - Title: "Connect Your WhatsApp Numbers"
-- Description (single number): "Name your WhatsApp number to connect it to your inbox."
-- Description (multiple numbers): "Name the numbers you'd like to connect to your inbox. Leave a name blank to skip that number."
+- Description (single number): "Select your WhatsApp number to connect it to your inbox. You can edit the channel name before connecting."
+- Description (multiple numbers): "Select the numbers you'd like to connect to your inbox. You can edit the channel name before connecting."
 
 **Phone Number Row:**
 - Phone number: Displayed with country code, formatted (e.g., "+1 (555) 123-4567") — read-only, `text-gray-900`, `text-sm`
 - WhatsApp icon: Small green WhatsApp logo to the left of the number
-- Green checkmark: Appears to the right of the input when a name is entered — `Icon` component, `text-green-500`
+- Checkbox: `Checkbox` component on the right side of the row — unchecked by default
 
 **Channel Name Input (per row):**
-- Placeholder: "e.g., Support Line"
+- Pre-filled with the name returned from Meta (e.g., display name or business name) — editable
+- Placeholder (if Meta returns no name): "e.g., Support Line"
 - Validation error (too long): "Channel name must be 50 characters or less."
+- Validation error (checked but empty): "Please enter a channel name."
 
 **Primary CTA (dynamic):**
-- No names entered (disabled): "Connect"
-- 1 name entered: "Connect 1 number"
-- Multiple names entered: "Connect 3 numbers" (dynamic count)
+- No rows checked (disabled): "Connect"
+- 1 row checked: "Connect 1 number"
+- Multiple rows checked: "Connect 3 numbers" (dynamic count)
 
 **Secondary CTA:**
 - "Cancel"
@@ -1553,51 +1556,18 @@ The new design shows all returned phone numbers in one scrollable list. The user
 
 ---
 
-#### Layout:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│  ✕                                                          │
-│                                                             │
-│  Connect Your WhatsApp Numbers                              │
-│  Name the numbers you'd like to connect to your inbox.      │
-│  Leave a name blank to skip that number.                    │
-│                                                             │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │  🟢 +1 (555) 123-4567      [Support Line____] ✓   │    │
-│  ├─────────────────────────────────────────────────────┤    │
-│  │  🟢 +1 (555) 234-5678      [Sales___________] ✓   │    │
-│  ├─────────────────────────────────────────────────────┤    │
-│  │  🟢 +44 20 7946 0958       [e.g., Support Li]     │    │
-│  ├─────────────────────────────────────────────────────┤    │
-│  │  🟢 +92 300 123 4567       [e.g., Support Li]     │    │
-│  ├─────────────────────────────────────────────────────┤    │
-│  │  🟢 +1 (555) 345-6789      [Main Business___] ✓   │    │
-│  └─────────────────────────────────────────────────────┘    │
-│                                                             │
-│                     [Cancel]    [Connect 3 numbers]          │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-```
-
-Each row: small WhatsApp icon (green) + phone number with country code (read-only, `text-gray-900`) on the left, `TextInput` for channel name + green checkmark icon (`text-green-500`, visible only when input has content) on the right.
-
-CTA bar pinned to bottom if list scrolls.
-
----
-
 #### Acceptance criteria:
 - [ ] After Meta redirect, the modal opens showing all returned phone numbers in a single scrollable list — no wizard/stepper
-- [ ] Each row shows the phone number with country code (read-only) on the left and a `TextInput` for the channel name on the right
-- [ ] Empty inputs display placeholder text "e.g., Support Line"
-- [ ] When a channel name is typed into an input, a green checkmark icon appears on that row
-- [ ] When a channel name is cleared, the checkmark disappears
-- [ ] The primary CTA text updates dynamically: "Connect 1 number", "Connect 2 numbers", "Connect 3 numbers", etc.
-- [ ] The primary CTA is disabled when no channel names are entered (zero numbers selected)
-- [ ] Clicking the primary CTA connects only the numbers that have a channel name filled in
-- [ ] Numbers with empty channel name inputs are skipped — not connected
-- [ ] Channel name validation: max 50 characters — shows inline error "Channel name must be 50 characters or less." if exceeded
-- [ ] If a phone number is already connected in the workspace, naming it again reconnects it (token refresh) — no blocked/disabled state
+- [ ] Each row shows: WhatsApp icon + phone number (read-only) on the left, pre-filled `TextInput` for channel name in the middle, `Checkbox` on the right
+- [ ] Channel names are pre-filled from Meta (display name or business name) and are editable
+- [ ] If Meta returns no name for a number, the input shows placeholder "e.g., Support Line"
+- [ ] All checkboxes start unchecked by default — user explicitly opts in
+- [ ] Name inputs are always editable regardless of checkbox state
+- [ ] The primary CTA text updates dynamically based on checked count: "Connect 1 number", "Connect 2 numbers", "Connect 3 numbers", etc.
+- [ ] The primary CTA is disabled when no checkboxes are checked
+- [ ] Clicking the primary CTA connects only the checked numbers with their current channel name; unchecked numbers are skipped
+- [ ] Channel name validation on checked rows: required (shows "Please enter a channel name." if empty) and max 50 characters (shows "Channel name must be 50 characters or less." if exceeded)
+- [ ] If a phone number is already connected in the workspace, checking it again reconnects it (token refresh) — no blocked/disabled state
 - [ ] Success toast shows dynamic count: "3 WhatsApp accounts connected successfully!"
 - [ ] The modal is scrollable if more than 4-5 numbers are returned, with the CTA bar pinned to the bottom
 - [ ] Single phone number scenario: same layout, just one row — no special UX

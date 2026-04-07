@@ -833,3 +833,110 @@ fal.ai Veo 3.1 Lite endpoint availability.
 - [ ] UI theming support — N/A, no UI changes in scope
 - [ ] White-label domains impact review
 - [ ] Cross-product impact assessment (web, mobile apps, Chrome extension)
+
+---
+
+## Story 13: [BE] Add Seedance 2.0 video generation model via fal.ai with geo-restriction handling
+
+### Description:
+
+As an AI Studio user, I want Seedance 2.0 (ByteDance) available as a video generation model so that I can use one of the most trending and capable video generation models directly from ContentStudio.
+
+This story adds Seedance 2.0 as a new video model in the AI agents platform, integrated through fal.ai. Unlike other video models, fal.ai has granted **conditional access** with three compliance restrictions that must be handled:
+
+1. **Geographic restriction** — Cannot serve users in the United States or Japan
+2. **B2B verification** — Must only serve business customers (ContentStudio is inherently B2B + trial users blocked from this model)
+3. **End user identification** — Must pass `end_user_id` in API calls and be able to restrict specific users on request
+
+**Restriction handling approach:**
+
+- **Geo-check at request time:** When a user selects Seedance 2.0 and submits a generation request, the backend checks `X-COUNTRY-NAME` from Cloudflare headers (already available on every request via `DeviceInfoService`). If the country is US or Japan, the request is rejected with a user-friendly error message. Seedance 2.0 stays visible in the model list for all users — no frontend filtering.
+- **B2B / Trial block:** ContentStudio is a B2B SaaS product by nature. Additionally, trial users are blocked from Seedance 2.0. Frontend disables the model in the list with a tooltip for trial users. Backend also checks as a safety net.
+- **`end_user_id`:** Pass `workspace_id:user_id` in every Seedance 2.0 fal.ai API call. Maintain a simple blocklist (DB config or collection) that is checked before making any Seedance 2.0 call — if fal.ai requests restricting a specific user, add them to the blocklist.
+
+**Implementation context:**
+- Existing Seedance v1 models are already in the frontend model list (`contentstudio-frontend/src/composables/useVideoGeneration.js`, lines 573-1075) — add Seedance 2.0 entries alongside them
+- Model registry in AI agents: `contentstudio-ai-agents/src/utils/model_registry.py`
+- Metadata API: `contentstudio-ai-agents/src/api/routers/metadata_router.py`
+- Geo headers already extracted by `contentstudio-backend/app/Services/DeviceInfoService.php` — `X-COUNTRY-NAME` from Cloudflare
+- Trial detection: subscription name prefix `trial-*` on User model
+- fal.ai endpoint: `https://fal.ai/models/bytedance/seedance-2.0/image-to-video`
+
+---
+
+### Workflow:
+
+1. User opens AI video generation in AI Studio
+2. User sees Seedance 2.0 in the model list — if on trial, the model is disabled with a tooltip explaining it requires a paid plan
+3. Paid user selects Seedance 2.0, configures preferences, and submits a generation request
+4. Backend receives the request, sees the model is Seedance 2.0
+5. Backend checks if user is on a trial plan — if so, returns error (safety net)
+6. Backend checks `X-COUNTRY-NAME` header — if US or Japan, returns error response
+7. Backend checks `end_user_id` against the blocklist — if blocked, returns error response
+8. If all checks pass, backend builds the request with `end_user_id` parameter and calls fal.ai
+9. Generated video result is returned and displayed in the existing AI Studio video flow
+
+---
+
+### Acceptance criteria:
+
+- [ ] Seedance 2.0 is registered as an available video generation model in the AI agents platform
+- [ ] Seedance 2.0 is added to the frontend video model list alongside existing Seedance v1 models
+- [ ] Model capability mappings correctly reflect all options and settings supported by Seedance 2.0 via fal.ai
+- [ ] All supported generation options (resolution, duration, aspect ratio, etc.) are handled and passed through correctly in requests
+- [ ] Request payloads are built correctly against the fal.ai Seedance 2.0 endpoint
+- [ ] Every Seedance 2.0 fal.ai API call includes `end_user_id` set to `workspace_id:user_id`
+- [ ] Trial users see Seedance 2.0 in the model list but it is disabled with a tooltip: "Seedance 2.0 is available on paid plans. Upgrade to unlock."
+- [ ] Backend also checks trial status as a safety net — rejects with error if trial user bypasses FE
+- [ ] When a user in the US or Japan submits a Seedance 2.0 request, the backend checks `X-COUNTRY-NAME` header and returns an error
+- [ ] A blocklist mechanism exists (DB collection or config) — before making a Seedance 2.0 call, the `end_user_id` is checked against the blocklist
+- [ ] If a blocked user submits a Seedance 2.0 request, the backend returns an error
+- [ ] The geo-check, trial block, and blocklist only apply to Seedance 2.0 — other video models are unaffected
+- [ ] Seedance 2.0 remains visible in the model list for all users regardless of country — geo restriction is enforced at request time, not at model list level
+- [ ] Unsupported or invalid option combinations are handled gracefully
+- [ ] Adding this model does not break existing video model flows
+
+---
+
+### Mock-ups:
+
+N/A — backend integration story. Frontend only adds model entries to the existing hardcoded list.
+
+---
+
+### UI Copy:
+
+- **Trial tooltip (FE, on disabled model):** "Seedance 2.0 is available on paid plans. Upgrade to unlock."
+- **Trial error (BE fallback):** "Seedance 2.0 is available on paid plans only. Upgrade to access this model."
+- **Geo-restricted (BE):** "Seedance 2.0 is not available in your region due to provider restrictions. Please try a different video model, or contact support for more information."
+- **Blocklisted user (BE):** "Seedance 2.0 is currently unavailable for your account. Please contact support for more information."
+
+---
+
+### Impact on existing data:
+
+No schema change expected. New model entry added to existing model configuration. New blocklist collection or config entry for Seedance 2.0 restricted users (initially empty).
+
+---
+
+### Impact on other products:
+
+- Web App: AI Studio video generation
+- Mobile apps: No impact (AI features are web-only)
+- Chrome extension: No impact
+
+---
+
+### Dependencies:
+
+fal.ai Seedance 2.0 endpoint access (granted, conditional).
+
+---
+
+### Global quality & compliance (wherever applicable)
+
+- [ ] Mobile responsiveness — N/A, backend story + minor FE model list addition
+- [ ] Multilingual support (error messages should use i18n keys)
+- [ ] UI theming support — N/A, no UI changes beyond model list entry
+- [ ] White-label domains impact review
+- [ ] Cross-product impact assessment (web, mobile apps, Chrome extension)

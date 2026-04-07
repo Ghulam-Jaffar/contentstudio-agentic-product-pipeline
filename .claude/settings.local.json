@@ -150,7 +150,9 @@
       "Bash(sort -t: -k2 -n)",
       "Bash(sort -t: -k2 -rn)",
       "Bash(node_modules/.bin/vue-tsc --noEmit)",
-      "Bash(for task:*)"
+      "Bash(for task:*)",
+      "Bash(gh auth:*)",
+      "Bash(ssh -T git@github.com)"
     ]
   }
 }

@@ -16,6 +16,7 @@
 | [BE] Add Kling 3.0 video generation model via fal.ai | https://app.shortcut.com/contentstudio-team/story/115859 |
 | [BE] Add Wan video generation model via fal.ai | https://app.shortcut.com/contentstudio-team/story/115861 |
 | [BE] Add Veo 3.1 Lite video generation model via fal.ai | https://app.shortcut.com/contentstudio-team/story/115862 |
+| [BE] Add Seedance 2.0 video generation model via fal.ai with geo-restriction handling | https://app.shortcut.com/contentstudio-team/story/111910 |
 
 ## Details
 

@@ -61,6 +61,7 @@ The full rules are in `docs/story-guidelines.md`. Key points:
 - **Color theming:** Use `text-primary-cs-500`, `bg-primary-cs-50`, etc. (CSS variable-backed) — never hardcode colors like `text-blue-600`
 - **Reference stories by full title**, never by number
 - **Create separate iOS/Android stories** when mobile apps are impacted
+- **No local pipeline file references in stories** — never reference `docs/features/...` or `docs/stories/...` paths in story content pushed to Shortcut. Use Shortcut URLs for docs and stories instead. Codebase paths (e.g., `contentstudio-frontend/src/...`) are fine.
 
 ## Shortcut API Integration
 

@@ -251,7 +251,24 @@ Example: If a backend story adds `last_login_method` to the API response, and us
 
 ---
 
-## 16. Code Implementation & PR Workflow
+## 16. No Local File References in Story Content
+
+**Never include local file paths from this pipeline project** (e.g., `docs/features/whatsapp-inbox-integration/01-research.md`) in story descriptions, links, or references that get pushed to Shortcut. Shortcut readers — developers, designers, QA — have no access to this repo's local files.
+
+Instead:
+- **Reference Shortcut stories** by their full title or Shortcut URL
+- **Reference Shortcut docs** by their Shortcut URL (created via `POST /documents`)
+- **Codebase file paths** (e.g., `contentstudio-frontend/src/modules/...`) are fine — those refer to the actual product codebases that developers work in
+
+**Bad:** `See research doc: docs/features/whatsapp-inbox-integration/01-research.md`
+**Good:** `See research doc: https://app.shortcut.com/contentstudio-team/doc/69ad5894-...`
+
+**Bad:** `Local reference: docs/technical/ai-agents-architecture-findings.md`
+**Good:** `Shortcut doc: https://app.shortcut.com/contentstudio-team/write/...`
+
+---
+
+## 17. Code Implementation & PR Workflow
 
 When implementing a story in code (if requested):
 

@@ -452,6 +452,55 @@ Minimum onboarding target:
 3. user runs `contentstudio workspaces list`
 4. user successfully creates or lists content in under 2 minutes
 
+## AI Agent Compatibility (OpenClaw/Claude/LLM Bots)
+
+If we want agent compatibility like Postiz, we do **not** need MCP first. We need:
+
+1. A public CLI
+2. Stable commands that support `--json`
+3. A `SKILL.md` manifest that declares the binary and required env vars
+
+This allows any agent that can run shell commands to use the CLI safely.
+
+### Required Behavior
+
+- Every command supports `--json`
+- Errors emit structured JSON when `--json` is used
+- Auth is possible via environment variables (`CONTENTSTUDIO_API_KEY`)
+
+### Example `SKILL.md`
+
+```md
+---
+name: contentstudio
+description: ContentStudio CLI for scheduling and managing social posts
+metadata:
+  openclaw:
+    requires:
+      env:
+        - CONTENTSTUDIO_API_KEY
+      bins:
+        - contentstudio
+---
+
+## Core commands
+- contentstudio workspaces list --json
+- contentstudio accounts list --workspace <id> --json
+- contentstudio posts create --workspace <id> --accounts <ids> --text "..." --json
+- contentstudio media upload --workspace <id> --file ./asset.png --json
+- contentstudio posts list --workspace <id> --json
+```
+
+### Example agent setup
+
+```bash
+npm install -g @contentstudio/cli
+export CONTENTSTUDIO_API_KEY=your_api_key
+contentstudio workspaces list --json
+```
+
+This is enough for OpenClaw-style systems to discover the CLI, verify eligibility, and execute commands.
+
 ## Risks
 
 ### 1. Weak public API contract

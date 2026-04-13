@@ -35,3 +35,7 @@
 ### Backend + Frontend — Expanded Scope
 - [[BE] Implement Telegram first comment publishing](https://app.shortcut.com/contentstudio-team/story/115509) — Backend — Web App — Medium Priority
 - [[FE] Add first comment and spoiler blur to Telegram Composer](https://app.shortcut.com/contentstudio-team/story/115510) — Frontend — Web App — Medium Priority
+
+### EasyConnect
+- [sc-116079 · [BE] Add Telegram to EasyConnect — agency client account connection via bot token](https://app.shortcut.com/contentstudio-team/story/116079) — Backend — Web App — Medium Priority
+- [sc-116080 · [FE] Add Telegram to EasyConnect client-facing account connection page](https://app.shortcut.com/contentstudio-team/story/116080) — Frontend — Web App — Medium Priority

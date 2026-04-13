@@ -12,7 +12,7 @@ Reddit integrates into the same four areas as every other social platform:
 | Area | Placement |
 |---|---|
 | **Settings → Social Accounts** | Reddit listed in "Connect Social Account" modal alongside Facebook, Instagram, LinkedIn, etc. Connected Reddit accounts appear in the accounts table with an orange Reddit icon and `Token valid / Token expired` status pills |
-| **Composer (Publisher)** | When a Reddit account is selected in the Social tab, a Reddit-specific section appears below the common message box with: subreddit selector, post type selector, title field, flair selector |
+| **Composer (Publisher)** | When a Reddit account is selected in the Social tab: (1) Title field appears above the common text description box, (2) Source URL field appears below the common text description box, (3) a Reddit Settings section appears below the common message area with: Post Type radio selector (Text | Image/Video | Link), subreddit selector, flair dropdown, OC toggle, Spoiler toggle, and conflict warnings at bottom |
 | **Planner / Calendar** | Reddit posts appear in the calendar view with Reddit's orange logo badge, same as all other platforms |
 | **Analytics** | Reddit account analytics card: karma, post count, top posts by upvotes/comments |
 
@@ -110,78 +110,91 @@ After OAuth completes and callback returns:
 ```
 1. User opens Composer (Publisher → Create Post)
 2. In "Social" tab, user selects one or more Reddit account(s)
-3. A "Reddit" section appears below the common message box
-4. Reddit section contains:
+3. Title field appears ABOVE the common text description box:
+   → Label: "Title" (if only Reddit and/or non-Pinterest platforms selected)
+   → Label: "Title (Pinterest, Reddit)" (if both Pinterest and Reddit are selected)
+   → Required, 300-char limit with live counter
+4. User types in the common text description box (body text for text posts)
+5. Source URL field appears BELOW the common text description box:
+   → Label: "Source URL" (if only Reddit selected)
+   → Label: "Source URL (Reddit, Pinterest)" (if both Reddit and Pinterest selected)
+   → Auto-populated from any URL detected in the common message box
+   → Only submitted to Reddit when post type = Link
+6. A "Reddit Settings" section appears below the common message area:
+
    ┌──────────────────────────────────────────────────────────┐
-   │ 🟠 Reddit                                                 │
+   │ 🟠 Reddit Settings                    [ Customize ]      │
    │                                                          │
    │ Post Type                                                │
-   │ [○ Text Post]  [○ Link Post]  [○ Image Post]             │
-   │                                                          │
-   │ Title *                                                  │
-   │ [                                              0 / 300 ] │
+   │ ● Text   ○ Image/Video   ○ Link   ℹ                   │
    │                                                          │
    │ Subreddit *                                              │
    │ [🔍 Search subreddit (e.g. r/marketing)             ▾ ] │
    │                                                          │
-   │ Flair  (appears after subreddit is selected)             │
+   │ Flair  ℹ  (appears after subreddit is selected)          │
    │ [Select flair...                                    ▾ ] │
    │                                                          │
-   │ ─── Post-type specific section ───                       │
-   │ [Text body textarea]  OR  [URL input]  OR  [Image shown] │
+   │ ☐ Original Content (OC)   ☐ Spoiler                     │
    │                                                          │
-   │ ☐ Send Replies   ☐ Original Content (OC)                │
+   │ ─── Conflict warnings (shown when applicable) ────       │
+   │ ⚠ [warning / error / info alert here]                    │
    └──────────────────────────────────────────────────────────┘
 
-5. User selects "Text Post":
-   → Title field is required
-   → Body text area appears (uses common message box content by default, editable)
-   → Markdown supported in body
+7. User selects post type from the "Post Type" radio row:
+   → Default: Text
 
-6. User selects "Link Post":
-   → Title field is required
-   → URL field appears (required)
-   → URL auto-populates from the link in the common message box if present
+8. User selects "Text":
+   → Body text from the common message box is used as Reddit body
+   → User can click "Customize" to write Reddit-specific body (overrides common message)
+   → Markdown supported
 
-7. User selects "Image Post":
-   → Title field is required
-   → Media from the common upload section is used (first image)
-   → NOTE: body text is NOT supported by Reddit API for image posts (shown as info tooltip)
+9. User selects "Image/Video":
+   → Media uploaded in the common section is used (first image/video)
+   → Body text is NOT submitted to Reddit (info in conflict warnings area if body has content)
+   → Source URL is NOT submitted to Reddit (error in conflict warnings area if URL is filled)
 
-8. User types in Subreddit field:
-   → Autocomplete search fires after 2 characters
-   → Shows: subreddit name + subscriber count + lock icon if private
-   → e.g.: "r/marketing · 1.2M members", "r/entrepreneur · 890K members"
+10. User selects "Link":
+    → Source URL field (below the text box) is used as the Reddit link URL
+    → Body text is NOT submitted to Reddit (info notice if body has content)
+    → Validation error shown below Source URL if it is empty
 
-9. After subreddit is selected:
-   → Flair dropdown loads dynamically from Reddit API
-   → If subreddit has no flair: dropdown hidden / shows "No flair available"
-   → If subreddit requires flair: dropdown shows "(Required)" label, publish blocked without selection
-   → Flair options show color swatches if subreddit uses colored flairs
+11. User types in Subreddit field:
+    → Autocomplete search fires after 2 characters
+    → Shows: subreddit name + subscriber count + lock icon if private
+    → e.g.: "r/marketing · 1.2M members", "r/entrepreneur · 890K members"
 
-10. User fills in title + body/URL/image
-11. User schedules or publishes
+12. After subreddit is selected:
+    → Flair dropdown loads dynamically from Reddit API
+    → ℹ tooltip on Flair: "Some subreddits require a flair before you can post — if yours does,
+      you must select one here. If your subreddit doesn't require flair, you can skip this."
+    → If subreddit has no flair: dropdown hidden entirely
+    → If subreddit requires flair: "(Required)" shown, publish blocked without selection
+    → Flair options show color swatches if subreddit uses colored flairs
+
+13. User toggles OC and/or Spoiler if needed
+14. User fills in title + selects subreddit + sets flair
+15. User schedules or publishes
 ```
 
 ### Post-type specific behavior
 
-**Text Post:**
+**Text (kind: self):**
 - Title: required, 1–300 chars (live counter)
-- Body: optional, 0–40,000 chars, supports Markdown
-- Body defaults to pulling from the common message box (like other platforms)
-- If user has written something in common box, it pre-fills in Reddit body
+- Body: from the common message box; user can override via Customize button; optional, 0–40,000 chars, Markdown supported
+- Source URL: visible below the text box but NOT submitted to Reddit
 
-**Link Post:**
+**Image/Video (kind: image):**
 - Title: required, 1–300 chars
-- URL: required (auto-populated from post if link detected)
-- No body text (Reddit link posts don't support it)
-- Reddit auto-generates thumbnail from the URL — shown as info note
-
-**Image Post:**
-- Title: required, 1–300 chars
-- Image: pulled from media uploaded in common section (1 image for v1)
-- No body text (Reddit API limitation — shown as ℹ tooltip)
+- Image/video: pulled from media uploaded in common section (first attachment for v1)
+- Body text: NOT submitted (Reddit API limitation — shown as non-blocking warning in conflict area if body has content)
+- Source URL: NOT submitted — shown as blocking error in conflict area if Source URL is filled
 - Supported: JPEG, PNG, GIF (up to 20MB)
+
+**Link (kind: link):**
+- Title: required, 1–300 chars
+- Source URL: required — from the Source URL field below the text box (auto-populated from any URL in common message box)
+- Body text: NOT submitted to Reddit (Reddit link posts don't support it — shown as non-blocking info notice if body has content)
+- Reddit auto-generates thumbnail from the URL — shown as info note
 
 ---
 
@@ -257,7 +270,9 @@ After OAuth completes and callback returns:
 | **Account karma too low** | Reddit returns `NOT_WHITELISTED_BY_USER_IN_SUBREDDIT` or karma error. ContentStudio shows: "Your Reddit account doesn't meet this subreddit's minimum requirements. Check the subreddit rules." |
 | **Token refresh fails mid-publish** | Post marked as failed in Planner. Notification sent. Account marked `Token expired`. |
 | **Multiple Reddit accounts selected** | Each account publishes independently to its specified subreddit. Each has its own subreddit + flair selection (per-account fields) |
-| **Common box used with Reddit selected** | Common message box text auto-fills into Reddit body (for text posts). User can override in the Reddit-specific section. |
+| **Common box used with Reddit selected** | Common message box text is used as Reddit body for text posts. User can click 'Customize' in the Reddit Settings header to write Reddit-specific body text instead. Source URL below text box auto-populates from any URL detected in the common message. |
+| **Post type = Image/Video selected, Source URL is filled** | Blocking error shown at the bottom of Reddit Settings: "Image posts don't support links. Clear the Source URL or switch to Link post type." Publish button disabled. |
+| **Post type = Link selected, Source URL empty** | Inline validation error below Source URL field: "A URL is required for Link posts." Publish button disabled. |
 | **Scheduling Reddit post in the past** | Standard ContentStudio validation — "Please choose a future time." |
 
 ---
@@ -291,13 +306,16 @@ Automatically split: first line = title, rest = body.
 - ✅ Zero extra UI
 - ❌ Users don't know this rule; creates confusion and titles easily exceed 300 chars
 
-**Option B — Dedicated Reddit title field inside the Reddit section**
-A clearly labeled "Title" input appears in the Reddit-specific composer section.
+**Option B — Dedicated Title field above the common text description box**
+A clearly labeled "Title" input appears above the common message textarea, following the same placement as Pinterest's Title field.
 - ✅ Clear UX, matches Reddit's own interface
 - ✅ Allows common message box to be used as-is (for cross-platform scheduling)
 - ✅ Same pattern VistaSocial uses
+- ✅ Label dynamically adapts: "Title (Pinterest, Reddit)" when both platforms are selected — single shared field
 
-**→ Recommendation: Option B** (dedicated Reddit title field inside the platform-specific section). This is the cleanest UX and avoids confusion when the same post is going to Reddit + Twitter + LinkedIn simultaneously.
+**→ Recommendation: Option B — BUT positioned **above the common text description box** (not inside the Reddit Settings section), following the same pattern as Pinterest's Title field. This keeps it prominently visible and allows the label to dynamically indicate which platforms are using it (e.g., 'Title (Pinterest, Reddit)' when both platforms are selected). The Reddit Settings section stays focused on Reddit-specific controls only.**
+
+**Note: Source URL field placement** — Reddit's link post URL reuses the existing Source URL field that Pinterest already uses, positioned below the common text description box. Label is dynamic: "Source URL" when only Reddit is selected; "Source URL (Reddit, Pinterest)" when both are selected. This avoids adding a duplicate URL field and keeps the composer layout clean.
 
 ---
 
@@ -309,13 +327,13 @@ If media is attached → Image post. If URL is in message → Link post. Otherwi
 - ❌ Ambiguous when both URL and text are present
 - ❌ User may not realize it became a link post when they just wanted to mention a URL in text
 
-**Option B — Explicit post type radio/tab selector**
-User explicitly picks: Text Post | Link Post | Image Post.
+**Option B — Explicit post type radio selector**
+User explicitly picks: **Text** | **Image/Video** | **Link** — via a "Post Type" radio row inside the Reddit Settings section (same pattern as YouTube Settings).
 - ✅ No ambiguity
 - ✅ Matches Reddit's own "Create Post" interface with tabs
 - ✅ VistaSocial uses explicit type selection
 
-**→ Recommendation: Option B** (explicit post type selector). Start with selected type = "Text Post" as default, and show a hint if media/URL is detected: "You have media attached — switch to Image Post?" or "Link detected — switch to Link Post?"
+**→ Recommendation: Option B** (explicit post type selector — radio button row in Reddit Settings, same pattern as YouTube's "Post Type" row). Options: **Text | Image/Video | Link**. Default selection: Text. Conflict warnings shown at the bottom of Reddit Settings when selected type conflicts with added content, rather than blocking the user from adding content.
 
 ---
 
@@ -372,17 +390,18 @@ User can pick multiple subreddits; system staggers posts automatically (e.g., 30
 
 **Composer / Publishing:**
 - [x] Reddit account selection in Social tab
-- [x] Explicit post type selector: Text Post | Link Post | Image Post
-- [x] Dedicated Title field (1–300 chars with counter)
-- [x] Body field for text posts (pre-fills from common box, max 40,000 chars)
-- [x] URL field for link posts (auto-detects from common box)
+- [x] Explicit post type selector (radio row in Reddit Settings): Text | Image/Video | Link
+- [x] Dedicated Title field above common text description box (1–300 chars with counter)
+- [x] Body field for text posts — from common message box; Customize button to override per Reddit
+- [x] Source URL field below text box shared with Pinterest (auto-populates from common message box; used by Reddit for Link post type)
 - [x] Image support (JPEG, PNG, GIF, max 20MB)
 - [x] Subreddit selector with autocomplete search
 - [x] Dynamic flair loading per subreddit
 - [x] Mandatory flair enforcement (block publish if required)
-- [x] Send Replies toggle (default: on)
 - [x] OC (Original Content) toggle (default: off)
-- [x] Inline validation (title required, title length, flair required)
+- [x] Spoiler toggle (default: off)
+- [x] Conflict warnings at bottom of Reddit Settings section (post type vs. content conflicts)
+- [x] Inline validation (title required, title length, flair required, Source URL required for Link posts)
 
 **Scheduling:**
 - [x] One-time scheduling
@@ -408,7 +427,6 @@ User can pick multiple subreddits; system staggers posts automatically (e.g., 30
 - [ ] Video post type (title + MP4 via Reddit video upload API)
 - [ ] Gallery post (multi-image, up to 20)
 - [ ] Poll creation (title + options + duration)
-- [ ] Spoiler toggle
 - [ ] Crosspost
 - [ ] Rich text / Markdown editor for body (v1 uses plain text)
 - [ ] "Recently used subreddits" quick-select

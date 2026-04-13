@@ -105,17 +105,30 @@ Manages 5–20 client workspaces in ContentStudio. Some clients are in industrie
 
 **Post Composition**
 - Reddit account selectable in the Composer's Social tab
-- When Reddit account is selected, a Reddit-specific section renders below the common message area with:
-  - Explicit post type selector: **Text Post** | **Link Post** | **Image Post** (tabs or radio)
-  - **Title field** — required, 1–300 characters, live character counter
-  - **Subreddit selector** — text input with autocomplete search (min 2 chars to trigger), showing subreddit name + subscriber count; one subreddit per post unit
-  - **Flair selector** — dropdown that loads dynamically from Reddit API after subreddit is selected; hidden if subreddit has no flairs; labeled "(Required)" if subreddit enforces flair
-  - **Send Replies toggle** — default ON
-  - **OC (Original Content) toggle** — default OFF
-- **Text Post** specific: body textarea (0–40,000 chars), pre-fills from common message box
-- **Link Post** specific: URL input field (required); auto-populates from detected link in common box
-- **Image Post** specific: uses image from media section; no body text field (API limitation — shown as ℹ tooltip)
-- Inline validation: title required, title ≤ 300 chars, URL required for link posts, flair required if subreddit enforces it, subreddit required
+- **Title field** — rendered **above the common text description box** (same placement as Pinterest's title field). Required, 1–300 characters, live character counter. **Label is dynamic:**
+  - Reddit selected (alone or with any non-Pinterest platform) → "Title"
+  - Reddit + Pinterest both selected → "Title (Pinterest, Reddit)" — single shared field for both platforms
+  - Pinterest only (no Reddit) → "Title" (existing Pinterest behavior unchanged)
+- **Source URL field** — rendered **below the common text description box** (same placement as Pinterest's Source URL field — reuses the same field). **Label is dynamic:**
+  - Reddit selected (alone or with any non-Pinterest platform) → "Source URL"
+  - Reddit + Pinterest both selected → "Source URL (Reddit, Pinterest)" — single shared field for both platforms
+  - Pinterest only (no Reddit) → "Source URL" (existing Pinterest behavior unchanged)
+  - For Reddit: Source URL is only submitted to Reddit when post type = **Link**; when post type is Text or Image/Video, the Source URL field is visible but its value is not sent to Reddit
+- When Reddit account is selected, a **Reddit Settings** section renders below the common message area with:
+  - **Post type selector** — "Post Type" label row at the top of the Reddit Settings section (same pattern as YouTube's "Post Type" radio row) with three radio button options: **Text**, **Image/Video**, **Link**. Default: Text. User selects one; the selection determines exactly what is submitted to Reddit regardless of other content present.
+  - **Subreddit selector** — text input with autocomplete search (min 2 chars to trigger), showing subreddit name + subscriber count; supports multiple subreddits (staggered)
+  - **Flair selector** — dropdown that loads dynamically from Reddit API after subreddit is selected; hidden entirely if subreddit has no flairs. ℹ tooltip: "Some subreddits require a flair before you can post — if yours does, you must select one here. If your subreddit doesn't require flair, you can skip this." Labeled "(Required)" and blocks publishing when the subreddit enforces mandatory flair.
+  - **OC (Original Content) toggle** — default OFF; marks post as original content
+  - **Spoiler toggle** — default OFF; marks post content with Reddit's spoiler blur
+- **Customize button** — When Reddit is selected alongside other platforms, a "Customize for Reddit" toggle is available in the Reddit section header. When ON, the body text area becomes Reddit-specific and overrides the common message body for Reddit only. When OFF, Reddit uses the common message body. Reddit-specific fields (post type selector, title, subreddit, flair, toggles) are always visible regardless of Customize state.
+- **Conflict warnings** shown at the **bottom of the Reddit Settings section** when the selected post type conflicts with added content:
+  - Post type = **Text**, image attached → `Alert` (warning): "Your attached image won't be included — text posts don't support images. Switch to 'Image/Video' to include it." Non-blocking.
+  - Post type = **Image/Video**, body text written → `Alert` (warning): "Body text won't be included — image posts don't support body text." Non-blocking.
+  - Post type = **Image/Video**, Source URL filled → `Alert` (error, blocks publish): "Image posts don't support links. Clear the Source URL or switch to 'Link' post type."
+  - Post type = **Link**, body text written → `Alert` (info): "Body text won't be included — link posts only publish the title and URL." Non-blocking.
+  - Post type = **Link**, Source URL empty → inline validation error (shown below the Source URL field in the common area): "A URL is required for Link posts."
+  - Post type = **Image/Video**, no image/video attached → inline validation error inside Reddit Settings: "Please attach an image or video."
+- Inline validation: title required, title ≤ 300 chars, flair required if subreddit enforces it, subreddit required
 
 **Multi-Subreddit Posting**
 - User can add multiple subreddit targets for the same post (via "+ Add Subreddit" control in the Reddit section)
@@ -140,6 +153,9 @@ Manages 5–20 client workspaces in ContentStudio. Some clients are in industrie
 
 **EasyConnect**
 - Reddit included in EasyConnect link flow so agencies can share a connect link for clients to authorize their Reddit accounts
+- EasyConnect link for Reddit follows the same OAuth flow as direct connection; the generated link redirects the client to Reddit's OAuth authorization page with ContentStudio's parameters pre-filled
+- Connected Reddit account appears in the client's workspace Social Accounts table after EasyConnect authorization completes
+- Reddit displayed in the EasyConnect platform list with the Reddit icon, label "Reddit", and subtext "(Profiles)"
 
 ### 6.2 Should Have (P1)
 
@@ -212,13 +228,18 @@ Manages 5–20 client workspaces in ContentStudio. Some clients are in industrie
 
 ### Creating and Scheduling a Reddit Post
 1. User opens Composer → selects Reddit account in Social tab
-2. Reddit-specific section appears: post type selector, title field, subreddit search, flair dropdown
-3. User picks post type (Text / Link / Image), enters title, searches for + selects subreddit
-4. Flair loads; user selects flair if available/required
-5. User adds content (body text / URL / image)
-6. Optionally adds more subreddits (multi-subreddit with auto-stagger)
-7. User schedules or publishes immediately
-8. Post appears in calendar; after publish, direct Reddit URL stored
+2. **Title field appears above the common text description box** — label reads "Title (Pinterest, Reddit)" if Pinterest is also selected, otherwise "Title"
+3. User enters post title (required)
+4. A **Reddit Settings** section appears below the common message area with a Customize button in the header
+5. User selects post type from the "Post Type" radio row (defaults to Text)
+6. User adds content appropriate for the selected post type: writes body text in the common message box for Text, attaches image/video for Image/Video, enters URL in the Source URL field below the text box for Link (label reads "Source URL (Reddit, Pinterest)" if Pinterest also selected)
+7. If added content conflicts with the selected post type, a warning appears at the bottom of the Reddit Settings section
+8. User optionally clicks "Customize for Reddit" to write Reddit-specific body text that overrides the common message
+9. User searches for and selects a subreddit; flair loads if the subreddit supports it
+10. User selects flair if available or required
+11. Optionally adds more subreddits (multi-subreddit with auto-stagger)
+12. User schedules or publishes immediately
+13. Post appears in calendar; after publish, direct Reddit URL stored
 
 ### Token Expiry & Reconnect
 1. Refresh token expires (6 months) or user revokes access on Reddit
@@ -234,8 +255,11 @@ Manages 5–20 client workspaces in ContentStudio. Some clients are in industrie
 |---|---|---|
 | BR-1 | A Reddit post MUST have a subreddit — no personal profile posting | Reddit API limitation; `/api/submit` requires `sr` parameter |
 | BR-2 | A Reddit post MUST have a title (1–300 chars) — publish button disabled until title is provided | Reddit API requires title for all post types |
-| BR-3 | Image posts CANNOT have body text | Reddit API does not support body text on image posts (`kind: image`) |
-| BR-4 | If a subreddit marks flair as required, the flair selector must be populated before the user can publish | Prevents post rejection from Reddit's side |
+| BR-3 | User explicitly selects post type via the "Post Type" radio row in Reddit Settings: **Text**, **Image/Video**, or **Link**. The selected type determines what is submitted to Reddit regardless of what other content is present in the common message area. | Gives users explicit control; avoids unintended post type changes when composing for multiple platforms where only one uses an image |
+| BR-3a | Post type = **Text** AND image attached: image excluded from Reddit submission; non-blocking warning at bottom of Reddit section: "Your attached image won't be included — text posts don't support images. Switch to 'Image/Video' to include it." | Reddit API `kind: self` does not accept media attachments |
+| BR-3b | Post type = **Image/Video** AND Source URL field is filled: publish is blocked until Source URL is cleared or post type is switched to Link. Blocking error at bottom of Reddit Settings: "Image posts don't support links. Clear the Source URL or switch to 'Link' post type." | Reddit API `kind: image` does not support a URL alongside an image |
+| BR-3c | Post type = **Link** AND body text written: body text excluded from Reddit submission; non-blocking info notice shown. Post type = **Image/Video** AND body text written: body text excluded; non-blocking warning shown. | Reddit API does not support body text on `kind: link` or `kind: image` posts |
+| BR-4 | Flair is mandatory only when the target subreddit has `flair_required: true` (detected via `/r/{subreddit}/about`). For subreddits where flair is optional, the flair selector is shown but not required. | Flair must be mandatory when Reddit enforces it (or the post is rejected); optional flair improves post discoverability but should not block publishing |
 | BR-5 | Multi-subreddit posts are staggered 30 minutes apart per subreddit | Avoids Reddit's spam detection which flags the same content posted to multiple subreddits simultaneously |
 | BR-6 | Flair options must be re-fetched each time the subreddit changes in the composer | Flair is per-subreddit; stale flair from a previous subreddit selection causes API errors |
 | BR-7 | Reddit access tokens are refreshed silently before each publish attempt if the token is within 5 minutes of expiry | Prevents publish failures from expired access tokens (access tokens expire every 1 hour) |

@@ -119,7 +119,7 @@ This story implements the `RedditPosting` class and integrates it into ContentSt
 ---
 
 ### Workflow:
-1. User has composed a Reddit post in the Composer: post type selected, title entered, subreddit(s) chosen, optional flair selected
+1. User has composed a Reddit post in the Composer: title entered, post type selected (Text / Image/Video / Link), subreddit(s) chosen, optional flair selected — all saved in `reddit_sharing_details` with explicit `post_type` field
 2. User clicks "Schedule" (or "Publish Now") — ContentStudio saves the plan with `reddit_sharing_details` and `account_selection.reddit`
 3. At the scheduled time, the publishing job fires
 4. ContentStudio publishes to the first subreddit via `POST https://oauth.reddit.com/api/submit`
@@ -134,19 +134,26 @@ This story implements the `RedditPosting` class and integrates it into ContentSt
 - [ ] `case 'Reddit': $this->post = new RedditPosting($plan);` added to `app/Strategy/Planner/Posting.php`
 - [ ] Reddit posting dispatcher added to `SocialPosting::processSocialPosting()`: `if (($plan['account_selection']['reddit'] ?? false) && is_array($plan['account_selection']['reddit']) && sizeof($plan['account_selection']['reddit'])) { ... }`
 - [ ] `initializePosting()` reads from `plan['reddit_sharing_details']` or falls back to `plan['common_sharing_details']` when `common_box_status` is true
-- [ ] `reddit_sharing_details` field added to `Plans` model fillable: `{ title, message, url, image, subreddits: [{name, flair_id, flair_text}], send_replies, oc }`
-- [ ] Text posts published via `POST /api/submit` with `kind: 'self'`, `sr`, `title`, `text`, `sendreplies`, `nsfw: false`
-- [ ] Link posts published via `POST /api/submit` with `kind: 'link'`, `sr`, `title`, `url`, `sendreplies`
-- [ ] Image posts: image URL fetched from media, then `POST /api/submit` with `kind: 'image'`, `sr`, `title`, `url` (direct image link)
-- [ ] `flair_id` and `flair_text` applied when present in `subreddits[].flair_id`
-- [ ] `oc: true` flag applied when `reddit_sharing_details.oc` is true
-- [ ] Multi-subreddit staggering: first subreddit posts at scheduled time; each subsequent subreddit is queued 30 minutes later via the existing job queue
-- [ ] After each successful publish, `posting_response` updated with: `platform: 'reddit'`, `subreddit`, `posted_id` (Reddit post ID), `link` (full Reddit URL: `https://www.reddit.com/r/{sr}/comments/{post_id}`)
-- [ ] `ALREADY_SUB` API error mapped to message: "This URL was already submitted to r/{subreddit} recently. Reddit prevents duplicate posts within a short window. Try a different subreddit or wait before resubmitting."
-- [ ] `FLAIR_REQUIRED` error mapped to: "This subreddit requires a flair to be selected before posting."
-- [ ] `SUBREDDIT_NOEXIST` / `SUBREDDIT_NOTALLOWED` error mapped to: "r/{subreddit} doesn't exist or is not accessible."
-- [ ] Karma/eligibility error mapped to: "Your Reddit account doesn't meet r/{subreddit}'s posting requirements. The subreddit may require a minimum karma score or account age."
-- [ ] `NOT_WHITELISTED_BY_USER_IN_SUBREDDIT` error mapped to: "r/{subreddit} is a private or restricted community. Your account must be approved by the moderators to post there."
+- [ ] `reddit_sharing_details` field added to `Plans` model fillable: `{ title, message, url, image, subreddits: [{name, flair_id, flair_text}], spoiler, oc }` — note: `send_replies` removed; `spoiler` added
+- [ ] **Post type read from `reddit_sharing_details.post_type`** field sent by frontend (`'self'` = Text, `'image'` = Image/Video, `'link'` = Link):
+  - `post_type: 'self'` → `kind: 'self'`; `text` set from `message`; any `image` or `url` in the payload is ignored
+  - `post_type: 'image'` → `kind: 'image'`; image uploaded via Reddit media endpoint; `text` parameter omitted
+  - `post_type: 'link'` → `kind: 'link'`; `url` used as the link; `text` parameter omitted even if `message` is present
+- [ ] Job-level validation: if `post_type: 'image'` and no image attached → fail with error: "Image post type selected but no image was attached. Please edit the post."; if `post_type: 'link'` and no `url` in `reddit_sharing_details` → fail with error: "Link post type selected but no URL was provided. Please edit the post."
+- [ ] Backwards compatibility: if `post_type` is absent from `reddit_sharing_details` (legacy plans), auto-detect using priority order image > link > text
+- [ ] Text posts: `POST /api/submit` with `kind: 'self'`, `sr`, `title`, `text`, `nsfw: false`
+- [ ] Link posts: `POST /api/submit` with `kind: 'link'`, `sr`, `title`, `url`, `nsfw: false`
+- [ ] Image posts: image uploaded via Reddit media upload endpoint first, then `POST /api/submit` with `kind: 'image'`, `sr`, `title`, uploaded image URL; `text` intentionally omitted
+- [ ] `spoiler: true` passed to `/api/submit` when `reddit_sharing_details.spoiler` is `true`
+- [ ] `oc: true` passed when `reddit_sharing_details.oc` is `true`
+- [ ] Flair applied when `flair_id` is set in `subreddits[].flair_id`; omitted entirely when not set (not required unless subreddit enforces it)
+- [ ] Multi-subreddit staggering: first subreddit posts at scheduled time; each subsequent subreddit queued 30 minutes later via job queue
+- [ ] After each successful publish, `posting_response` updated with: `platform: 'reddit'`, `subreddit`, `posted_id`, `detected_post_type` ('self'|'link'|'image'), `link` (`https://www.reddit.com/r/{sr}/comments/{post_id}`)
+- [ ] `ALREADY_SUB` error → "This URL was already submitted to r/{subreddit} recently. Reddit prevents duplicate posts within a short window. Try a different subreddit or wait before resubmitting."
+- [ ] `FLAIR_REQUIRED` error → "This subreddit requires a flair to be selected before posting."
+- [ ] `SUBREDDIT_NOEXIST` / `SUBREDDIT_NOTALLOWED` error → "r/{subreddit} doesn't exist or is not accessible."
+- [ ] Karma/eligibility error → "Your Reddit account doesn't meet r/{subreddit}'s posting requirements. The subreddit may require a minimum karma score or account age."
+- [ ] `NOT_WHITELISTED_BY_USER_IN_SUBREDDIT` → "r/{subreddit} is a private or restricted community. Your account must be approved by the moderators to post there."
 - [ ] Token auto-refreshed before each publish attempt if within 5 minutes of expiry
 - [ ] Rate limit (429) handled with exponential backoff and retry (max 3 attempts)
 
@@ -499,6 +506,13 @@ As a social media manager, I want to connect my Reddit account to ContentStudio 
 - [ ] `SaveSocialAccounts.vue` updated with reddit cases in all platform-specific switch statements (modalHeader, firstSectionHeader, firstSectionItems)
 - [ ] All user-facing strings use `$t()` i18n keys
 
+**EasyConnect:**
+- [ ] Reddit listed in the EasyConnect platform selector alongside other platforms; displays Reddit icon, label "Reddit", subtext "(Profiles)"
+- [ ] EasyConnect link for Reddit generates a unique workspace-scoped URL that initiates the Reddit OAuth flow; when the client opens the link, they are redirected to Reddit's authorization page with ContentStudio's OAuth parameters pre-filled
+- [ ] After the client completes OAuth authorization via EasyConnect, their Reddit account appears in the workspace Social Accounts table (same post-connection behavior as direct connection)
+- [ ] `AddReddit.vue` supports being triggered from both the EasyConnect flow and the direct Social Accounts "Connect" flow (same component, different entry point parameter)
+- [ ] EasyConnect redirect and callback routes handle Reddit the same way as other OAuth platforms already in EasyConnect
+
 **UI component usage:**
 - `Modal` for both modals (connection + success)
 - `Button` (primary variant) for "Connect with Reddit ↗"
@@ -546,79 +560,140 @@ Depends on: **[BE] Add Reddit OAuth 2.0 account connection, token management, an
 
 ## Story 8
 
-### Title: [FE] Build Reddit composer section with post type selector, title field, subreddit search, flair dropdown, and multi-subreddit support
+### Title: [FE] Build Reddit composer section with post type selector, title field, subreddit search, flair dropdown, Customize button, and multi-subreddit support
 
 ### Description:
-As a social media manager, I want a dedicated Reddit section in the ContentStudio composer that lets me write a title, choose a post type (text, link, or image), search for and select a subreddit, pick a flair, and optionally add multiple subreddits — so I can craft the perfect Reddit post without any guesswork.
+As a social media manager, I want a dedicated Reddit section in the ContentStudio composer that lets me explicitly select my post type (Text, Image/Video, or Link), write a title, search for and select a subreddit, pick a flair, and optionally add multiple subreddits — so I can craft the perfect Reddit post without any guesswork. If the content I've added conflicts with my selected post type, clear warnings appear at the bottom of the Reddit section so I always know exactly what will be published.
 
 ---
 
 ### Workflow:
 1. User opens the Composer and selects a Reddit account in the Social tab
-2. A "Reddit" platform-specific section appears below the common message box
-3. User selects a post type using the segmented control: "Text Post", "Link Post", or "Image Post"
-4. User enters a title in the Title field (required, 300-char limit shown as a live counter)
-5. User types in the Subreddit field — autocomplete shows matching subreddits with subscriber counts after 2 characters
-6. User selects a subreddit; the flair dropdown loads for that subreddit
-7. If the subreddit has no flairs, the flair field shows "No flair available" and is disabled
-8. If the subreddit requires flair, the flair field is labeled "(Required)" and the publish button stays disabled until one is chosen
-9. User picks a flair (or skips if not required)
-10. User optionally clicks "+ Add Subreddit" to target more subreddits (each with its own flair selector); stagger notice is shown
-11. For text posts: body comes from the common message box (editable within the Reddit section)
-12. For link posts: URL field appears (auto-populated from any link in the common box)
-13. For image posts: the image from the media section is shown with a note that body text is not supported
-14. User completes the post and schedules or publishes
+2. The **Title field** appears above the common text description box (same placement as Pinterest's title field). If Pinterest is also selected, the label reads "Title (Pinterest, Reddit)"; otherwise "Title"
+3. A "Reddit Settings" platform-specific section appears below the common message box; a "Customize for Reddit" button is visible in the section header
+4. At the top of the Reddit Settings section is the **"Post Type" row** — a radio button group with three options: Text | Image/Video | Link (same pattern as YouTube Settings "Post Type" row). Default selection: Text
+5. User selects a post type:
+   - **Text**: body textarea (the common message box) is used as the post body; user can click "Customize for Reddit" to write Reddit-specific body text
+   - **Image/Video**: image/video attachment area shown in Reddit Settings; body textarea is not submitted
+   - **Link**: the Source URL field below the text box (common area) is used as the Reddit link URL; label reads "Source URL (Reddit, Pinterest)" if Pinterest is also selected; body textarea is not submitted to Reddit
+6. If added content conflicts with the selected post type, a warning appears at the **bottom of the Reddit section**:
+   - Post type = Text + image attached → warning: "Your attached image won't be included — text posts don't support images. Switch to 'Image/Video' to include it."
+   - Post type = Image/Video + body text written → warning: "Body text won't be included — image posts don't support body text."
+   - Post type = Image/Video + URL present in common message → error (blocks publish): "Image posts don't support links. Remove the URL or switch to 'Link' post type."
+   - Post type = Link + body text written → info: "Body text won't be included — link posts only publish the title and URL."
+7. User types in the Subreddit field — autocomplete shows matching subreddits with subscriber counts after 2 characters
+8. User selects a subreddit; if the subreddit has flairs, the flair dropdown loads
+9. If the subreddit requires flair, the flair field is labeled "(Required)" and publish stays disabled until one is chosen; otherwise flair is optional
+10. User picks a flair (or skips if not required)
+11. User optionally clicks "+ Add Subreddit" to target more subreddits (each with its own flair selector); stagger notice is shown
+12. User toggles "Spoiler" and/or "Original Content" if needed
+13. User completes the post and schedules or publishes
 
 ---
 
 ### Acceptance criteria:
 - [ ] Reddit section renders in the composer whenever at least one Reddit account is selected in the Social tab
-- [ ] Reddit section header: "🟠 Reddit" with the Reddit icon badge
-- [ ] Post type selector uses the `SegmentedControl` component with three segments: "Text Post" | "Link Post" | "Image Post"; defaults to "Text Post"
-- [ ] Title field label: "Title" with asterisk (*) for required
+- [ ] Reddit section header: "Reddit" with the Reddit icon badge
+
+**Title field (above the common text description box — same placement as Pinterest's title field):**
+- [ ] Title field rendered **above the common message textarea**, not inside the Reddit Settings section
+- [ ] Title field label is **dynamic** based on which platforms requiring a title are selected:
+  - Reddit selected (alone or with any non-Pinterest platform) → label: "Title *"
+  - Both Pinterest and Reddit selected → label: "Title (Pinterest, Reddit) *" — single shared field for both platforms
+  - Pinterest only → label: "Title *" (existing Pinterest behavior unchanged)
+- [ ] Title field uses `TextInput` component
 - [ ] Title field placeholder: "Write a compelling title (e.g., 'How we grew our newsletter to 10k subscribers')"
 - [ ] Title field helper text: "Keep it clear and direct — Reddit users scroll fast. 300 characters max."
 - [ ] Title character counter shows live count (e.g., "87 / 300"); counter turns `text-red-500` when over 300
 - [ ] Title validation error (shown inline below field): "Post title is required for Reddit."
 - [ ] Title max-length error: "Reddit titles cannot exceed 300 characters."
-- [ ] Subreddit selector field label: "Subreddit" with asterisk (*) for required
+
+**Source URL field (below the common text description box — same placement as Pinterest's Source URL field):**
+- [ ] Source URL field rendered **below the common message textarea**, not inside the Reddit Settings section — reuses the same Source URL field that Pinterest uses
+- [ ] Source URL field label is **dynamic**:
+  - Reddit selected (alone or with any non-Pinterest platform) → label: "Source URL"
+  - Both Reddit and Pinterest selected → label: "Source URL (Reddit, Pinterest)" — single shared field for both platforms
+  - Pinterest only → label: "Source URL" (existing Pinterest behavior unchanged)
+- [ ] For Reddit: Source URL value is submitted to Reddit only when post type = "Link"; when post type is Text or Image/Video the field remains visible but the value is not sent to Reddit
+- [ ] Auto-populated from any URL detected in the common message box
+- [ ] Inline validation error (shown below the Source URL field) when post type = "Link" and field is empty: "A URL is required for Link posts."
+
+**Post type selector (first row inside the Reddit Settings section):**
+- [ ] "Post Type" label row at the top of the Reddit Settings section — same layout pattern as YouTube Settings' "Post Type" row
+- [ ] Three radio button options inline: "Text" | "Image/Video" | "Link" — uses `RadioButton` component (same as YouTube's Video/Shorts radio row)
+- [ ] Default selection on section open: "Text"
+- [ ] An ℹ tooltip on the row explains the difference: "Text: body text only. Image/Video: photo or video attachment. Link: a URL to an article or page."
+- [ ] Selecting a radio option immediately re-evaluates all conflict warnings at the bottom of Reddit Settings
+- [ ] Post type selection stored in `reddit_sharing_details.post_type` as `'self'` (Text), `'image'` (Image/Video), or `'link'` (Link)
+
+**Conflict warnings (shown at the bottom of the Reddit section, below all other fields):**
+- [ ] **Text + image conflict:** Post type = "Text" AND image is attached → `Alert` (warning variant) at the bottom: "Your attached image won't be included — text posts don't support images. Switch to 'Image/Video' to include it." Non-blocking.
+- [ ] **Image/Video + body text conflict:** Post type = "Image/Video" AND body textarea has content → `Alert` (warning variant) at the bottom: "Body text won't be included — image posts don't support body text." Non-blocking.
+- [ ] **Image/Video + URL conflict:** Post type = "Image/Video" AND the Source URL field is filled → `Alert` (error variant) at the bottom: "Image posts don't support links. Clear the Source URL or switch to 'Link' post type." **Blocks publish (publish button disabled).**
+- [ ] **Link + body text conflict:** Post type = "Link" AND body textarea has content → `Alert` (info variant) at the bottom: "Body text won't be included — link posts only publish the title and URL." Non-blocking.
+- [ ] Conflict alerts update live when the user changes the post type selector or modifies content; dismissed automatically when the conflict is resolved
+
+**Body content per post type (how the common text box and Source URL field behave for Reddit):**
+- [ ] **Post type = "Text"**: the common text description box content is submitted to Reddit as the post body; when Customize is OFF the body is synced from the common message; when Customize is ON a Reddit-specific textarea inside the Reddit Settings section is shown and used instead (label "Body (optional)", placeholder "Add context, details, or a story (Markdown supported)…", 40,000 char limit)
+- [ ] **Post type = "Link"**: the Source URL field (below the text box in the common area — already covered above) is used as the Reddit link URL; body text from the common message is NOT submitted to Reddit; no extra content area shown inside Reddit Settings for this type
+- [ ] **Post type = "Image/Video"**: the first attached image or video is submitted to Reddit; no body text is submitted; no extra content area shown inside Reddit Settings for this type
+
+**Customize button:**
+- [ ] "Customize for Reddit" button/toggle shown in the Reddit section header, alongside the Reddit platform label and icon
+- [ ] Default state: OFF — Reddit body text is synced from the common message box; "Customize" label displayed
+- [ ] When toggled ON: Reddit-specific body textarea becomes independently editable; changes to the common message no longer affect it; label changes to "Customized" with `text-primary-cs-500` styling to indicate active state
+- [ ] When Customize is ON and post type = "Text": Reddit body textarea shows its own content instead of the common message
+- [ ] Turning Customize OFF resets the Reddit body text to match the current common message (with a confirmation if the user has already written custom content: "Reset Reddit-specific text and use the common message?")
+- [ ] Uses `Button` (ghost variant) or `Switch` consistent with how the existing composer handles per-platform customization
+
+**Subreddit selector:**
+- [ ] Subreddit field label: "Subreddit" with asterisk (*) for required
 - [ ] Subreddit placeholder: "Search for a community (e.g. r/marketing, r/entrepreneur)"
-- [ ] Subreddit autocomplete fires after 2 characters typed; shows dropdown with: subreddit name (bold), subscriber count (e.g. "1.2M members"), lock icon (🔒) for private/restricted subreddits
+- [ ] Subreddit autocomplete fires after 2 characters typed; shows dropdown with: subreddit name (bold), subscriber count (e.g. "1.2M members"), lock icon for private/restricted subreddits
 - [ ] Subreddit search uses `SearchInput` component; dropdown uses `Dropdown` + `DropdownItem` components
 - [ ] "No subreddits found" empty state: small text "No subreddits matched your search. Try a different name."
-- [ ] After subreddit is selected, flair dropdown appears below
-- [ ] Flair field label: "Flair"
-- [ ] Flair label shows "(Required)" in `text-red-500` when subreddit enforces mandatory flair
+
+**Flair selector (shown per subreddit row, only when the subreddit has flairs):**
+- [ ] After a subreddit is selected, if the subreddit has flairs: flair dropdown appears below that subreddit row
+- [ ] If the subreddit has no flairs: flair dropdown is hidden entirely (not shown as disabled)
+- [ ] Flair field label: "Flair" with an ℹ tooltip: "Some subreddits require you to select a flair before posting — if yours does, you must pick one here. If your subreddit doesn't require flair, you can skip this."
+- [ ] When `flair_required: true` for the subreddit: flair label shows "(Required)" appended; flair is visually marked as mandatory; publish button remains disabled until a flair is selected
+- [ ] When `flair_required: false`: flair is shown but optional; user may publish without selecting one
 - [ ] Flair dropdown placeholder: "Select a flair…"
 - [ ] Flair dropdown uses `Dropdown` + `DropdownItem` components; each item shows flair color swatch (as a 12px circle) + flair text
-- [ ] When subreddit has no flairs: flair dropdown is hidden entirely (not shown as disabled)
 - [ ] Flair required validation error (shown inline): "This subreddit requires a flair. Please select one before publishing."
-- [ ] Publish button disabled when: title is empty, title > 300 chars, no subreddit selected, or flair required but not selected
-- [ ] ℹ tooltip on the flair field: "Some subreddits require you to label your post with a category (called a 'flair') before you can publish. For example, r/entrepreneur might require you to tag your post as 'Advice', 'Story', or 'Resource'. If no flair is needed, this field won't appear."
-- [ ] "Send Replies" toggle below subreddit section; uses `Switch` component; default: ON
-- [ ] "Send Replies" label: "Send Replies"
-- [ ] "Send Replies" ℹ tooltip: "When on, Reddit will notify you when someone replies to your post. Turn this off if you don't want email notifications from Reddit for this post."
+
+**Publish button blocking conditions:**
+- [ ] Publish button is disabled when: title is empty, title > 300 chars, no subreddit selected, flair required but not selected, post type = "Link" and no URL provided, post type = "Image/Video" and no image/video attached, or Image/Video + URL conflict is present
+
+**Post settings toggles (below subreddit section):**
+- [ ] "Spoiler" toggle; uses `Switch` component; default: OFF
+- [ ] "Spoiler" label: "Spoiler"
+- [ ] "Spoiler" ℹ tooltip: "Blur your post's content so viewers have to click to reveal it. Use this for posts that contain surprise endings, sensitive discussion topics, or anything your audience might want to opt into seeing. Example: a plot twist, a before/after reveal, or a sensitive news topic."
 - [ ] "OC (Original Content)" toggle; uses `Switch` component; default: OFF
 - [ ] "OC" label: "Original Content"
 - [ ] "OC" ℹ tooltip: "Mark this post as original content you created yourself — not a repost or reshared link. Some subreddits require this for certain types of posts."
-- [ ] **Text Post:** Body textarea pre-filled with content from the common message box; uses `Textarea` component; label "Body (optional)"; placeholder "Add context, details, or a story (Markdown supported)…"; 40,000 char limit
-- [ ] **Link Post:** URL field appears; label "URL"; placeholder "https://your-article-or-page.com"; required for link posts; auto-populates from any URL detected in the common message box
-- [ ] **Image Post:** Shows the first image from the media section as a preview thumbnail; `Alert` component (info variant) shown below: "Reddit image posts don't support body text. Your image will be posted with the title only." — uses `text-primary-cs-500` and `bg-primary-cs-50` for theming
+
+**Multi-subreddit:**
 - [ ] "+ Add Subreddit" button (ghost variant `Button`) below the first subreddit row; clicking it adds another subreddit row (each with its own subreddit selector and flair selector)
 - [ ] When 2+ subreddits are added, a stagger notice appears: `Alert` component (info variant): "Posts to multiple subreddits will be published 30 minutes apart to comply with Reddit's community guidelines and avoid spam detection."
 - [ ] Each subreddit row shows an "×" remove button to delete that row; first row cannot be removed if it's the only one
+
+**General:**
 - [ ] `reddit: []` added to platform initialization in `SocialTab.vue` (or equivalent composer platform data structure)
 - [ ] All user-facing strings use `$t()` i18n keys
 
 **UI component summary:**
-- `SegmentedControl` — post type selector
-- `TextInput` — title field
+- `RadioButton` — post type selector row (Text | Image/Video | Link), same pattern as YouTube Settings
+- `TextInput` — title field, Source URL field
 - `SearchInput` — subreddit search
 - `Dropdown` + `DropdownItem` — subreddit autocomplete + flair dropdown
 - `Textarea` — text post body
-- `Switch` — Send Replies and OC toggles
-- `Button` (ghost) — "+ Add Subreddit"
-- `Alert` (info) — image post note and multi-subreddit stagger notice
+- `Switch` — Spoiler and OC toggles
+- `Button` (ghost) — "+ Add Subreddit", "Customize for Reddit"
+- `Alert` (warning) — Text + image conflict, Image/Video + body text conflict
+- `Alert` (error) — Image/Video + URL conflict (blocking)
+- `Alert` (info) — Link + body text notice, multi-subreddit stagger notice
 - `Icon` — ℹ info icons, Reddit logo
 
 **Loading states:**
@@ -628,7 +703,7 @@ As a social media manager, I want a dedicated Reddit section in the ContentStudi
 **Error states:**
 - Subreddit not found: "No subreddits matched your search."
 - Flair load failure: "Couldn't load flairs. Please try again." with a retry link
-- No Reddit accounts connected: section hidden; instead shown as a `Alert` (warning variant) "No Reddit accounts connected. Connect one in Social Accounts settings."
+- No Reddit accounts connected: section hidden; instead shown as an `Alert` (warning variant): "No Reddit accounts connected. Connect one in Social Accounts settings."
 
 ---
 
@@ -655,7 +730,7 @@ Depends on: **[FE] Add Reddit account connection modal and Social Accounts setti
 ---
 
 ### Global quality & compliance:
-- [ ] Mobile responsiveness — Reddit composer section must reflow correctly on tablet (768px) and small screens; `SegmentedControl` must not overflow
+- [ ] Mobile responsiveness — Reddit composer section must reflow correctly on tablet (768px) and small screens; title field, subreddit selector, and toggles must not overflow
 - [ ] Multilingual support — All labels, placeholders, tooltips, validation messages, and `Alert` copy must use `$t()` i18n keys; add to all locale files
 - [ ] UI theming support — Use `text-primary-cs-500`, `bg-primary-cs-50`, `border-primary-cs-200` for all primary color elements; no hardcoded colors
 - [ ] White-label domains impact review — Reddit icon and brand color must not bleed into theme; all interactive states use CSS variable-backed classes
@@ -1023,7 +1098,7 @@ As a product team, we need finalized UI designs for the Reddit integration acros
 
 ### Acceptance criteria:
 - [ ] **Connection modal designs:** Pre-OAuth info screen (what CS can/cannot do), success state (account card), and error state (OAuth denied / already connected) — all states designed
-- [ ] **Composer Reddit section:** All three post type states (Text, Link, Image), subreddit autocomplete dropdown, flair dropdown with color swatches, mandatory flair "(Required)" state, multi-subreddit rows with stagger notice, all validation error states, all toggle states (Send Replies, OC)
+- [ ] **Composer Reddit section:** "Post Type" radio row (Text | Image/Video | Link) with all three states — same layout pattern as YouTube Settings "Post Type" row, Customize button (OFF/ON states with "Customized" active styling), dynamic title field label ("Title" vs "Title (Pinterest, Reddit)"), Source URL field with dynamic label ("Source URL" vs "Source URL (Pinterest, Reddit)"), body area for each post type (body textarea / image-video area / Source URL field), subreddit autocomplete dropdown, flair dropdown with color swatches, mandatory flair "(Required)" state, all conflict warnings at bottom of section (warning/error/info variants), multi-subreddit rows with stagger notice, all validation error states, all toggle states (Spoiler, OC)
 - [ ] **Inbox thread view:** Reddit inbox list item, conversation panel with comment thread, reply box, DM not-supported notice, empty state
 - [ ] **Analytics card:** Metric cards (posts, upvotes, comments, upvote ratio), top posts table, empty state, loading skeleton
 - [ ] All designs use `@contentstudio/ui` design system components — no custom component shapes that don't exist in the library
@@ -1144,7 +1219,7 @@ As a social media manager, I want to create Reddit poll posts from the ContentSt
 
 ### Workflow:
 1. User selects a Reddit account in the composer
-2. User selects "Poll" in the post type `SegmentedControl` ("Text Post" | "Link Post" | "Image Post" | "Poll")
+2. User selects "Poll" from the "Post Type" radio row in Reddit Settings ("Text" | "Image/Video" | "Link" | "Poll")
 3. Poll-specific fields appear: Question (title field), Answer Options (2–6 inputs), Voting Duration
 4. User enters the poll question as the title
 5. User adds answer options (min 2, max 6) — a "+ Add Option" button adds more
@@ -1155,7 +1230,7 @@ As a social media manager, I want to create Reddit poll posts from the ContentSt
 ---
 
 ### Acceptance criteria:
-- [ ] "Poll" segment added to the post type `SegmentedControl` (4th option)
+- [ ] "Poll" radio option added as the 4th option to the Post Type radio row alongside the existing "Text" | "Image/Video" | "Link" options
 - [ ] Poll section shows: Question field (same as Title field, 300 char limit), Answer Options section, Voting Duration selector
 - [ ] Answer Options: minimum 2 fields shown by default, labeled "Option 1", "Option 2", etc.
 - [ ] "+ Add Option" `Button` (ghost) adds a new option input up to a max of 6
@@ -1194,7 +1269,7 @@ Extends the Reddit composer section. No impact on other platforms.
 
 ### Dependencies:
 Depends on: **[BE] Implement Reddit poll post type publishing**
-Depends on: **[FE] Build Reddit composer section with post type selector, title field, subreddit search, flair dropdown, and multi-subreddit support**
+Depends on: **[FE] Build Reddit composer section with post type selector, title field, subreddit search, flair dropdown, Customize button, and multi-subreddit support**
 
 ---
 
@@ -1218,7 +1293,7 @@ Depends on: **[FE] Build Reddit composer section with post type selector, title 
 | 5 | [BE] Implement Reddit post analytics sync job | Backend | Medium (P1) | Web App | Analytics |
 | 6 | [BE] Implement Reddit inbox strategy for post comments | Backend | Medium (P1) | Web App | Inbox |
 | 7 | [FE] Add Reddit account connection modal and Social Accounts settings integration | Frontend | High (P0) | Web App | Integrations |
-| 8 | [FE] Build Reddit composer section with post type selector, title field, subreddit search, flair dropdown, and multi-subreddit support | Frontend | High (P0) | Web App | Composer |
+| 8 | [FE] Build Reddit composer section with post type selector, title field, subreddit search, flair dropdown, Customize button, and multi-subreddit support | Frontend | High (P0) | Web App | Composer |
 | 9 | [FE] Add Reddit to automation channel selectors, Evergreen automation, and onboarding platform list | Frontend | Medium (P1) | Web App | Automation |
 | 10 | [FE] Add Reddit analytics to the Analytics dashboard | Frontend | Medium (P1) | Web App | Analytics |
 | 11 | [FE] Add Reddit post comments to the unified Inbox | Frontend | Medium (P1) | Web App | Inbox |

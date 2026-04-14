@@ -8,6 +8,8 @@ ContentStudio Public CLI & Agent Skills is a new public developer surface for Co
 
 The feature packages ContentStudio's existing public publishing API into a terminal-first product that users can install with npm, authenticate with an API key, and use for deterministic workflows such as listing workspaces, discovering accounts, uploading media, creating posts, reviewing approvals, and managing comments. The same CLI also becomes the agent-facing surface through a bundled `SKILL.md` manifest and machine-safe `--json` output.
 
+The public launch should not stop at the website. The app should also close the loop by exposing first-party CLI setup inside `Settings -> API Key` and a lightweight discovery entry inside the dashboard integrations surfaces.
+
 This is not "AI orchestration inside the CLI." The CLI should stay operational, script-safe, and predictable. The agent story comes from making the CLI easy for shell-capable agents to discover and execute.
 
 ## Why This Matters Now
@@ -55,6 +57,7 @@ Inference: the whitespace is not "another API." It is a usable terminal surface 
 - media upload before post creation
 - stable JSON output for automation
 - predictable exit codes and concise error messages
+- an in-app quickstart section next to API key management so users can move from key creation to CLI usage immediately
 
 ### Competitive delighters
 
@@ -62,6 +65,7 @@ Inference: the whitespace is not "another API." It is a usable terminal surface 
 - a bundled `SKILL.md` manifest so no extra glue code is needed for shell-capable agents
 - a standalone public skill-install path such as `npx skills add contentstudio/contentstudio-agent`
 - launch docs with copy-pasteable workflows for humans and agents
+- first-party in-app discovery on the API Key page and dashboard, without burying the CLI inside third-party automation cards
 - marketing that speaks to developers and automation operators without overpromising autonomy
 
 ## Recommended Product Shape For ContentStudio
@@ -72,8 +76,10 @@ Inference: the whitespace is not "another API." It is a usable terminal surface 
 4. Make `--json` a first-class contract, not an afterthought.
 5. Bundle a `SKILL.md` manifest so shell-capable agents can discover the CLI and required env vars.
 6. Publish a standalone public skill repo so users can install ContentStudio into supported agent registries with a one-liner such as `npx skills add contentstudio/contentstudio-agent`.
-7. Keep v1 publishing-first: auth, workspaces, accounts, media, posts, approvals, comments.
-8. Include launch assets in the same epic: install guide, command reference, agent setup guide, and website landing/supporting CTAs.
+7. Add a first-party `ContentStudio CLI & Agent Access` section to `Settings -> API Key`, above Zapier/Make.com/n8n, so the app teaches the official install flow where users already generate keys.
+8. Add a `ContentStudio CLI` discovery card to the shared dashboard integrations carousel used by both standard and API-centric dashboards.
+9. Keep v1 publishing-first: auth, workspaces, accounts, media, posts, approvals, comments.
+10. Include launch assets in the same epic: install guide, command reference, agent setup guide, website landing/supporting CTAs, and in-app setup entry points.
 
 ## Codebase Analysis
 
@@ -114,6 +120,9 @@ The app already has session-authenticated API key management and request-log exp
 - `contentstudio-backend/app/Repository/ApiKeyRepo.php` standardizes key generation with the `cs_` prefix
 - `contentstudio-frontend/src/modules/setting/components/ApiKeysPage.vue` already presents API key credentials, request usage, and request logs
 - `contentstudio-frontend/src/modules/setting/config/routes/setting.js` already routes users to `Settings -> API Key`
+- `contentstudio-frontend/src/modules/dashboard/components/ApiCentricDashboard.vue` already includes API-key CTAs and the shared integrations carousel
+- `contentstudio-frontend/src/views/DashboardNew.vue` already renders the same `IntegrationsCard.vue` component on the standard dashboard
+- `contentstudio-frontend/src/components/dashboard/IntegrationsCard.vue` already powers the "Content Creation & Automation Tools" carousel used for product discovery
 
 This is important because the CLI launch does not need to invent a credential-management experience. Users can keep generating and rotating keys in the app.
 

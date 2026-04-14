@@ -6,9 +6,9 @@
 
 **Description:**
 
-Ship a public, npm-installed ContentStudio CLI that lets developers, operators, and AI agents authenticate with an API key, discover workspaces and accounts, upload media, and create or manage posts from the command line. V1 is built on the existing public REST API with structured JSON output, a bundled `SKILL.md` manifest, and a standalone public skill-install path for shell-capable agents.
+Ship a public, npm-installed ContentStudio CLI that lets developers, operators, and AI agents authenticate with an API key, discover workspaces and accounts, upload media, and create or manage posts from the command line. V1 is built on the existing public REST API with structured JSON output, a bundled `SKILL.md` manifest, a standalone public skill-install path for shell-capable agents, and native setup entry points inside the web app.
 
-The release also includes onboarding docs and launch assets so ContentStudio can be marketed as a safe, human-in-the-loop automation surface. The work covers public API hardening where needed, CLI foundations, auth/config flows, publishing commands, agent discovery packaging, public docs, and website launch support.
+The release also includes onboarding docs, in-app setup surfaces on the API Key and dashboard pages, and launch assets so ContentStudio can be marketed as a safe, human-in-the-loop automation surface. The work covers public API hardening where needed, CLI foundations, auth/config flows, publishing commands, agent discovery packaging, public docs, web-app discovery/setup, and website launch support.
 
 ---
 
@@ -484,6 +484,100 @@ N/A - backend/tooling story
 
 ---
 
+### Story 10: [FE] Add CLI and agent setup entry points to API Key and dashboard surfaces in the web app
+
+**Description:**
+As a full-suite or API-plan user, I want to discover the ContentStudio CLI inside the web app and complete setup from the API Key page so that I can go from in-app browsing or key generation to working terminal commands without searching around outside the product.
+
+This story adds first-party CLI discovery to the shared dashboard integrations carousel and adds a dedicated setup section to `Settings -> API Key`. The CLI must not be positioned as just another Zapier-style partner integration. The API Key page should present the official ContentStudio quickstart above the third-party automation cards, while the dashboard surfaces should act as lightweight discovery and routing entry points.
+
+**UI copy and component requirements:**
+- On `Settings -> API Key`, use the existing `LayoutCard` pattern for a new first-party section placed above the current Zapier / Make.com / n8n area
+- Add a `Badge` with label `Official` next to the new section title
+- Section title: `ContentStudio CLI & Agent Access`
+- Section description: `Install the official ContentStudio CLI, connect it with your API key, and use the same commands from scripts or shell-capable AI agents.`
+- CLI block title: `CLI Quickstart`
+- CLI step label 1: `Install the CLI`
+- CLI step label 2: `Connect your account`
+- CLI step label 3: `Run your first command`
+- CLI step 1 command: `npm install -g @contentstudio/cli`
+- CLI step 2 command: `contentstudio auth login --api-key cs_xxx`
+- CLI step 3 command: `contentstudio workspaces list`
+- Primary CTA button: `View CLI Docs`
+- Secondary CTA button: `Copy CLI Quickstart`
+- Agent block title: `AI Agent Setup`
+- Agent description: `Use the standalone ContentStudio skill so supported agent tools can discover the same CLI commands.`
+- Agent setup command: `npx skills add contentstudio/contentstudio-agent`
+- Agent helper text: `Install the CLI first, then add the skill to your agent tool.`
+- Agent CTA button 1: `Agent Setup Guide`
+- Agent CTA button 2: `Copy Agent Setup`
+- Empty-state alert title: `Generate your API key to start with the CLI`
+- Empty-state alert body: `Create a key first, then install ContentStudio CLI and connect your account from the terminal.`
+- Empty-state alert CTA: `Generate API Key`
+- Existing third-party section title on the same page: `Other automation integrations`
+- Existing third-party section description: `Need no-code automations too? Connect ContentStudio with Zapier, Make.com, or n8n.`
+- On the shared dashboard `IntegrationsCard`, add a first-party card that uses the existing `IntegrationCard` pattern plus a `Badge` for `Official`
+- Dashboard card name: `ContentStudio CLI`
+- Dashboard card click behavior: route to `Settings -> API Key`
+- Dashboard docs icon tooltip text remains `View docs`
+- Use the current tooltip approach already used by the dashboard cards; no new tooltip component is required
+
+**Workflow:**
+1. User lands on the standard dashboard or API-centric dashboard and sees `ContentStudio CLI` inside the existing `Content Creation & Automation Tools` carousel.
+2. User clicks the `ContentStudio CLI` card and is taken to `Settings -> API Key`.
+3. User sees a new `ContentStudio CLI & Agent Access` section before the existing Zapier / Make.com / n8n section.
+4. User reads the short intro and either opens `View CLI Docs` or copies the CLI quickstart commands.
+5. User optionally reads `AI Agent Setup`, copies the standalone skill command, or opens the setup guide.
+6. If the user has not generated an API key yet, the page shows the `Generate your API key to start with the CLI` alert and a `Generate API Key` CTA.
+7. After generating a key, the user returns to the same page and uses the shown commands to connect the CLI.
+8. User can still scroll to `Other automation integrations` for Zapier, Make.com, and n8n after the first-party CLI section.
+
+**Acceptance criteria:**
+- [ ] `Settings -> API Key` includes a dedicated `ContentStudio CLI & Agent Access` section above the existing Zapier / Make.com / n8n cards
+- [ ] The new section uses the existing `LayoutCard` pattern and includes a visible `Official` badge
+- [ ] The section title, description, CLI step labels, CLI commands, agent title, agent description, helper text, and CTA labels match the copy defined in this story exactly
+- [ ] The CLI block shows all three commands in order: `npm install -g @contentstudio/cli`, `contentstudio auth login --api-key cs_xxx`, and `contentstudio workspaces list`
+- [ ] The agent block shows `npx skills add contentstudio/contentstudio-agent` and the helper text `Install the CLI first, then add the skill to your agent tool.`
+- [ ] If the user has no API key yet, an inline `Alert` appears with the title `Generate your API key to start with the CLI`, the body `Create a key first, then install ContentStudio CLI and connect your account from the terminal.`, and a `Generate API Key` CTA
+- [ ] The existing third-party integrations section is renamed to `Other automation integrations` and uses the description `Need no-code automations too? Connect ContentStudio with Zapier, Make.com, or n8n.`
+- [ ] The shared dashboard `IntegrationsCard` used by both `DashboardNew.vue` and `ApiCentricDashboard.vue` contains a `ContentStudio CLI` card with an `Official` badge
+- [ ] Clicking the `ContentStudio CLI` dashboard card routes the user to `Settings -> API Key`
+- [ ] The dashboard card docs icon opens the CLI docs article while keeping the existing `View docs` tooltip behavior
+- [ ] On white-label domains, the new dashboard card follows the same visibility rules already used by the shared integrations carousel
+- [ ] Loading state: while API key or plan data is loading, show a `Loader` with the label `Loading CLI setup...` in the new API Key page section instead of flashing incomplete content
+- [ ] Error state: if the API Key page fails to load the key/access state, show an inline `Alert` with the message `We couldn't load your CLI setup details right now. Refresh the page or try again in a moment.`
+- [ ] The new API Key page section and the dashboard card layout are responsive across desktop and mobile breakpoints
+
+**Mock-ups:**
+See the design story **[Design] Create launch assets for the public CLI website and docs**. If the API Key page or dashboard card need net-new visual treatments beyond the current component system, attach those mockups here before implementation starts.
+
+**Impact on existing data:**
+- No backend schema changes
+- No changes to API key storage or request-log data
+- Existing dashboard/help article metadata may need a new entry for the CLI docs article
+
+**Impact on other products:**
+- Standard dashboard gets CLI discovery through the shared integrations carousel
+- API-centric dashboard gets the same CLI discovery card
+- Settings gets the detailed setup surface for CLI and agent install flows
+- No mobile app impact
+- No Chrome extension impact
+
+**Dependencies:**
+- Depends on: **[BE] Implement CLI authentication, local config persistence, and structured errors**
+- Depends on: **[BE] Package the CLI for AI-agent discovery with bundled SKILL.md and JSON-safe execution**
+- Depends on: **[BE] Publish a standalone ContentStudio skill repo for direct agent installation**
+- Depends on: **[BE] Publish public CLI docs, quickstart examples, and agent setup guides**
+
+**Global quality & compliance (wherever applicable)**
+- [ ] Mobile responsiveness (frontend only, N/A for backend-only stories)
+- [ ] Multilingual support (frontend + backend, translations available or fallback handled)
+- [ ] UI theming support (default + white-label, design library components are being used)
+- [ ] White-label domains impact review
+- [ ] Cross-product impact assessment (web, mobile apps, Chrome extension)
+
+---
+
 ## Story Summary
 
 | # | Title | Group | Project | Priority | Skill Set | Product Area | Story Type |
@@ -497,3 +591,4 @@ N/A - backend/tooling story
 | 7 | [FE] Launch the public CLI website page and conversion CTAs | Frontend | Website | High | Frontend | Throughout Product | feature |
 | 8 | [Design] Create launch assets for the public CLI website and docs | Design | Website | Medium | Design | Throughout Product | chore |
 | 9 | [BE] Publish a standalone ContentStudio skill repo for direct agent installation | Backend | Web App | High | Backend | Throughout Product | feature |
+| 10 | [FE] Add CLI and agent setup entry points to API Key and dashboard surfaces in the web app | Frontend | Web App | High | Frontend | Throughout Product | feature |

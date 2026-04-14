@@ -2,32 +2,37 @@
 
 ---
 
-## Story 1: [FE] Sunset blog composer with two-phase ContentPen migration
+## Story 1: [FE] Sunset blog composer for old users with phased ContentPen migration
 
 ### Description:
 
-As the ContentStudio product team, we want to sunset the blog composer and migrate all users to ContentPen so that blog functionality is consolidated into a dedicated, more capable product.
+As the ContentStudio product team, we want to sunset the blog composer for old users (those with `redirect_to_content_pen: false` or unset) and migrate them to ContentPen.
 
-The blog composer is being deprecated in two phases:
+**Users with `redirect_to_content_pen: true` are already handled** — they see the ContentPen CTA modal when creating new blog posts, and go directly to `app.contentpen.ai` if linked. No changes needed for these users.
+
+This story only affects **old users** where the redirect flag is not set. Two phases:
 
 **Phase 1 (Now → April 30, 2026):**
-- **Creating new blog posts is blocked for all users.** Remove the `shouldRedirectBlogToContentPen` conditional — all "create blog post" entry points now show the existing ContentPen CTA modal (`contentpen-cta-modal`) regardless of the super admin's `redirect_to_content_pen` flag.
-- **Editing existing blog posts is still allowed**, but a persistent non-dismissable sunset banner is shown at the top of the blog composer directing users to ContentPen.
-- **Scheduled/published blog posts are unaffected** — they continue to work normally.
+- Old users can still **create new** and **edit** blog posts — no blocking yet
+- A **persistent non-dismissable sunset banner** is shown at the top of the blog composer (for both new and edit) warning them the feature is moving to ContentPen
+- Banner has a CTA that opens the ContentPen CTA modal
 
 **Phase 2 (April 30, 2026+):**
-- **Editing is also blocked.** All blog composer entry points (create and edit) redirect to the ContentPen CTA modal.
-- A date check (`new Date() >= new Date('2026-04-30')`) controls the phase transition — no deployment needed on April 30.
+- Old users can **no longer create new** blog posts — the "create new" entry points now follow the same flow as `redirect_to_content_pen: true` (show ContentPen CTA modal)
+- Old users can still **edit existing** blog posts from planner — but with an updated, stronger banner
+- A date check (`new Date() >= new Date('2026-04-30')`) controls the phase transition — no deployment needed on April 30
 
-**Entry points that need changes:**
-- `useComposerPost.js` — main create/edit routing logic (remove `shouldRedirectBlogToContentPen` condition for create, add date check for edit)
-- `ComposerDropdown.vue` — "Composer Article" option (add ContentPen redirect)
-- `Blog.vue` — blog composer component (add sunset banner for Phase 1, block access for Phase 2)
-- `useNotificationHandler.js` — blog notification click (add Phase 2 block)
-- `TopHeaderBar.vue` — Blog Websites settings link (hide for all users, not just those with redirect flag)
+**Scheduled/published blog posts are unaffected in both phases** — they continue to work normally.
+
+**Entry points that need changes (only when `redirect_to_content_pen` is false):**
+- `Blog.vue` — add sunset banner (Phase 1 and Phase 2 versions)
+- `useComposerPost.js` — after April 30, block "create new" for old users (same as redirect flow)
+- `ComposerDropdown.vue` — after April 30, "Composer Article" option shows ContentPen modal for old users
+- `useNotificationHandler.js` — after April 30, blog notification clicks for new posts redirect to modal
 
 **Entry points already handled (no changes needed):**
-- `SidebarMain.vue`, `WelcomeRow.vue`, `useAIPostGeneration.ts` — already use `openBlogComposer` which goes through `useComposerPost.js`
+- All entry points for users with `redirect_to_content_pen: true` — already showing ContentPen modal
+- `SidebarMain.vue`, `WelcomeRow.vue`, `useAIPostGeneration.ts` — already go through `useComposerPost.js`
 
 **Components to use:**
 - `Alert` from `@contentstudio/ui` — sunset banner in blog composer
@@ -39,51 +44,46 @@ The blog composer is being deprecated in two phases:
 
 ### Workflow:
 
-**Phase 1 (Now → April 30):**
-1. User clicks any "create blog post" entry point (publisher sidebar, dashboard, header, composer dropdown, AI library)
-2. Instead of opening the blog composer, the ContentPen CTA modal opens
-3. Super admin sees "Try ContentPen" button that creates a session and redirects to `app.contentpen.ai`
-4. Team member sees a message to contact their super admin
-5. User navigates to an existing blog post to edit it (from planner, notifications, or direct URL)
-6. Blog composer opens with a persistent amber banner at the top explaining the sunset
-7. User can still edit and save the post
-8. User clicks "Learn more about ContentPen" in the banner — ContentPen CTA modal opens
+**Phase 1 (Now → April 30) — old users only:**
+1. User clicks "create blog post" from any entry point — blog composer opens normally
+2. User sees a persistent amber banner at the top of the blog composer about the upcoming sunset
+3. User can create and save the blog post as usual
+4. User clicks "Learn more about ContentPen" in the banner — ContentPen CTA modal opens
+5. User opens an existing blog post to edit — same banner appears, editing works normally
 
-**Phase 2 (April 30+):**
-9. User tries to edit an existing blog post
-10. Instead of opening the blog composer, the ContentPen CTA modal opens
-11. Optional toast: "Blog composer is no longer available. Use ContentPen to create and edit blog content."
+**Phase 2 (April 30+) — old users only:**
+6. User clicks "create blog post" from any entry point — instead of opening the blog composer, the ContentPen CTA modal opens (same behavior as users with `redirect_to_content_pen: true`)
+7. Super admin sees "Try ContentPen" CTA button; team member sees contact-admin message
+8. User opens an existing blog post to edit from planner — blog composer opens with an updated, stronger banner
+9. User can still edit and save the existing post
 
 ---
 
 ### Acceptance criteria:
 
-**Phase 1 — New posts blocked:**
-- [ ] All "create new blog post" entry points show the ContentPen CTA modal for ALL users — not just users with `redirect_to_content_pen: true`
-- [ ] The `shouldRedirectBlogToContentPen` condition is removed from create-new-post paths — all users get the modal
-- [ ] `ComposerDropdown.vue` "Composer Article" option shows the ContentPen CTA modal instead of opening the blog composer
-- [ ] Blog Websites settings link in the header is hidden for all users (not just those with the redirect flag)
-
-**Phase 1 — Edit still allowed with banner:**
-- [ ] When editing an existing blog post, a persistent non-dismissable banner appears at the top of the blog composer
+**Phase 1 — Banner on all blog composer usage (before April 30):**
+- [ ] When an old user (`redirect_to_content_pen` is false/unset) opens the blog composer (new or edit), a persistent non-dismissable banner appears at the top
 - [ ] The banner uses `Alert` component with amber/warning styling
-- [ ] Banner copy: "Blog composer is moving to ContentPen. Editing existing blog posts will no longer be available after April 30, 2026. Move to ContentPen for a better blog writing experience with AI-powered SEO, internal linking, and more."
-- [ ] Banner has a CTA button: "Learn more about ContentPen" that opens the `contentpen-cta-modal`
+- [ ] Phase 1 banner copy: "Blog composer is moving to ContentPen on April 30, 2026. We recommend switching to ContentPen now for a better blog writing experience with AI-powered SEO, internal linking, and more."
+- [ ] Banner has a CTA button: "Try ContentPen" that opens the `contentpen-cta-modal`
 - [ ] The banner cannot be dismissed or closed
-- [ ] Editing and saving the blog post still works normally
-- [ ] Scheduled and published blog posts continue to work without any disruption
+- [ ] Creating and editing blog posts still works normally — no functionality is blocked
+- [ ] Users with `redirect_to_content_pen: true` are not affected — their flow stays the same
 
-**Phase 2 — Everything blocked (April 30+):**
+**Phase 2 — New posts blocked, edit still allowed (April 30+):**
 - [ ] A date check (`new Date() >= new Date('2026-04-30')`) controls the phase transition
-- [ ] After April 30, editing existing blog posts also shows the ContentPen CTA modal instead of opening the composer
-- [ ] Blog notification clicks that would open `composerBlog` route also redirect to the ContentPen CTA modal after April 30
+- [ ] After April 30, old users clicking "create new blog post" from any entry point see the ContentPen CTA modal instead of the blog composer — same behavior as the existing `redirect_to_content_pen: true` flow
+- [ ] After April 30, old users can still open existing blog posts for editing from planner
+- [ ] The edit banner updates to Phase 2 copy: "Creating new blog posts is no longer available in ContentStudio. Use ContentPen for all new blog content. Editing existing posts will also be removed soon."
+- [ ] Phase 2 edit banner CTA: "Switch to ContentPen" that opens the `contentpen-cta-modal`
+- [ ] Editing and saving existing blog posts still works
 - [ ] No deployment needed on April 30 — the date check handles the transition automatically
-- [ ] A toast is shown when the user is redirected: "Blog composer is no longer available. Use ContentPen to create and edit blog content."
 
 **General:**
 - [ ] The existing ContentPen CTA modal continues to work correctly — super admin sees CTA button, team member sees contact-admin message
+- [ ] Scheduled and published blog posts continue to work without any disruption in both phases
 - [ ] All new user-facing strings use i18n keys — add to all locale directories
-- [ ] No changes to blog publishing backend — scheduled posts continue to go out
+- [ ] No changes to blog publishing backend
 - [ ] Colors use theme-aware classes — banner uses standard warning/amber styling
 
 ---
@@ -96,13 +96,15 @@ N/A — use existing `ContentPenCTAModal` for all redirects. Banner in blog comp
 
 ### UI Copy:
 
-**Sunset banner (Phase 1, inside blog composer when editing):**
+**Phase 1 banner (before April 30, inside blog composer for old users):**
 - Icon: `AlertTriangle` (amber)
-- Text: "Blog composer is moving to ContentPen. Editing existing blog posts will no longer be available after April 30, 2026. Move to ContentPen for a better blog writing experience with AI-powered SEO, internal linking, and more."
-- CTA: "Learn more about ContentPen" → opens `contentpen-cta-modal`
+- Text: "Blog composer is moving to ContentPen on April 30, 2026. We recommend switching to ContentPen now for a better blog writing experience with AI-powered SEO, internal linking, and more."
+- CTA: "Try ContentPen" → opens `contentpen-cta-modal`
 
-**Phase 2 toast (when edit is blocked):**
-- "Blog composer is no longer available. Use ContentPen to create and edit blog content."
+**Phase 2 banner (after April 30, inside blog composer when editing existing posts):**
+- Icon: `AlertTriangle` (amber)
+- Text: "Creating new blog posts is no longer available in ContentStudio. Use ContentPen for all new blog content. Editing existing posts will also be removed soon."
+- CTA: "Switch to ContentPen" → opens `contentpen-cta-modal`
 
 **No new copy needed for the ContentPen CTA modal** — it already has all the copy for super admin and team member flows.
 
@@ -131,7 +133,7 @@ None — the ContentPen CTA modal and all required infrastructure already exist.
 ### Global quality & compliance (wherever applicable)
 
 - [ ] Mobile responsiveness (banner should display correctly on narrower widths inside the blog composer)
-- [ ] Multilingual support (banner copy and toast use i18n — add keys to all locale directories)
+- [ ] Multilingual support (banner copy uses i18n — add keys to all locale directories)
 - [ ] UI theming support (use `Alert` component and theme-aware classes for banner)
 - [ ] White-label domains impact review
 - [ ] Cross-product impact assessment (web, mobile apps, Chrome extension)

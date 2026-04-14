@@ -25,3 +25,4 @@
 - [[FE] Launch the public CLI website page and conversion CTAs](https://app.shortcut.com/contentstudio-team/story/116127) - Frontend - Website - High Priority
 - [[Design] Create launch assets for the public CLI website and docs](https://app.shortcut.com/contentstudio-team/story/116133) - Design - Website - Medium Priority
 - [[BE] Publish a standalone ContentStudio skill repo for direct agent installation](https://app.shortcut.com/contentstudio-team/story/116139) - Backend - Web App - High Priority
+- [[FE] Add CLI and agent setup entry points to API Key and dashboard surfaces in the web app](https://app.shortcut.com/contentstudio-team/story/116206) - Frontend - Web App - High Priority

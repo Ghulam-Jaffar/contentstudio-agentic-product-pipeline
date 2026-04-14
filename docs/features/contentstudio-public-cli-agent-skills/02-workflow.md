@@ -16,11 +16,21 @@ The public entry point should be a dedicated CLI landing page plus supporting CT
 
 ### 2. App
 
-The app remains the place where users create, rotate, and inspect API keys.
+The app remains the place where users create, rotate, and inspect API keys, and it should also provide the native setup path for the CLI after the user gets a key.
 
-Primary app entry point:
+Primary app entry points:
 
 - `Settings -> API Key`
+- API-centric dashboard
+- standard dashboard integrations carousel
+
+Recommended in-app placement:
+
+- Add a first-party `ContentStudio CLI & Agent Access` section on `Settings -> API Key`
+- Place this new section above the current Zapier / Make.com / n8n area
+- Rename the existing integrations area to `Other automation integrations`
+- Add a `ContentStudio CLI` card to the shared `IntegrationsCard` carousel used by both standard and API-centric dashboards
+- Use the dashboard card for discovery and routing; keep the detailed quickstart on `Settings -> API Key`
 
 ### 3. npm surface
 
@@ -48,18 +58,20 @@ A separate public skill repo should also be published for direct registry-style 
 ## Happy Path
 
 1. User lands on the ContentStudio CLI website page and sees a clear terminal-first value proposition.
-2. User opens `Settings -> API Key` in the app and generates or copies an existing API key.
-3. User installs the CLI with npm or runs it with `npx`.
-4. User authenticates with either:
+2. User sees `ContentStudio CLI` on the dashboard integrations carousel or navigates directly to `Settings -> API Key`.
+3. User opens `Settings -> API Key` in the app and generates or copies an existing API key.
+4. User uses the in-app `ContentStudio CLI & Agent Access` section to copy the install commands or open the docs.
+5. User installs the CLI with npm or runs it with `npx`.
+6. User authenticates with either:
    - `contentstudio auth login --api-key cs_xxx`
    - `export CONTENTSTUDIO_API_KEY=cs_xxx`
-5. User runs `contentstudio workspaces list` to confirm access.
-6. User runs `contentstudio accounts list --workspace <id>` to discover connected social accounts.
-7. User uploads media with `contentstudio media upload --workspace <id> --file ./asset.png` when needed.
-8. User creates a post with `contentstudio posts create --workspace <id> --accounts <id1,id2> --text "..."`.
-9. User verifies or manages output with `posts list`, `posts delete`, `posts approve`, and `comments` commands.
-10. Agent users either rely on the bundled `SKILL.md` in the CLI package or install the standalone skill with `npx skills add contentstudio/contentstudio-agent`.
-11. The agent runs the same CLI commands with `--json` and the operator keeps human review over publish-triggering actions.
+7. User runs `contentstudio workspaces list` to confirm access.
+8. User runs `contentstudio accounts list --workspace <id>` to discover connected social accounts.
+9. User uploads media with `contentstudio media upload --workspace <id> --file ./asset.png` when needed.
+10. User creates a post with `contentstudio posts create --workspace <id> --accounts <id1,id2> --text "..."`.
+11. User verifies or manages output with `posts list`, `posts delete`, `posts approve`, and `comments` commands.
+12. Agent users either rely on the bundled `SKILL.md` in the CLI package or install the standalone skill with `npx skills add contentstudio/contentstudio-agent`.
+13. The agent runs the same CLI commands with `--json` and the operator keeps human review over publish-triggering actions.
 
 ## Alternative Flows
 
@@ -69,6 +81,12 @@ A separate public skill repo should also be published for direct registry-style 
 2. CLI validates against `GET /api/v1/me`.
 3. CLI returns a concise message in human mode and structured error JSON in `--json` mode.
 4. User is directed back to `Settings -> API Key` to generate or rotate a key.
+
+### In-app discovery path
+
+1. User is on the standard dashboard or API-centric dashboard and sees the `ContentStudio CLI` card in the integrations carousel.
+2. User clicks the card and is routed to `Settings -> API Key`.
+3. User lands directly on the new `ContentStudio CLI & Agent Access` section instead of hunting for setup docs manually.
 
 ### Missing workspace selection
 
@@ -146,11 +164,23 @@ Rationale:
 - These routes already exist publicly.
 - This gives ContentStudio a credible CLI launch without dragging in analytics or deeper workflow surfaces.
 
+### 6. First-party in-app placement
+
+Decision: show the CLI as a first-party ContentStudio capability inside the web app, not as just another Zapier-style partner card.
+
+Rationale:
+
+- Users generate keys inside the app, so setup should continue there.
+- The API Key page is the right place for the detailed quickstart and agent setup steps.
+- The dashboard integrations carousel is the right place for broad discovery on both standard and API-centric dashboards.
+- Keeping the detailed quickstart above the third-party integrations section preserves the product hierarchy: first-party CLI first, partner automations second.
+
 ## Integration With Existing Product Areas
 
-- Settings: users get keys from the existing API Key page.
+- Settings: users get keys from the existing API Key page and should see the detailed CLI / agent quickstart there.
 - Publishing: CLI operates on the same posting and approval primitives as the app.
 - Media Library: upload flows reuse the existing media endpoint.
+- Dashboard: standard and API-centric dashboards should surface CLI discovery through the shared integrations carousel.
 - Website: launch page and docs surface the new terminal workflow publicly.
 
 ## V1 vs V2 Scope Recommendation
@@ -168,6 +198,8 @@ Rationale:
 - `--json` support on all commands
 - bundled `SKILL.md`
 - standalone public skill repo installable via `npx skills add contentstudio/contentstudio-agent`
+- in-app `ContentStudio CLI & Agent Access` section on `Settings -> API Key`
+- dashboard `ContentStudio CLI` discovery card in the shared integrations carousel
 - install docs, command reference, quickstart, agent setup guide
 - website launch page and conversion CTAs
 

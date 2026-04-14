@@ -1,7 +1,7 @@
 # PRD: ContentStudio Public CLI & Agent Skills
 
 **Author:** Codex  
-**Last Updated:** April 9, 2026  
+**Last Updated:** April 10, 2026  
 **Status:** Draft  
 **Target Release:** Q2 2026
 
@@ -9,7 +9,7 @@
 
 ## 1. Overview
 
-ContentStudio Public CLI & Agent Skills packages ContentStudio's existing public publishing API into a public npm-installed CLI that developers, operators, and shell-capable AI agents can use for deterministic social-media workflows. V1 covers API-key authentication, workspace/account discovery, media upload, post creation and management, approvals, comments, JSON-safe output, a standalone public skill-install path, and launch assets that position ContentStudio as a terminal-friendly automation surface.
+ContentStudio Public CLI & Agent Skills packages ContentStudio's existing public publishing API into a public npm-installed CLI that developers, operators, and shell-capable AI agents can use for deterministic social-media workflows. V1 covers API-key authentication, workspace/account discovery, media upload, post creation and management, approvals, comments, JSON-safe output, a standalone public skill-install path, in-app setup entry points on the API Key and dashboard surfaces, and launch assets that position ContentStudio as a terminal-friendly automation surface.
 
 ---
 
@@ -69,6 +69,7 @@ Non-technical social managers who only want a browser UI, mobile app users, and 
 | US-4 | reviewer or operator | approve, reject, comment on, or delete posts from the terminal | I can manage the full publishing lifecycle without leaving the shell | Must Have |
 | US-5 | AI-agent operator | install ContentStudio into my agent environment with a one-line skill command and run the CLI with `--json` | my shell-capable agent can use ContentStudio safely with minimal setup | Must Have |
 | US-6 | website visitor | understand what the CLI is and how to get started in minutes | I can evaluate the product quickly and convert | Should Have |
+| US-7 | full-suite or API-plan user | discover the CLI from my dashboard and finish setup from the API Key page | I can go from in-app discovery to working terminal commands without searching external docs first | Must Have |
 
 ---
 
@@ -102,6 +103,8 @@ Non-technical social managers who only want a browser UI, mobile app users, and 
 - Bundled `SKILL.md` manifest declaring `contentstudio` and `CONTENTSTUDIO_API_KEY`
 - Standalone public skill repo installable via `npx skills add contentstudio/contentstudio-agent`
 - Website launch page and developer-facing CTAs
+- Web-app `ContentStudio CLI & Agent Access` quickstart section on `Settings -> API Key`
+- Web-app `ContentStudio CLI` discovery card in the shared dashboard integrations carousel used by both the standard dashboard and API-centric dashboard
 - Public API audit/gap-closure before CLI contract freeze
 
 ### 6.2 Should Have (P1)
@@ -111,6 +114,7 @@ Non-technical social managers who only want a browser UI, mobile app users, and 
 - Examples for multi-account posting and media upload
 - Explicit guidance that API keys are created in `Settings -> API Key`
 - Website copy that distinguishes CLI users from full-suite browser users cleanly
+- Dashboard and API Key page copy that distinguishes the first-party CLI from third-party automation integrations clearly
 
 ### 6.3 Nice to Have (P2)
 
@@ -132,15 +136,16 @@ Non-technical social managers who only want a browser UI, mobile app users, and 
 
 ## 7. User Flow (High Level)
 
-1. User opens the CLI landing page and understands the install/auth story.
+1. User opens the CLI landing page or discovers `ContentStudio CLI` from the dashboard integrations carousel.
 2. User generates or copies an API key from `Settings -> API Key`.
-3. User installs the CLI via npm or runs it with `npx`.
-4. User authenticates with an API key or environment variable.
-5. User runs `workspaces list` and `accounts list` to identify context.
-6. User optionally uploads media.
-7. User creates, lists, approves, comments on, or deletes posts from the CLI.
-8. Agent users repeat the same flow with `--json` and the bundled `SKILL.md`.
-9. Agent users can also install the standalone skill with `npx skills add contentstudio/contentstudio-agent` and use the same CLI contract.
+3. User uses the in-app `ContentStudio CLI & Agent Access` quickstart to copy install commands or open the setup docs.
+4. User installs the CLI via npm or runs it with `npx`.
+5. User authenticates with an API key or environment variable.
+6. User runs `workspaces list` and `accounts list` to identify context.
+7. User optionally uploads media.
+8. User creates, lists, approves, comments on, or deletes posts from the CLI.
+9. Agent users repeat the same flow with `--json` and the bundled `SKILL.md`.
+10. Agent users can also install the standalone skill with `npx skills add contentstudio/contentstudio-agent` and use the same CLI contract.
 
 ---
 
@@ -156,6 +161,8 @@ Non-technical social managers who only want a browser UI, mobile app users, and 
 | BR-6 | Error output in human mode must be concise and readable; error output in `--json` mode must be structured and script-safe | Supports both interactive and automated use |
 | BR-7 | Website and docs must position the CLI as a safe automation surface with human-in-the-loop usage guidance | Avoids misleading AI/autonomy messaging |
 | BR-8 | The standalone skill-install path must stay in sync with the published CLI command surface and auth contract | Prevents agent install paths from drifting away from the actual product |
+| BR-9 | The app must treat the CLI as a first-party ContentStudio capability, not bury it inside third-party automation content | Preserves the correct product hierarchy and messaging |
+| BR-10 | The detailed quickstart lives on `Settings -> API Key`, while dashboard surfaces act as discovery and routing entry points | Keeps the install/setup flow close to API key generation without overloading the dashboard |
 
 ---
 
@@ -185,7 +192,7 @@ Non-technical social managers who only want a browser UI, mobile app users, and 
 
 ## 11. Dependencies
 
-- **Internal:** public API controllers and middleware in `contentstudio-backend`; API key management flows already exposed in settings; website/marketing capacity for launch assets
+- **Internal:** public API controllers and middleware in `contentstudio-backend`; API key management flows already exposed in settings; website/marketing capacity for launch assets; web-app dashboard and settings surfaces in `contentstudio-frontend`
 - **External:** npm publishing access; user API keys; supported public API uptime and rate limits
 - **Blockers:** API audit must happen before command contract freeze; package-boundary decision must happen before CLI implementation work starts
 
@@ -205,6 +212,10 @@ Non-technical social managers who only want a browser UI, mobile app users, and 
 - Relevant frontend files:
   - `contentstudio-frontend/src/modules/setting/components/ApiKeysPage.vue`
   - `contentstudio-frontend/src/modules/setting/config/routes/setting.js`
+  - `contentstudio-frontend/src/modules/dashboard/components/ApiCentricDashboard.vue`
+  - `contentstudio-frontend/src/views/DashboardNew.vue`
+  - `contentstudio-frontend/src/components/dashboard/IntegrationsCard.vue`
+  - `contentstudio-frontend/src/components/dashboard/IntegrationCard.vue`
 
 ---
 
@@ -213,3 +224,4 @@ Non-technical social managers who only want a browser UI, mobile app users, and 
 | Date | Author | Changes |
 | --- | --- | --- |
 | April 9, 2026 | Codex | Initial draft |
+| April 10, 2026 | Codex | Added in-app CLI placement across API Key and dashboard surfaces |

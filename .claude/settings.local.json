@@ -152,7 +152,14 @@
       "Bash(node_modules/.bin/vue-tsc --noEmit)",
       "Bash(for task:*)",
       "Bash(gh auth:*)",
-      "Bash(ssh -T git@github.com)"
+      "Bash(ssh -T git@github.com)",
+      "WebFetch(domain:blog.publer.me)",
+      "WebFetch(domain:redact.dev)",
+      "WebFetch(domain:help.publer.io)",
+      "WebFetch(domain:help.publer.com)",
+      "WebFetch(domain:publer.nolt.io)",
+      "WebFetch(domain:www.sprinklr.com)",
+      "WebFetch(domain:docs.contentstudio.io)"
     ]
   }
 }

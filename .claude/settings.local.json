@@ -159,7 +159,15 @@
       "WebFetch(domain:help.publer.com)",
       "WebFetch(domain:publer.nolt.io)",
       "WebFetch(domain:www.sprinklr.com)",
-      "WebFetch(domain:docs.contentstudio.io)"
+      "WebFetch(domain:docs.contentstudio.io)",
+      "Bash(cp /home/casper/code/contentstudio-agentic-product-pipeline/.claude/commands/feature.md /home/casper/code/contentstudio-agentic-product-pipeline/agents/commands/feature.md)",
+      "Bash(cp /home/casper/code/contentstudio-agentic-product-pipeline/.claude/commands/story.md /home/casper/code/contentstudio-agentic-product-pipeline/agents/commands/story.md)",
+      "Bash(rm .claude/commands/feature.md .claude/commands/story.md .codex/skills/feature/SKILL.md .codex/skills/story/SKILL.md)",
+      "Bash(ln -s ../../agents/commands/feature.md .claude/commands/feature.md)",
+      "Bash(ln -s ../../agents/commands/story.md .claude/commands/story.md)",
+      "Bash(ln -s ../../../agents/commands/feature.md .codex/skills/feature/SKILL.md)",
+      "Bash(ln -s ../../../agents/commands/story.md .codex/skills/story/SKILL.md)",
+      "Bash(awk '{print $5, $NF}')"
     ]
   }
 }

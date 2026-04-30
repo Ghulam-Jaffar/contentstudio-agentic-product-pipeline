@@ -88,6 +88,13 @@ Based on approved research, create the stories.
 - Empty states if introducing a new view
 - Info icon content, learn-more placement
 
+**Analytics events** (per guidelines section 19):
+If the story introduces a **new trackable user action** — addon purchase/unlock, social account connection, AI generation, first-X milestone, settings change indicating commitment — spec the Usermaven event(s) as testable AC items:
+- `- [ ] When the user [does X], a `[event_name]` Usermaven event fires with `[payload]`
+- Event names: `snake_case`, action-completed past tense (e.g., `addon_purchased`, `connected_social_accounts`, `ai_posts_generated`)
+- Before naming a new event, search `contentstudio-frontend/src/` for `userMaven.track(` to check if the action already has an event — reuse it.
+- Skip for pure refactors, copy-only changes, UI gating changes, or stories that fully reuse existing tracked actions.
+
 **Save to:** `docs/stories/<slug>/02-stories.md`
 
 Present the stories to the user.

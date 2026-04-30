@@ -83,7 +83,8 @@ Based on approved research, create `docs/features/<slug>/02-workflow.md` contain
 4. **Alternative Flows** — error states, edge cases
 5. **Key Design Decisions** — present 2-3 options where trade-offs exist, with your recommendation and rationale
 6. **Integration with Existing Features** — how it connects to composer, planner, analytics, etc.
-7. **Scope Recommendation** — what to include in v1 vs. defer to v2
+7. **Trackable Actions (Usermaven candidates)** — list user actions in this feature that should emit Usermaven events (e.g., addon purchase, first connection, AI generation success, settings change indicating commitment). For each, propose a candidate event name (snake_case, action-completed) and trigger. Skip the section if the feature is a pure refactor / copy change / UI gating change with no new trackable actions. (See guidelines section 19 for what counts as trackable.)
+8. **Scope Recommendation** — what to include in v1 vs. defer to v2
 
 #### Diagram requirements
 
@@ -166,6 +167,7 @@ Using the approved research + workflow, fill in the PRD template (`docs/PRD Feat
 - Requirements should be prioritized P0/P1/P2
 - Risks should be grounded in the competitor research and codebase analysis
 - Dependencies should reference specific existing code from the codebase analysis
+- **Analytics Events (§3.1):** Populate from the "Trackable Actions" identified in Step 2's workflow doc. For each event, specify name, trigger, payload, and what metric we measure with it. Before naming a new event, search `contentstudio-frontend/src/` for `userMaven.track(` to check if a matching event name already exists — reuse it. Skip the section (or write *"None"*) for pure refactors / copy-only changes / UI gating changes. (See guidelines section 19.)
 
 Save as `docs/features/<slug>/03-prd.md` and present it.
 
@@ -211,6 +213,12 @@ Every FE story MUST specify the actual UI copy for ALL of these elements:
 - Toggle/option labels with tooltips (plain language, example-driven, layman-friendly)
 - Info icon (`ℹ`) hover content
 - Empty states (headline, subtext, CTA), error states, loading states (guidelines section 10)
+
+**Analytics events (guidelines section 19):**
+Any FE (or BE) story that introduces a trackable user action listed in PRD §3.1 must include the Usermaven event(s) as **testable AC items**:
+- `- [ ] When the user [does X], a `[event_name]` Usermaven event fires with `[payload]`
+- Event name + payload **must match the PRD §3.1 spec exactly**. If the spec needs to change while writing the story, update the PRD too — don't let the two drift.
+- Most events are FE-dispatched. For server-side actions (subscription renewals, async job completions), put the AC in the BE story instead.
 
 Write all tooltips and labels as if for a **non-technical user who has never used a social media management tool**. Include concrete examples in tooltips so the user understands instantly without thinking twice.
 

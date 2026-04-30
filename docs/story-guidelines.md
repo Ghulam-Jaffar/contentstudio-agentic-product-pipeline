@@ -359,3 +359,76 @@ The non-binding framing matters. Reviewers (PMs, designers, QA) read top-down an
 >
 > **Gotcha:**
 > - The `recoverPassword` flow has a latent bug — for 2FA-enabled users, `TwoFactorChallengeData` returns early and the existing `terminateAllSessions` call below it is unreachable. Any fix to session invalidation needs to move the call **above** the 2FA early-return.
+
+---
+
+## 19. Analytics Event Tracking (Usermaven)
+
+ContentStudio uses **Usermaven** for product analytics. Every story that introduces a **new trackable user action** must spec the Usermaven event(s) the feature emits. If we ship a feature without instrumentation, we have no way to measure adoption, conversion, or whether the feature is worth keeping.
+
+### When to add Usermaven events
+
+Add tracking when a user action falls into one of these categories:
+
+- **Monetization / conversion** — addon purchased, addon unlocked, plan upgraded, plan cancelled, trial started
+- **Adoption milestones** — first connection of a social account, first post created, first AI generation, first brand voice created, onboarding step completed
+- **Recurring usage signals** — post created, AI post generated, AI post regenerated, automation activated, custom view saved, label/hashtag created
+- **Funnel completion** — signup verified, workspace created, team member invited, social account connected
+- **Engagement events that signal commitment** — settings change indicating real use (added hashtags, configured auto-replies, set up brand knowledge)
+
+Do **not** add tracking for:
+- Trivial UI interactions — sidebar toggle, tab switch (unless the tab itself is the feature being measured), modal open/close on view-only modals
+- Read-only navigation — page views are tracked globally via `userMaven.track('pageview')` in the router
+- Form field touches, hover states, scroll events
+
+If you're unsure, default to **not tracking** and flag it in the workflow doc / PRD for the PO to decide. Noise in analytics is worse than gaps.
+
+### Event naming convention
+
+ContentStudio's existing Usermaven events follow a strict convention:
+
+- **`snake_case`** — never camelCase or kebab-case
+- **Action-completed past tense** for completed actions: `addon_purchased`, `team_member_invited`, `ai_posts_generated`, `brand_profile_created`, `connected_social_accounts`, `labels_created`, `hashtags_created`
+- **Object-first then action** when grouping related events: `ai_post_regenerated`, `ai_post_compose`, `ai_post_feedback` — keeps related events alphabetically clustered in dashboards
+- **Reuse existing event names** when the action already has one — don't invent `social_account_attached` if `connected_social_accounts` already exists for the same action. Search the codebase first.
+
+### Payload convention
+
+- Payload property names are **`snake_case`**: `profile_id`, `number_of_posts`, `post_type`, `tab_name`
+- Include enough context to slice the event in dashboards (e.g., `platform: 'facebook'` so we can split connected-account events by platform)
+- **Do not include PII** beyond what Usermaven already has from `identify` calls — no email, no full name, no message bodies, no post content
+- Keep payloads small (≤ ~6 properties) — Usermaven dashboard filters get clunky with large payloads
+
+### Where events live in the story
+
+**In the FE story Acceptance Criteria** as testable items:
+
+```
+- [ ] When the user clicks "Connect Facebook" and OAuth completes, a `connected_social_accounts` Usermaven event fires with `{ platform: 'facebook' }`
+- [ ] When the user purchases an addon from the Twitter Posting upgrade modal, a `addon_purchased` Usermaven event fires with `{ addon: 'twitter_posting' }`
+- [ ] When AI post generation completes, an `ai_posts_generated` Usermaven event fires with `{ profile_id, number_of_posts, post_type }`
+```
+
+If the events were already specified in the PRD's Analytics Events section, **the FE story's AC must match the PRD spec exactly** — same event names, same payload shape. If the dev (or you, while writing) discovers the PRD spec needs to change, update the PRD too — don't let the two drift.
+
+### Backend events
+
+Most Usermaven tracking is frontend-dispatched. **Backend** can also emit events via the server-side Usermaven SDK or via Customer.io (`_cio.track`) for actions that don't have a clear FE trigger (e.g., subscription renewals, async job completions). When a feature requires BE tracking, put the event spec in the BE story's AC, same shape as the FE pattern.
+
+### Existing event examples (for reference / reuse)
+
+| Event | Where it fires |
+|---|---|
+| `addon_purchased` | Billing flows, addon upgrade modals |
+| `addon_unlocked_x_posting` | Twitter Posting addon unlock |
+| `team_member_invited` | Settings → Organization → Add member |
+| `connected_social_accounts` | Social account OAuth completion |
+| `ai_posts_generated` | AI Content Library — post generation success |
+| `ai_post_regenerated` | AI Content Library — regenerate single post |
+| `brand_profile_created` | AI Content Library — brand setup wizard completion |
+| `labels_created` | Composer / settings — new label saved |
+| `hashtags_created` | Settings → Hashtags — new hashtag saved |
+| `language_change` | Header → language switcher |
+| `account_cancellation_feedback` | Cancel plan dialog submit |
+
+Search `contentstudio-frontend/src/` for `userMaven.track(` to find the full live catalog before naming a new event.

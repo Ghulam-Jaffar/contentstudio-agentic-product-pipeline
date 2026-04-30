@@ -37,6 +37,26 @@ Business impact, churn risk, competitive disadvantage, support burden, etc.
 | Secondary goal | e.g., Increase feature adoption | 40% of workspaces | Product analytics |
 | Guard rail | e.g., No increase in churn | \<1% delta | Billing data |
 
+### **3.1 Analytics Events (Usermaven)**
+
+List the Usermaven events this feature will emit so we can measure the metrics above. **Required for any feature that introduces a new trackable user action** — monetization (addon purchases, plan upgrades), adoption milestones (first connection, first AI generation), recurring usage signals, funnel completions, or commitment-signaling settings changes.
+
+Skip the section (or write *"None — feature does not introduce a new trackable user action"*) for pure refactors, copy-only changes, UI gating changes, or features that fully reuse existing tracked events.
+
+| Event Name | Trigger | Payload | What we measure with it |
+| ----- | ----- | ----- | ----- |
+| `addon_purchased` | User completes addon checkout | `{ addon: 'twitter_posting' }` | Addon attach rate, conversion from upgrade modal |
+| `ai_posts_generated` | AI generation request succeeds | `{ profile_id, number_of_posts, post_type }` | AI Studio usage volume, breakdown by post type |
+| `connected_social_accounts` | OAuth completes for any platform | `{ platform: 'facebook' }` | Account-connection funnel completion, breakdown by platform |
+
+**Event naming rules** (see story guidelines section 19):
+- `snake_case`, action-completed past tense (`addon_purchased`, not `purchaseAddon`)
+- Reuse existing event names where the action already has one — search `contentstudio-frontend/src/` for `userMaven.track(` first
+- Payload property names are `snake_case`; no PII; ≤ ~6 properties
+- Whether the event fires from FE (most common) or BE (server-side jobs, webhooks) — note in the trigger column
+
+These events become **acceptance criteria** in the FE (or BE) stories — see story guidelines section 19. Story-level AC must match this PRD spec exactly; if it has to change, update both.
+
 ---
 
 ## **4\. Target Users**

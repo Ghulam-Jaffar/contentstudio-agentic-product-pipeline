@@ -43,6 +43,10 @@ All story workflows must be written **from the user's point of view**, describin
 > 4. User sees a live preview update on the right side as they type
 > 5. User clicks "Save & Publish" and sees a success toast with the live URL
 
+For API-developer-facing stories (e.g. public API endpoints, MCP tools, CLI commands), the "user" *is* a developer — using developer terms (HTTP verbs, request shape) is fine because that's what that user actually sees. For everything else, stay in product language.
+
+**Implementation pointers do not belong in Workflow.** File paths, class names, method signatures, helper suggestions, JWT/Redis/cache mechanics, ORM details — none of this goes in Workflow. If it's useful to the dev, park it in **Implementation references** at the end of the story (see section 18).
+
 ---
 
 ## 5. UI Content: Labels, Tooltips, Subtexts, Modals
@@ -147,6 +151,23 @@ Use checkbox format. Each criterion must be **testable** — a QA engineer shoul
 - [ ] UI looks good
 - [ ] Performance is acceptable
 ```
+
+### No implementation prescriptions in AC
+
+Acceptance criteria describe **observable behavior** — what the user sees, what the API returns, what state changes — never **how** the dev should write the code.
+
+**Bad (implementation prescription — should not be in AC):**
+- [ ] `canAccessSidebar` computed in `PublisherMain.vue` returns `true` for approvers
+- [ ] Add an `isApprover()` helper in `usePermission.ts`
+- [ ] Toast uses the existing `useAlertStore` / `alertMessage` pattern
+- [ ] The shared helper is named `invalidateAllSessions($userId, ?string $keepToken = null)`
+
+**Good (observable behavior):**
+- [ ] Approvers see the publisher sidebar (today it's hidden for approvers without create-post permission)
+- [ ] Success toast appears with copy: "Password updated. All other devices have been signed out."
+- [ ] Other active sessions are invalidated when a user resets their password (existing sessions rejected on next request)
+
+A code reference is fine when it disambiguates *which* behavior the AC is testing ("Compose dropdown excludes the Blog post action"). It's wrong when it dictates *how* to implement. If it's the latter, move it to **Implementation references** (section 18).
 
 ---
 
@@ -289,3 +310,52 @@ When implementing a story in code (if requested):
 - **Description:** Link to the Shortcut story, summary of changes, files modified
 - **Base branch:** `develop`
 - The Shortcut/GitHub integration auto-links PRs to stories via the `sc-XXXXX` in the branch name
+
+---
+
+## 18. Implementation References (Optional, Trailing Section)
+
+When research surfaces useful technical pointers — codebase entry points, patterns to follow, suggested names, gotchas — put them in a dedicated **Implementation references** section at the **end of the story body**, after the Global quality & compliance checklist.
+
+This section is what lets the core story (Description, Workflow, AC) stay strictly user-POV while devs still get the research output they need to move fast.
+
+**Section header — copy this verbatim:**
+
+> ### Implementation references
+> *Pointers from research — not a contract. Engineering may choose a different approach.*
+
+The non-binding framing matters. Reviewers (PMs, designers, QA) read top-down and stop at the checklist; devs jump to the bottom for the "how". The header signals the section is a hint, not a spec.
+
+### What goes here
+
+- **Codebase entry points** — files / controllers / components / composables that research found relevant. Use full repo-qualified paths (`contentstudio-frontend/src/modules/...`), per section 16.
+- **Existing patterns to follow** — "the closest existing MCP tool is `FetchSocialAccountsTool`", "matches the change-password flow already in `ProfileController::changePassword`".
+- **Suggested names** — helper signatures, i18n keys, prop names, route paths — clearly marked as suggestions, never as a contract.
+- **Gotchas** — latent bugs or quirks research uncovered. E.g. *"the existing `terminateAllSessions` call in `recoverPassword` sits below an early-return for 2FA users, so 2FA users currently get zero session termination."*
+- **Existing behavior to preserve** — bits of code research confirmed are already correct ("AI Studio is already gated by `hasFullAccess` — no change needed").
+
+### What does NOT go here
+
+- **Anything testable as user-facing behavior** — that's an AC, not a reference. If you find yourself writing "the helper must clear the trusted_devices collection," rewrite it as "trusted devices for the user are revoked when X happens" and put it in AC.
+- **Pipeline-internal paths** (`docs/features/...`, `docs/stories/...`) — section 16 forbids these in any pushed story content. They stay in the local `02-stories.md` only.
+- **Mandates** — if a specific class / file / approach is truly required (not just suggested), write it as a behavioral AC. References are non-binding by definition.
+
+### When to omit the section
+
+**Omit it entirely if research did not surface anything useful.** Empty boilerplate ("Implementation references: None") trains readers to skip the section and devalues it for stories where it matters.
+
+### Example shape
+
+> ### Implementation references
+> *Pointers from research — not a contract. Engineering may choose a different approach.*
+>
+> **Primary entry points:**
+> - `contentstudio-frontend/src/modules/publisher/views/PublisherMain.vue` — sidebar visibility gate (`canAccessSidebar` computed) lives here
+> - `contentstudio-frontend/src/composables/usePermission.ts` — likely home for a centralised `isApprover()` helper if the team prefers that over inlining the role check
+>
+> **Existing behavior to preserve (no change needed):**
+> - Compose dropdown's "Use template" option is already wired via `:show-template-attachment="true"` passed into `ComposeActionsDropdown`
+> - AI Studio / Automations / Planner Settings sections are already gated by `hasFullAccess` (false for approvers)
+>
+> **Gotcha:**
+> - The `recoverPassword` flow has a latent bug — for 2FA-enabled users, `TwoFactorChallengeData` returns early and the existing `terminateAllSessions` call below it is unreachable. Any fix to session invalidation needs to move the call **above** the 2FA early-return.

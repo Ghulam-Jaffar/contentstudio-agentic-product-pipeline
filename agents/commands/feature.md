@@ -128,14 +128,15 @@ Based on the approved PRD, create:
 
 For each story, use the Shortcut story template (`docs/Shortcut story template.md`):
 
-- **Description:** What needs to be built, with context from the PRD
-- **Workflow:** Step-by-step flow **written from the user's POV** — describe what the user does and sees, not technical implementation. (See guidelines section 4)
-- **Acceptance criteria:** Testable checkbox items that a QA engineer can verify pass/fail. (See guidelines section 7)
+- **Description:** User value — who, what, why — with context from the PRD. Strictly user-POV. **No file paths, class names, or implementation details in core sections** — those go in Implementation references at the end.
+- **Workflow:** Step-by-step flow **written from the user's POV** — describe what the user does and sees, not technical implementation (no JWT/Redis/cache mechanics, no DB collection names). (See guidelines section 4)
+- **Acceptance criteria:** Testable checkboxes describing **observable behavior**. No implementation prescriptions — AC describes *what* the user / API / system does, not *how* the dev should write it. (See guidelines section 7)
 - **Mock-ups:** "See PRD section 7" or "N/A — backend only"
 - **Impact on existing data:** What existing data/schemas are affected
 - **Impact on other products:** Cross-feature impacts
 - **Dependencies:** Reference other stories **by their full title**, never by number. (See guidelines section 2)
 - **Global quality checklist:** All unchecked — this is for devs. Mark N/A items with a reason. No dark mode, no RTL. (See guidelines sections 3 and 8)
+- **Implementation references** (optional, trailing section): When research surfaced useful pointers — codebase entry points, patterns to follow, suggested names, gotchas — bundle them in a final section after the quality checklist. Lead with: *"Pointers from research — not a contract. Engineering may choose a different approach."* Omit entirely if nothing useful surfaced. (See guidelines section 18)
 
 **Frontend/UI story requirements (guidelines section 5):**
 Every FE story MUST specify the actual UI copy for ALL of these elements:

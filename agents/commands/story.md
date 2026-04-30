@@ -71,14 +71,15 @@ Based on approved research, create the stories.
 
 **For each story, use the Shortcut story template and guidelines:**
 
-- **Description:** What needs to be built, referencing specific file paths from research
-- **Workflow:** Written from the user's POV (what the user does and sees)
-- **Acceptance criteria:** Testable checkboxes. A QA engineer can verify each one.
+- **Description:** User value — who, what, why. Strictly user-POV. **No file paths, class names, or implementation details** — those go in Implementation references.
+- **Workflow:** Written from the user's POV (what the user does and sees). No JWT/Redis/cache mechanics. (See guidelines section 4)
+- **Acceptance criteria:** Testable checkboxes describing **observable behavior**. No implementation prescriptions ("`canAccessSidebar` returns true" → wrong; "approvers see the sidebar" → right). (See guidelines section 7)
 - **Mock-ups:** N/A for most quick stories, unless the user provides mockups
 - **Impact on existing data:** What changes to existing schemas/data
 - **Impact on other products:** Mobile apps, Chrome extension, white-label, etc.
 - **Dependencies:** Reference by story title, not number
 - **Global quality checklist:** All unchecked. Add N/A notes only where items clearly don't apply.
+- **Implementation references** (optional, trailing section): If research surfaced useful pointers — codebase entry points, patterns to follow, suggested names, gotchas — bundle them here. Lead with: *"Pointers from research — not a contract. Engineering may choose a different approach."* Omit the section entirely if research did not surface anything useful. (See guidelines section 18)
 
 **Frontend stories MUST include all UI copy** (per guidelines section 5):
 - Labels, tooltips (plain language + examples), subtexts

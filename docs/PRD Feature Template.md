@@ -99,7 +99,7 @@ Describe the happy path in numbered steps. Keep it brief — detailed flows belo
 3. System responds with \[result\]  
 4. ...
 
-Include a flow diagram if helpful (link or embed).
+**Embed the workflow diagram** from `02-workflow.md` (mermaid block — flowchart, sequence, or state — whichever was used for the overview). If the workflow doc has multiple diagrams, embed the overview here and reference the others. Keep the embedded diagram identical to the source so this PRD section and the workflow doc do not drift.
 
 ---
 

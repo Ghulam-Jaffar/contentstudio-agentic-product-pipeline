@@ -78,16 +78,82 @@ Save the returned `id` (UUID) — it will be linked to the epic in Step 5.
 Based on approved research, create `docs/features/<slug>/02-workflow.md` containing:
 
 1. **Feature Placement** — where in ContentStudio's UI this feature lives (navigation, entry points)
-2. **User Flow** — numbered step-by-step happy path
-3. **Alternative Flows** — error states, edge cases
-4. **Key Design Decisions** — present 2-3 options where trade-offs exist, with your recommendation and rationale
-5. **Integration with Existing Features** — how it connects to composer, planner, analytics, etc.
-6. **Scope Recommendation** — what to include in v1 vs. defer to v2
+2. **Workflow Diagram (Overview)** — one mermaid diagram at the top showing the high-level user journey through this feature (see "Diagram requirements" below)
+3. **User Flow** — numbered step-by-step happy path
+4. **Alternative Flows** — error states, edge cases
+5. **Key Design Decisions** — present 2-3 options where trade-offs exist, with your recommendation and rationale
+6. **Integration with Existing Features** — how it connects to composer, planner, analytics, etc.
+7. **Scope Recommendation** — what to include in v1 vs. defer to v2
 
-Present the workflow to the user.
+#### Diagram requirements
+
+Every `02-workflow.md` must include **at least one mermaid diagram** placed near the top (right after Feature Placement) that captures the feature's high-level user journey. Add **per-flow diagrams** inside individual flow sections only when they meaningfully add clarity beyond the numbered steps — don't force a diagram on every trivial flow.
+
+**Pick the diagram type that matches what the feature actually is:**
+
+| Feature shape | Use | Mermaid type |
+|---|---|---|
+| Branching user flow with decisions ("if X, do A, else B") — most product features | **Flowchart** | `flowchart TD` |
+| Multi-system / multi-actor interaction over time — OAuth flows, webhook fan-outs, MCP tool → API → polling, third-party integrations | **Sequence diagram** | `sequenceDiagram` |
+| Discrete states with rules for transitions — approval workflows, post lifecycle, account connection states | **State diagram** | `stateDiagram-v2` |
+
+Mixing types within one doc is fine and often correct — e.g. an overview flowchart at the top, plus a sequence diagram inside the OAuth flow section, plus a state diagram for the approval-status transitions.
+
+**Diagram conventions:**
+- Use plain English labels (no class/method names) — workflow diagrams are user-POV, same as story workflows
+- Keep nodes ≤ ~12 for the overview diagram. If you can't fit it, the flow is too detailed for the overview — split it into per-section diagrams
+- For sequence diagrams, name actors by their role (User, ContentStudio, Facebook OAuth, etc.) — not by service/file names
+- Always wrap the diagram in a fenced code block with the `mermaid` language tag so GitHub / Shortcut renders it
+
+**Example — flowchart for a branching user flow:**
+
+```mermaid
+flowchart TD
+    Start([User opens Publisher]) --> CheckRole{User role?}
+    CheckRole -->|Approver| ShowSidebar[Show sidebar with Planner only]
+    CheckRole -->|Owner/Admin/Collaborator| ShowFullSidebar[Show full sidebar]
+    ShowSidebar --> CheckPerm{Has create-post permission?}
+    CheckPerm -->|Yes| ShowCompose[Show Compose button + Planner]
+    CheckPerm -->|No| HideCompose[Show Planner only]
+    ShowFullSidebar --> Done([User browses])
+    ShowCompose --> Done
+    HideCompose --> Done
+```
+
+**Example — sequence diagram for an OAuth integration:**
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant CS as ContentStudio
+    participant FB as Facebook OAuth
+    User->>CS: Click "Connect Facebook"
+    CS->>FB: Redirect with OAuth URL
+    User->>FB: Authorize
+    FB->>CS: Callback with auth code
+    CS->>FB: Exchange code for token
+    FB-->>CS: Access token + account info
+    CS->>User: Show "Connected" + account details
+```
+
+**Example — state diagram for a status-driven feature:**
+
+```mermaid
+stateDiagram-v2
+    [*] --> Draft
+    Draft --> InReview: Submit for approval
+    InReview --> Approved: Approver accepts
+    InReview --> ChangesRequested: Approver rejects
+    ChangesRequested --> Draft: User edits
+    Approved --> Scheduled: Set publish time
+    Scheduled --> Published: Publish job runs
+    Published --> [*]
+```
+
+Present the workflow (with diagram) to the user.
 
 **🔒 REVIEW GATE:** Ask the user:
-- "Here's the proposed workflow. Any changes to the flow? Disagree with any decisions? Reply 'approved' to continue to PRD."
+- "Here's the proposed workflow with diagram. Any changes to the flow? Diagram capture the right shape? Disagree with any decisions? Reply 'approved' to continue to PRD."
 
 ---
 

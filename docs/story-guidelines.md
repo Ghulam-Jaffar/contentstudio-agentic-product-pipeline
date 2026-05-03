@@ -287,6 +287,16 @@ Instead:
 **Bad:** `Local reference: docs/technical/ai-agents-architecture-findings.md`
 **Good:** `Shortcut doc: https://app.shortcut.com/contentstudio-team/write/...`
 
+### Shortcut attachments and image previews
+
+When screenshots or mockups are uploaded to Shortcut, **embed image attachments in the story description using Markdown image syntax** so Shortcut renders an inline preview:
+
+```
+![image.png](https://media.app.shortcut.com/api/attachments/files/clubhouse-assets/.../image.png)
+```
+
+Do not add uploaded image references as plain Markdown links like `[image.png](...)`; those render as text links instead of previews. Non-image attachments such as `.jsx`, `.pdf`, or `.zip` should remain normal Markdown links.
+
 ---
 
 ## 17. Code Implementation & PR Workflow

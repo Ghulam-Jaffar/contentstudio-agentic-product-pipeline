@@ -197,7 +197,7 @@ Based on the approved PRD, create:
 For each story, use the Shortcut story template (`docs/Shortcut story template.md`):
 
 - **Description:** User value — who, what, why — with context from the PRD. Strictly user-POV. **No file paths, class names, or implementation details in core sections** — those go in Implementation references at the end.
-- **Workflow:** Step-by-step flow **written from the user's POV** — describe what the user does and sees, not technical implementation (no JWT/Redis/cache mechanics, no DB collection names). (See guidelines section 4)
+- **Workflow:** Step-by-step flow **written from the user's POV** — describe what the user does and sees, not technical implementation (no JWT/Redis/cache mechanics, no DB collection names). (See guidelines section 4.) When the flow has branching, multi-system steps, or state transitions, also include a Mermaid diagram inside this section per guidelines section 20. The `02-workflow.md` overview diagram already covers the full feature shape — story-level diagrams should focus on the slice this story owns, not duplicate the overview. Skip diagrams for trivial single-step flows, copy / theming / refactor stories, role-exposure stories, and pure backend stories where the AC describes the behavior cleanly.
 - **Acceptance criteria:** Testable checkboxes describing **observable behavior**. No implementation prescriptions — AC describes *what* the user / API / system does, not *how* the dev should write it. (See guidelines section 7)
 - **Mock-ups:** "See PRD section 7" or "N/A — backend only"
 - **Impact on existing data:** What existing data/schemas are affected

@@ -72,7 +72,7 @@ Based on approved research, create the stories.
 **For each story, use the Shortcut story template and guidelines:**
 
 - **Description:** User value — who, what, why. Strictly user-POV. **No file paths, class names, or implementation details** — those go in Implementation references.
-- **Workflow:** Written from the user's POV (what the user does and sees). No JWT/Redis/cache mechanics. (See guidelines section 4)
+- **Workflow:** Written from the user's POV (what the user does and sees). No JWT/Redis/cache mechanics. (See guidelines section 4.) When the flow has branching, multi-system steps, or state transitions, include a Mermaid diagram inside this section per guidelines section 20. Skip the diagram for trivial single-step flows, copy / theming / refactor stories, role-exposure stories, and pure backend stories where the AC describes the behavior cleanly.
 - **Acceptance criteria:** Testable checkboxes describing **observable behavior**. No implementation prescriptions ("`canAccessSidebar` returns true" → wrong; "approvers see the sidebar" → right). (See guidelines section 7)
 - **Mock-ups:** N/A for most quick stories, unless the user provides mockups
 - **Impact on existing data:** What changes to existing schemas/data

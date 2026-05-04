@@ -442,3 +442,53 @@ Most Usermaven tracking is frontend-dispatched. **Backend** can also emit events
 | `account_cancellation_feedback` | Cancel plan dialog submit |
 
 Search `contentstudio-frontend/src/` for `userMaven.track(` to find the full live catalog before naming a new event.
+
+---
+
+## 20. Diagrams in Workflow Sections
+
+When a story's workflow involves **branching logic**, **multi-system interaction**, or **discrete state transitions**, include a Mermaid diagram inside the **Workflow** section of the story body. Skip diagrams for trivial CRUD, copy-only changes, simple UI gating, role-exposure stories, and single-step flows where prose alone is clear.
+
+Use the same diagram-type rubric the `/feature` Step 2 workflow doc uses:
+
+| When the workflow is... | Use | Mermaid type |
+|---|---|---|
+| A branching user flow ("if X, do A, else B") | Flowchart | `flowchart TD` |
+| A multi-system interaction (FE → API → 3rd party → callback) | Sequence diagram | `sequenceDiagram` |
+| A state-driven entity lifecycle (post status, approval state, account connection) | State diagram | `stateDiagram-v2` |
+
+**Conventions:**
+- Plain English labels — user-POV, no class names, file paths, or method signatures
+- Keep node count tight (≤ ~12). If you need more, split into multiple diagrams or restructure the story
+- Always wrap in a fenced code block tagged `mermaid` so Shortcut and GitHub render it
+- For sequence diagrams, name actors by role (User, ContentStudio, Facebook OAuth) — not service or file names
+
+**Placement:** Inside the story body's **Workflow** section, immediately before the numbered prose steps. The diagram visualizes the shape; the numbered steps capture the user-POV detail. Both belong together — diagram alone misses detail, prose alone misses structure.
+
+**Example (branching flow inside a story body):**
+
+````
+### Workflow
+
+```mermaid
+flowchart TD
+    Start([User clicks Reset Password email link]) --> Form[Enter new password]
+    Form --> Save{Password valid?}
+    Save -->|Yes| Persist[Save + invalidate other sessions]
+    Save -->|No| Error[Show validation error]
+    Error --> Form
+    Persist --> Toast[Show 'sessions signed out' toast]
+    Toast --> Login[Redirect to app]
+```
+
+1. User clicks the reset-password email link and lands on the Reset Password screen.
+2. User enters a new password and clicks Save.
+3. ...
+````
+
+**When to skip:**
+- Pure backend stories with no user-facing flow — the AC describes the behavior cleanly
+- Single-action stories ("user clicks save → server saves") — prose is clearer than a 2-node diagram
+- Copy / theming / refactor / style stories
+- Stories that expose existing UI to a new role (the existing flow is already documented elsewhere)
+- Stories where the `02-workflow.md` overview diagram already covers the shape — link to the workflow doc instead of duplicating

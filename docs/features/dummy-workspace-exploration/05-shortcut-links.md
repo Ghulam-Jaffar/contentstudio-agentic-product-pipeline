@@ -23,6 +23,7 @@
 - [[BE] Seed AI chats, generated assets, and content-library scenarios for sample workspaces](https://app.shortcut.com/contentstudio-team/story/116351) - Backend - Web App - High Priority
 - [[BE] Seed sample inbox conversations and isolate sample inbox behavior](https://app.shortcut.com/contentstudio-team/story/116357) - Backend - Web App - High Priority
 - [[BE] Serve synthetic analytics for sample workspaces and sample accounts](https://app.shortcut.com/contentstudio-team/story/116363) - Backend - Web App - High Priority
+- [[BE] Seed sample automations across RSS, Evergreen, Bulk, Content Categories, and Repeat Post](https://app.shortcut.com/contentstudio-team/story/117712) - Backend - Web App - High Priority
 - [[BE] Block live actions from sample workspaces and track blocked attempts](https://app.shortcut.com/contentstudio-team/story/116369) - Backend - Web App - High Priority
 
 ### Frontend - Web App

@@ -1,7 +1,7 @@
 # PRD: Dummy Workspace Exploration
 
 **Author:** Product Team
-**Last Updated:** 2026-04-14
+**Last Updated:** 2026-05-06
 **Status:** In Review
 **Target Release:** Q2 2026
 
@@ -95,18 +95,104 @@ Evaluation-Phase Team Lead — A decision-maker or operator setting up ContentSt
 **Provisioning and data ownership**
 - Trigger provisioning after signup onboarding is completed, not during raw registration
 - Provision sample data through backend/services and queued jobs, not frontend fixtures
-- Seed realistic records across:
-  - planner/calendar
-  - approvals/comments
-  - media library
-  - content categories / labels / folders / campaigns as needed
-  - AI chats / AI-generated outputs / AI content-library artifacts
-  - inbox conversations / comments / assignments
-  - team members and roles
+- Seed realistic records across every supported product surface; coverage in v1 must be exhaustive, not representative
+
+**Platform coverage (sample social accounts)**
+Seed at least one non-live sample account per supported platform so that every channel surface in the product has data to render:
+- Facebook (Page, Group)
+- Instagram (Business, Personal)
+- X / Twitter
+- LinkedIn (Profile, Company Page)
+- Pinterest
+- TikTok (Business, Personal)
+- YouTube
+- Threads
+- Bluesky
+- Google Business Profile (GBP)
+- Tumblr
+
+**Post-type coverage (per platform, where the platform supports the type)**
+Seed at least one example of each post type per platform so every composer mode and planner card variant has data:
+- Image post (single)
+- Carousel / multi-image post
+- Video post
+- Reel / short-form vertical video (Instagram Reel, Facebook Reel, YouTube Short, TikTok video, Pinterest Idea Pin)
+- Story (Facebook, Instagram, where supported)
+- Text-only post (X, LinkedIn, Threads, Bluesky)
+- Link / article share (Facebook, LinkedIn, X)
+- Thread (X, Threads)
+- Document post (LinkedIn)
+- GBP post variants (Update, Event, Offer)
+- Pinterest pin variants (image pin, video pin, idea pin)
+- First-comment included for at least one Instagram, LinkedIn, and Facebook post
+- Boosted/ad-style metadata where the planner surfaces it
+
+**Post-status coverage**
+Seed every post status the planner, approvals, and post detail UIs can render:
+- Draft
+- Scheduled
+- In Review (pending approval)
+- Approved (awaiting schedule)
+- Rejected with feedback (approver comments included)
+- Queued via content category
+- Published / Posted (with engagement metrics aligned to seeded analytics)
+- Failed (with realistic failure reason)
+- Missed schedule
+- Repost / repeat-post instances
+
+**Automations coverage**
+Seed at least one configured-but-non-executing example of every automation type so the Automations module is populated:
+- RSS Feed automation
+- Evergreen automation
+- Bulk Upload (CSV) campaign with imported drafts
+- Content Categories (queues) with assigned slots and queued posts
+- Repeat Post rules attached to one or more sample posts
+- Each automation must be configured with sample accounts, schedule, and any rules required by the UI, but must never actually execute (no real fetches, no real publishing) — see live-action guardrails below
+
+**AI coverage**
+Seed every AI surface so the AI module is fully explorable:
+- AI chat threads (multiple, covering caption ideation, image prompting, post variants)
+- AI-generated captions saved to content library
+- AI-generated images (cover at least one example per supported image model surface)
+- AI-generated videos (where the product supports them)
+- AI post variants tied to seeded posts
+- AI brand voice / brand knowledge sample setup
+- AI Studio / Composer AI history populated
+
+**Inbox coverage**
+Seed inbox data for every platform that has an inbox surface, covering every record type and status:
+- Direct messages, comments, mentions, reviews (where the platform supports them)
+- Status mix: unread, read, assigned, pending, archived, done, snoozed (where supported)
+- At least one conversation with multiple back-and-forth messages
+- At least one assigned-to-teammate conversation
+- At least one review with rating (GBP, Facebook)
+- Sample notification/activity history aligned to inbox records
+
+**Analytics coverage**
+Seed synthetic analytics so every analytics report and date range renders coherently:
+- Overview, per-platform, per-account, per-post reports
+- Engagement, reach, impressions, follower growth, best-time-to-post data
+- Coherent values for last 7 days, last 30 days, last quarter, custom ranges that overlap the seeded post timeline
+- Competitor / report-builder surfaces seeded where the workspace exposes them
+
+**Supporting records**
+Seed the supporting structures the rest of the product depends on:
+- Content categories with slots and assigned posts
+- Labels / tags with assignments
+- Folders for media and posts
+- Campaigns with assigned posts
+- UTMs and replacement rules
+- Hashtag groups
+- Saved captions / saved replies
+- Approval workflows configured with seeded approvers
+- Team members and roles, including at least one Approver, one Editor, and one Viewer
+
+**Date anchoring**
 - Generate seeded dates relative to the workspace timezone and current date:
   - previous month
   - current month
   - next two months
+- Published statuses must be anchored to past dates; scheduled / in-review / approved must be anchored to future dates; drafts and queued can be undated
 
 **Analytics**
 - Serve synthetic but coherent analytics for sample workspace/account IDs
@@ -199,6 +285,8 @@ Detailed flow and edge cases live in [02-workflow.md](/home/casper/code/contents
 | BR-10 | The sample workspace should allow safe internal interactions, but not full live behavior | Exploration quality without external side effects |
 | BR-11 | The standard onboarding widget must be hidden in the sample workspace | Seeded data already demonstrates the product |
 | BR-12 | Provisioning failure must not block user access to the real workspace | New-user access cannot depend on sample generation succeeding |
+| BR-13 | Sample-data coverage must be exhaustive across every supported platform, post type, post status, automation type, AI surface, inbox record type, and analytics report — not a representative subset | Every empty UI surface in v1 must demonstrate the product, otherwise the feature fails its own activation goal |
+| BR-14 | Seeded automations must be visible and configured but must never execute — no real fetches, no real publishing, no real schedule progression | Automations module must look populated without producing live side effects |
 
 ---
 
@@ -212,6 +300,8 @@ Detailed flow and edge cases live in [02-workflow.md](/home/casper/code/contents
 | Which actions are blocked vs. sandboxed vs. redirected? | Per-module action matrix | Product + Engineering | Sprint 1 | Pending |
 | How should readiness be surfaced if provisioning is slow? | Polling card / toast / notification center / all of these | Product + Frontend | Sprint 1 | Pending |
 | Should users be able to rename or edit the sample workspace metadata? | No / partial / yes | Product | Before implementation | Pending |
+| Are there platforms / post types we explicitly skip in v1 despite the exhaustive-coverage rule? | None / list per platform | Product + Engineering | Sprint 1 | Pending |
+| How do we verify exhaustive coverage before release? | Manual checklist / automated coverage report / both | Engineering + QA | Before implementation | Pending |
 
 ---
 
@@ -236,6 +326,8 @@ Detailed flow and edge cases live in [02-workflow.md](/home/casper/code/contents
 - Frontend team for chooser flow, banner/badge treatment, empty-state CTAs, and sample-aware UI behavior
 - Inbox service changes for seeded sample inbox records and safe handling
 - Analytics service changes for synthetic sample analytics responses
+- Automations service changes (RSS, Evergreen, Bulk, Content Categories, Repeat Post) to allow configured-but-non-executing seeded automations
+- AI service changes (chats, generations, content-library) to seed sample-workspace-scoped artifacts without consuming real generation credits or quotas
 - Product analytics / event tracking for activation and confusion guard rails
 
 **External:**
@@ -264,3 +356,4 @@ Detailed flow and edge cases live in [02-workflow.md](/home/casper/code/contents
 |---|---|---|
 | 2026-04-14 | Product Team | Initial PRD draft |
 | 2026-04-14 | Product Team | Added explicit sample-workspace visual treatment and backend/frontend ownership split |
+| 2026-05-06 | Product Team | Made coverage exhaustive: enumerated platforms, post types, post statuses, automations, AI surfaces, inbox record types, analytics reports. Added BR-13 (exhaustive coverage) and BR-14 (configured-but-non-executing automations). Excluded blog destinations (blog publishing has been sunset). |

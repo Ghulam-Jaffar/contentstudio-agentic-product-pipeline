@@ -6,9 +6,9 @@
 
 **Description:**
 
-Give each newly onboarded eligible full-suite user a second private sample workspace filled with realistic demo data so they can understand ContentStudio faster without polluting their own real workspace. The release covers sample-workspace metadata and eligibility, asynchronous provisioning, date-relative seeded scenarios across Planner, AI, Inbox, Analytics, media, approvals, and team structure, plus backend guardrails so sample workspaces never trigger live sync, publishing, or billing side effects.
+Give each newly onboarded eligible full-suite user a second private sample workspace filled with realistic demo data so they can understand ContentStudio faster without polluting their own real workspace. Coverage in v1 is exhaustive, not representative: every supported social platform, every post type that platform supports, every post status, every automation type (RSS, Evergreen, Bulk, Content Categories, Repeat Post), every AI surface, every inbox record type and status, and every analytics report must have seeded data so no module renders empty. The release covers sample-workspace metadata and eligibility, asynchronous provisioning, date-relative seeded scenarios across Planner, AI, Inbox, Analytics, Automations, media, approvals, and team structure, plus backend guardrails so sample workspaces never trigger live sync, publishing, automation execution, or billing side effects.
 
-On the frontend, the release adds a post-onboarding start screen, persistent demo-workspace identification through banner and badge treatment, sample-aware guidance across key modules, and clean handoff paths between the sample workspace and the user’s real workspace. V1 keeps the real workspace empty and trustworthy while making the sample workspace feel rich, current, and safe to explore.
+On the frontend, the release adds a post-onboarding start screen, persistent demo-workspace identification through banner and badge treatment, sample-aware guidance across key modules, and clean handoff paths between the sample workspace and the user's real workspace. V1 keeps the real workspace empty and trustworthy while making the sample workspace feel rich, current, and safe to explore.
 
 ---
 
@@ -128,15 +128,33 @@ As a user exploring the sample workspace, I want to see a realistic publishing c
 5. User understands how the planning and collaboration side of ContentStudio works without first building everything manually.
 
 **Acceptance criteria:**
-- [ ] Sample workspaces are seeded with non-live sample account records that look valid in the product but cannot be used as real connected accounts
-- [ ] Planner data spans the previous month, current month, and next two months using the generated anchor date
-- [ ] Seeded planner data includes a realistic mix of published posts, scheduled posts, draft posts, in-review posts, and rejected posts with feedback
-- [ ] Sample approval records include approvers, comments, and status states that are visible in normal planner/post views
-- [ ] Sample team members and roles are created so collaboration and approvals feel populated
-- [ ] Supporting records are seeded where needed, including categories, labels, folders, campaigns, and media assets
+
+Platform coverage:
+- [ ] At least one non-live sample account is seeded for every supported platform: Facebook (Page, Group), Instagram (Business, Personal), X / Twitter, LinkedIn (Profile, Company Page), Pinterest, TikTok (Business, Personal), YouTube, Threads, Bluesky, Google Business Profile, Tumblr
+- [ ] No real platform credentials, tokens, webhook subscriptions, or external account references are stored for sample accounts
+- [ ] Sample accounts render correctly in account-pickers, planner filters, and analytics filters as if they were connected
+
+Post-type coverage (per platform, where the platform supports the type):
+- [ ] At least one sample of each of these is seeded across the relevant platforms: image post, carousel/multi-image post, video post, reel/short, story, text-only post, link/article share, thread, document post (LinkedIn), GBP Update / Event / Offer, Pinterest image pin / video pin / idea pin
+- [ ] At least one Instagram, LinkedIn, and Facebook post includes a first-comment example
+- [ ] Seeded posts use realistic media (sample images and videos from the seeded media library), not lorem-ipsum placeholders
+
+Post-status coverage:
+- [ ] Seeded planner data includes at least one example of each status the product supports: Draft, Scheduled, In Review, Approved (awaiting schedule), Rejected with feedback, Queued via content category, Published / Posted, Failed (with realistic failure reason), Missed schedule, Repost / repeat-post instance
+- [ ] Published statuses are anchored to past dates within the seeded window; Scheduled / In Review / Approved are anchored to future dates; Drafts and Queued may be undated
+- [ ] Seeded planner data spans previous month, current month, and next two months using the generated anchor date
+
+Approvals, team, supporting records:
+- [ ] Sample approval records include approvers, multi-step approval chains where the workspace supports them, approver comments, and the full status set (in-review, approved, rejected with feedback)
+- [ ] At least one Approver, one Editor, and one Viewer team member are seeded so collaboration roles are demonstrated
+- [ ] Content categories with slots and assigned/queued posts are seeded
+- [ ] Labels / tags, folders, campaigns, UTMs, hashtag groups, and saved captions/replies are seeded with realistic assignments
+- [ ] Sample media library includes images and videos used by seeded posts, plus extra browsable assets
+
+Isolation and idempotency:
 - [ ] Seeded records are scoped only to the sample workspace and do not pollute the user’s real workspace
-- [ ] No real platform credentials, tokens, or external account references are stored for sample accounts
 - [ ] Re-running the seed process does not create uncontrolled duplicate records for the same sample workspace version
+- [ ] A coverage manifest is produced per provisioning run that lists which platforms, post types, statuses, and supporting records were seeded — used for QA verification and observability
 
 **Mock-ups:**
 N/A - backend only
@@ -175,13 +193,15 @@ As a user evaluating ContentStudio’s AI capabilities, I want the sample worksp
 4. User understands how AI creation and content reuse work before they begin creating real content in their own workspace.
 
 **Acceptance criteria:**
-- [ ] Sample workspaces include seeded AI chat threads with realistic prompts and responses across common use cases
-- [ ] Seeded AI outputs include at least captions, post variants, images, videos, and saved content artifacts where the current product supports them
+- [ ] Sample workspaces include seeded AI chat threads with realistic prompts and responses across common use cases (caption ideation, image prompting, post-variant generation, brand voice rewriting)
+- [ ] Every AI surface in the product has seeded data: AI Studio / Composer AI history, AI chat sidebar, AI captions library, AI image library, AI video library (where supported), AI post variants attached to seeded posts, AI brand voice / brand knowledge sample setup
+- [ ] At least one seeded AI image example exists per supported image-generation surface (e.g., Imagen, Nano Banana, DALL-E variants — whichever the product currently exposes)
 - [ ] AI chat messages and saved outputs are scoped only to the sample workspace
 - [ ] AI-generated sample assets appear in the normal media/content-library surfaces for the sample workspace
 - [ ] Seeded AI examples reflect a believable marketing context rather than placeholder lorem ipsum
-- [ ] Existing AI actions performed by the user inside the sample workspace continue saving back into the sample workspace only
-- [ ] Seeded AI data does not appear in the user’s real workspace
+- [ ] Seeding AI artifacts does not consume real generation credits, real model API calls, or real generation quotas
+- [ ] Existing AI actions performed by the user inside the sample workspace continue saving back into the sample workspace only and remain subject to the sample workspace's safety and quota rules
+- [ ] Seeded AI data does not appear in the user's real workspace
 
 **Mock-ups:**
 N/A - backend only
@@ -220,11 +240,14 @@ As a user exploring Inbox, I want to see realistic conversations, comments, assi
 4. User understands how triage and collaboration work in Inbox without requiring live platform traffic.
 
 **Acceptance criteria:**
-- [ ] Sample workspaces are seeded with sample inbox details, messages, comments, assignments, and status mixes that appear correctly in Inbox
+- [ ] Inbox is seeded for every platform that exposes an inbox surface (Facebook, Instagram, LinkedIn, YouTube, TikTok, Google Business Profile — whichever are live in the inbox module)
+- [ ] Every inbox record type the platform supports is seeded: direct messages, comments, mentions, reviews (with star ratings for GBP and Facebook), reactions where surfaced
+- [ ] Sample inbox records include the full status set: unread, read, assigned (to seeded teammate), pending, archived, done, snoozed (where supported)
+- [ ] At least one conversation has multiple back-and-forth messages so threading UI is demonstrated
+- [ ] At least one record per platform is assigned to a seeded teammate to demonstrate assignment UX
 - [ ] Inbox sample data is scoped to the sample workspace only
-- [ ] Sample inbox records include a realistic distribution of unread, assigned, pending, archived, and done items
-- [ ] Sample inbox data does not trigger any live sync, fetch, reply, or notification behavior against external platforms
-- [ ] Sample inbox records can be safely viewed and manipulated in the product without affecting live inbox data
+- [ ] Sample inbox data does not trigger any live sync, fetch, reply, webhook, or notification behavior against external platforms
+- [ ] Sample inbox records can be safely viewed and manipulated in the product without affecting live inbox data or producing outbound messages
 - [ ] Seeding logic is versionable and idempotent for repeated provisioning/retry scenarios
 
 **Mock-ups:**
@@ -265,10 +288,12 @@ As a user exploring Analytics, I want the sample workspace to show believable pe
 
 **Acceptance criteria:**
 - [ ] Analytics responses for sample workspace and sample account IDs are served from a synthetic sample-data path rather than the normal live-ingestion path
-- [ ] Sample analytics cover the date ranges needed by the current analytics UI and return coherent responses for common filters and overview requests
-- [ ] Sample analytics align logically with the sample accounts and seeded timeline used elsewhere in the sample workspace
+- [ ] Every analytics report the product exposes returns coherent sample data: overview, per-platform, per-account, per-post, engagement, reach, impressions, follower growth, best-time-to-post, and any competitor / report-builder views
+- [ ] Sample analytics cover at minimum these date ranges coherently: last 7 days, last 30 days, last 90 days / quarter, custom ranges that overlap the seeded post timeline (previous month through next two months)
+- [ ] Per-post analytics align with the seeded post mix produced by Story 3 — every Published seeded post has corresponding sample metrics
+- [ ] Per-account analytics align with the seeded account mix produced by Story 3 — every seeded sample account has corresponding sample metrics
 - [ ] Synthetic analytics responses are clearly distinguishable internally so they can be debugged and supported
-- [ ] Live analytics refresh or sync paths are not invoked for sample workspaces
+- [ ] Live analytics refresh, sync, and ingestion paths are not invoked for sample workspaces
 - [ ] Normal analytics behavior for real workspaces remains unchanged
 
 **Mock-ups:**
@@ -297,7 +322,56 @@ N/A - backend only
 
 ---
 
-### Story 7: [BE] Block live actions from sample workspaces and track blocked attempts
+### Story 7: [BE] Seed sample automations across RSS, Evergreen, Bulk, Content Categories, and Repeat Post
+
+**Description:**
+As a user evaluating ContentStudio's automation capabilities, I want the sample workspace to include realistic configured-but-non-executing examples of every automation type so that I can understand RSS feeds, Evergreen recycling, Bulk uploads, Content Category queues, and Repeat Post rules without setting them up from scratch — and without any of them firing real publishes.
+
+**Workflow:**
+1. User opens the Automations module inside the sample workspace.
+2. User sees populated automations across every supported automation type.
+3. User can open each automation, inspect its configuration, schedule, and assigned posts/feeds.
+4. User understands how each automation type works in practice without triggering any real fetches or publishes.
+
+**Acceptance criteria:**
+- [ ] At least one sample RSS automation is seeded with a sample feed source, content rules, sample-account targets, and a believable schedule — but it never actually fetches the feed and never publishes
+- [ ] At least one sample Evergreen automation is seeded with a content pool, recycling rules, and sample-account targets — but it never actually publishes
+- [ ] At least one sample Bulk Upload campaign is seeded with imported draft posts attached to sample accounts — drafts appear in the planner with a `Bulk` origin where the UI surfaces it
+- [ ] Content Categories are seeded with named categories, weekly slot schedules, sample-account assignments, and at least one queue with multiple queued posts already attached
+- [ ] At least one Repeat Post rule is seeded against a Published seeded post with a realistic recurrence pattern; future repeat instances appear in the planner without ever firing real publishes
+- [ ] Seeded automations appear correctly in the Automations list, detail views, and any planner badges/origin indicators the product exposes
+- [ ] Seeded automations are scoped only to the sample workspace and never appear in the user's real workspace
+- [ ] No automation seeded in the sample workspace registers with cron, queue workers, RSS pollers, or any background job runner that would cause it to execute
+- [ ] Users can interact with seeded automations safely in the UI (open, inspect, toggle pause/resume) without producing live side effects
+- [ ] Seeding logic is versionable and idempotent for repeated provisioning/retry scenarios
+
+**Mock-ups:**
+N/A - backend only
+
+**Impact on existing data:**
+- Creates sample workspace-scoped automation records across RSS, Evergreen, Bulk, Content Categories, and Repeat Post
+- No changes to live automation behavior in real workspaces
+
+**Impact on other products:**
+- Makes the existing web Automations module immediately explorable for new users
+- No mobile app changes in v1
+- No Chrome extension impact
+
+**Dependencies:**
+- Depends on: **[BE] Add sample workspace metadata, ownership, and eligibility rules**
+- Depends on: **[BE] Build sample workspace provisioning and date-relative scenario generation**
+- Depends on: **[BE] Seed sample accounts, planner calendar, approvals, team, media, and supporting records**
+
+**Global quality & compliance (wherever applicable)**
+- [ ] Mobile responsiveness - N/A, backend-only story
+- [ ] Multilingual support (frontend + backend, translations available or fallback handled)
+- [ ] UI theming support - N/A, backend-only story
+- [ ] White-label domains impact review
+- [ ] Cross-product impact assessment (web, mobile apps, Chrome extension)
+
+---
+
+### Story 8: [BE] Block live actions from sample workspaces and track blocked attempts
 
 **Description:**
 As a user exploring the sample workspace, I want the system to stop me from connecting real accounts, syncing live data, or publishing real content from the demo environment so that I can explore safely without accidental external side effects.
@@ -313,9 +387,11 @@ As a user exploring the sample workspace, I want the system to stop me from conn
 - [ ] Real social account connection and credential-save paths are blocked for sample workspaces
 - [ ] Real publishing, posting, or scheduling paths that would hit external platforms are blocked for sample workspaces
 - [ ] Live inbox reply/sync and analytics refresh/sync paths are blocked for sample workspaces
+- [ ] Seeded automations (RSS, Evergreen, Bulk, Content Categories, Repeat Post) are excluded from cron, queue workers, RSS pollers, and any background job runner — verified per automation type
+- [ ] AI generation requests inside the sample workspace either use sandboxed paths or otherwise do not consume real generation credits / quotas
 - [ ] Sample workspaces and sample accounts are excluded from background jobs, webhooks, automations, and other live-processing paths that should only run for real workspaces
-- [ ] Blocked attempts are logged with enough context for support and product review
-- [ ] Blocking behavior does not affect equivalent actions in the user’s real workspace
+- [ ] Blocked attempts are logged with enough context for support and product review, including action type, automation type (if applicable), and originating workspace
+- [ ] Blocking behavior does not affect equivalent actions in the user's real workspace
 
 **Mock-ups:**
 N/A - backend only
@@ -341,7 +417,7 @@ N/A - backend only
 
 ---
 
-### Story 8: [FE] Add the post-onboarding chooser and sample-workspace readiness states
+### Story 9: [FE] Add the post-onboarding chooser and sample-workspace readiness states
 
 **Description:**
 As a newly onboarded user, I want to choose between my own workspace and a prepared sample workspace right after onboarding so that I can either start real setup immediately or explore the full product with realistic data first.
@@ -413,7 +489,7 @@ As a newly onboarded user, I want to choose between my own workspace and a prepa
 
 ---
 
-### Story 9: [FE] Add persistent demo-workspace banner, badges, and sample-aware visual treatment
+### Story 10: [FE] Add persistent demo-workspace banner, badges, and sample-aware visual treatment
 
 **Description:**
 As a user inside the sample workspace, I want the app to clearly show that I am in a demo environment so that I do not confuse generated sample data with my own real workspace data.
@@ -472,7 +548,7 @@ As a user inside the sample workspace, I want the app to clearly show that I am 
 
 ---
 
-### Story 10: [FE] Add sample-workspace handoff UX for empty states and blocked live actions
+### Story 11: [FE] Add sample-workspace handoff UX for empty states and blocked live actions
 
 **Description:**
 As a user moving between the sample workspace and my real workspace, I want clear prompts that tell me when to explore the sample workspace and when to switch back to my own workspace for live actions so that I always know where to go next.

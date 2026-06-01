@@ -171,7 +171,8 @@
       "Bash(ls /home/tehreem/code/ 2>/dev/null | head -30)",
       "Read(//home/tehreem/code/**)",
       "Bash(mkdir -p /home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories/chrome-ext-content-category-search)",
-      "Bash(mkdir -p /home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories/content-category-sort-filter)"
+      "Bash(mkdir -p /home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories/content-category-sort-filter)",
+      "Bash(mkdir -p /home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories/social-listening-data-banner)"
     ],
     "additionalDirectories": [
       "/home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories"

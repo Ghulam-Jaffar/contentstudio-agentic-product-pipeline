@@ -1,0 +1,356 @@
+name: Production Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+concurrency:
+  group: contentstudio-social-analytics-go-production-release
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/d4interactive/contentstudio-social-analytics-go
+
+jobs:
+  version:
+    name: Determine Release Version
+    runs-on: arc-runners-d4interactive
+    # Skip version bump commits
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    outputs:
+      release_tag: ${{ steps.release_version.outputs.release_tag }}
+      prev_tag: ${{ steps.release_version.outputs.prev_tag }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: prod-version
+
+      - name: Determine release version
+        id: release_version
+        working-directory: prod-version
+        run: |
+          # Check if there's a UAT or RC tag to promote
+          LATEST_PRE=$(git tag -l 'v*-uat.*' 'v*-rc.*' --sort=-v:refname | head -n1 || echo "")
+
+          if [ -n "$LATEST_PRE" ]; then
+            # Promote pre-release to stable: v1.3.0-uat.3 -> v1.3.0
+            RELEASE_TAG=$(echo "$LATEST_PRE" | sed -E 's/-(uat|rc)\.[0-9]*//')
+            PREV_TAG=$(git tag -l 'v*' --sort=-v:refname | grep -vE '\-(dev|feat|uat|rc)\.' | head -n1 || echo "v0.0.0")
+            echo "Promoting $LATEST_PRE -> $RELEASE_TAG"
+          else
+            # No pre-release found — compute version from commits
+            PREV_TAG=$(git tag -l 'v*' --sort=-v:refname | grep -vE '\-(dev|feat|uat|rc)\.' | head -n1 || echo "v0.0.0")
+            echo "No pre-release tag found, computing from commits since $PREV_TAG"
+
+            if [ "$PREV_TAG" = "v0.0.0" ]; then
+              COMMITS=$(git log --pretty=format:"%s" -20)
+            else
+              COMMITS=$(git log "$PREV_TAG"..HEAD --pretty=format:"%s")
+            fi
+
+            BUMP_TYPE="patch"
+            if echo "$COMMITS" | grep -qiE "^(BREAKING CHANGE|breaking|major):"; then
+              BUMP_TYPE="major"
+            elif echo "$COMMITS" | grep -qiE "^(feat|feature|minor):"; then
+              BUMP_TYPE="minor"
+            fi
+
+            VERSION=${PREV_TAG#v}
+            IFS='.' read -ra PARTS <<< "$VERSION"
+            MAJOR=${PARTS[0]:-0}
+            MINOR=${PARTS[1]:-0}
+            PATCH=${PARTS[2]:-0}
+
+            case $BUMP_TYPE in
+              major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+              minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+              patch) PATCH=$((PATCH + 1)) ;;
+            esac
+
+            RELEASE_TAG="v${MAJOR}.${MINOR}.${PATCH}"
+          fi
+
+          # Guard: don't re-release an existing tag
+          if git rev-parse "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "Tag $RELEASE_TAG already exists — skipping"
+            echo "release_tag=" >> "$GITHUB_OUTPUT"
+          else
+            echo "release_tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "prev_tag=$PREV_TAG" >> "$GITHUB_OUTPUT"
+          echo "Release tag: $RELEASE_TAG"
+
+  build-and-push:
+    name: Build & Push Images
+    runs-on: arc-runners-d4interactive
+    needs: [version]
+    if: needs.version.outputs.release_tag != ''
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          path: build-prod
+
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build images
+        run: |
+          sudo docker build \
+            -f build-prod/Dockerfile \
+            -t ${{ env.IMAGE_PREFIX }}/analytics-pipeline:${{ needs.version.outputs.release_tag }} \
+            -t ${{ env.IMAGE_PREFIX }}/analytics-pipeline:sha-${{ github.sha }} \
+            -t ${{ env.IMAGE_PREFIX }}/analytics-pipeline:prod-latest \
+            build-prod/
+
+      - name: Push images
+        run: |
+          sudo docker push ${{ env.IMAGE_PREFIX }}/analytics-pipeline:${{ needs.version.outputs.release_tag }}
+          sudo docker push ${{ env.IMAGE_PREFIX }}/analytics-pipeline:sha-${{ github.sha }}
+          sudo docker push ${{ env.IMAGE_PREFIX }}/analytics-pipeline:prod-latest
+
+  release:
+    name: Create Official Release
+    runs-on: arc-runners-d4interactive
+    needs: [version, build-and-push]
+    if: always() && needs.version.result == 'success' && needs.version.outputs.release_tag != '' && !contains(needs.*.result, 'failure')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: prod-release
+
+      - name: Configure git
+        working-directory: prod-release
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create and push release tag
+        working-directory: prod-release
+        run: |
+          RELEASE_TAG="${{ needs.version.outputs.release_tag }}"
+          git tag -a "$RELEASE_TAG" -m "Release $RELEASE_TAG"
+          git push origin "$RELEASE_TAG"
+
+      - name: Generate changelog
+        id: changelog
+        working-directory: prod-release
+        run: |
+          RELEASE_TAG="${{ needs.version.outputs.release_tag }}"
+          PREV_TAG="${{ needs.version.outputs.prev_tag }}"
+
+          if [ -n "$PREV_TAG" ] && [ "$PREV_TAG" != "v0.0.0" ]; then
+            COMMITS=$(git log "$PREV_TAG"..HEAD --pretty=format:"- %s (%h)" --no-merges)
+          else
+            COMMITS=$(git log --pretty=format:"- %s (%h)" --no-merges -30)
+          fi
+
+          # Categorize commits
+          FEATURES=$(echo "$COMMITS" | grep -iE "^- (feat|feature):" || true)
+          FIXES=$(echo "$COMMITS" | grep -iE "^- fix:" || true)
+          OTHER=$(echo "$COMMITS" | grep -viE "^- (feat|feature|fix):" || true)
+
+          cat > changelog.md << EOF
+          ## What's Changed in ${RELEASE_TAG}
+
+          EOF
+
+          if [ -n "$FEATURES" ]; then
+            echo "### Features" >> changelog.md
+            echo "$FEATURES" >> changelog.md
+            echo "" >> changelog.md
+          fi
+
+          if [ -n "$FIXES" ]; then
+            echo "### Bug Fixes" >> changelog.md
+            echo "$FIXES" >> changelog.md
+            echo "" >> changelog.md
+          fi
+
+          if [ -n "$OTHER" ]; then
+            echo "### Other Changes" >> changelog.md
+            echo "$OTHER" >> changelog.md
+            echo "" >> changelog.md
+          fi
+
+          echo "" >> changelog.md
+          echo "### Docker Images" >> changelog.md
+          echo "- \`${{ env.IMAGE_PREFIX }}/analytics-pipeline:${RELEASE_TAG}\`" >> changelog.md
+          echo "" >> changelog.md
+          echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${RELEASE_TAG}" >> changelog.md
+
+      - name: Install GitHub CLI
+        run: |
+          (type -p wget >/dev/null || (sudo apt-get update && sudo apt-get install -y wget)) \
+            && sudo mkdir -p -m 755 /etc/apt/keyrings \
+            && out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+            && cat $out | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
+            && sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+            && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+            && sudo apt-get update && sudo apt-get install -y gh
+
+      - name: Create GitHub release
+        working-directory: prod-release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ needs.version.outputs.release_tag }}" \
+            --title "Release ${{ needs.version.outputs.release_tag }}" \
+            --notes-file changelog.md \
+            --latest
+
+      - name: Update d4-k8 manifests
+        run: |
+          RELEASE_TAG="${{ needs.version.outputs.release_tag }}"
+
+          # Clone d4-k8 repo
+          D4K8_CLONE="${GITHUB_WORKSPACE}/../d4-k8-clone"
+          rm -rf "$D4K8_CLONE"
+          git clone --depth 1 "https://x-access-token:${{ secrets.D4_K8_MANIFEST_UPDATE_PAT }}@github.com/d4interactive/d4-k8.git" "$D4K8_CLONE"
+          cd "$D4K8_CLONE"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Update fullstack values
+          sed -i 's|tag: ".*"|tag: "'"$RELEASE_TAG"'"|g' \
+            charts/contentstudio-fullstack/analytics-pipeline/values-prod.yaml
+
+          # Update jobs values
+          sed -i 's|tag: ".*"|tag: "'"$RELEASE_TAG"'"|g' \
+            charts/contentstudio-jobs/analytics-pipeline/values-prod.yaml
+
+          # Update CronWorkflow image tags
+          for f in argo-cronworkflows/prod/social-analytics-go/*.yaml; do
+            sed -i 's|image: ".*"|image: "'"${{ env.IMAGE_PREFIX }}/analytics-pipeline:$RELEASE_TAG"'"|g' "$f"
+          done
+
+          # Commit and push
+          git add -A
+          git commit -m "chore: update social-analytics-go prod images to $RELEASE_TAG [skip ci]" || echo "No manifest changes"
+          git pull --rebase origin main
+          git push origin main
+
+      - name: Clean up pre-release tags
+        working-directory: prod-release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Delete pre-release tags for this version
+          RELEASE_TAG="${{ needs.version.outputs.release_tag }}"
+          PRERELEASE_TAGS=$(git tag -l "${RELEASE_TAG}-dev.*" "${RELEASE_TAG}-feat.*" "${RELEASE_TAG}-uat.*" "${RELEASE_TAG}-rc.*")
+
+          for tag in $PRERELEASE_TAGS; do
+            echo "Cleaning up pre-release tag: $tag"
+            gh release delete "$tag" --yes 2>/dev/null || true
+            git push origin --delete "$tag" 2>/dev/null || true
+          done
+
+  sonarqube:
+    name: SonarQube Analysis
+    runs-on: arc-runners-d4interactive
+    needs: [release]
+    if: always() && needs.release.result == 'success'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y curl unzip
+
+      - name: Install and run SonarQube analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+        run: |
+          export SONAR_SCANNER_VERSION=6.2.0.4584
+          export SONAR_SCANNER_HOME=$HOME/.sonar/sonar-scanner-$SONAR_SCANNER_VERSION-linux-x64
+          curl --create-dirs -sSLo $HOME/.sonar/sonar-scanner.zip \
+            https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$SONAR_SCANNER_VERSION-linux-x64.zip
+          unzip -o $HOME/.sonar/sonar-scanner.zip -d $HOME/.sonar/
+          export PATH=$SONAR_SCANNER_HOME/bin:$PATH
+
+          sonar-scanner \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=${{ vars.SONARQUBE_HOST_URL }} \
+            -Dsonar.token=$SONAR_TOKEN
+
+  notify-failure:
+    name: Notify Mattermost on Failure
+    runs-on: arc-runners-d4interactive
+    needs: [version, build-and-push, release, sonarqube]
+    if: failure()
+    steps:
+      - name: Send failure notification to Mattermost
+        env:
+          ACTOR: ${{ github.actor }}
+          RUN_NUMBER: ${{ github.run_number }}
+          RUN_ID: ${{ github.run_id }}
+          SERVER_URL: ${{ github.server_url }}
+          REPOSITORY: ${{ github.repository }}
+          REF_NAME: ${{ github.ref_name }}
+          VERSION_RESULT: ${{ needs.version.result }}
+          BUILD_RESULT: ${{ needs.build-and-push.result }}
+          RELEASE_RESULT: ${{ needs.release.result }}
+          SONARQUBE_RESULT: ${{ needs.sonarqube.result }}
+          WEBHOOK_URL: ${{ vars.MATTERMOST_WEBHOOK_URL }}
+        run: |
+          python3 - << 'PYEOF'
+          import os, json, urllib.request
+
+          actor = os.environ['ACTOR']
+          run_number = os.environ['RUN_NUMBER']
+          run_id = os.environ['RUN_ID']
+          server_url = os.environ['SERVER_URL']
+          repository = os.environ['REPOSITORY']
+          ref_name = os.environ['REF_NAME']
+          webhook_url = os.environ['WEBHOOK_URL']
+
+          run_url = f"{server_url}/{repository}/actions/runs/{run_id}"
+
+          job_results = {
+              "Determine Release Version": os.environ.get('VERSION_RESULT', 'unknown'),
+              "Build & Push Images": os.environ.get('BUILD_RESULT', 'unknown'),
+              "Create Official Release": os.environ.get('RELEASE_RESULT', 'unknown'),
+              "SonarQube Analysis": os.environ.get('SONARQUBE_RESULT', 'unknown'),
+          }
+          failed_jobs = [j for j, s in job_results.items() if s == 'failure']
+          failed_jobs_str = ", ".join(failed_jobs) if failed_jobs else "Unknown"
+
+          message = (
+              "@kashif.ali9498 @wasay @waqasasif\n\n"
+              "| | |\n"
+              "|:---|:---|\n"
+              f"| **Action** | [#{run_number}] [Production Release] by {actor} |\n"
+              f"| **Failed Execution** | :x: [Execution #{run_number}]({run_url}) |\n"
+              "| **Pipeline** | Production Release |\n"
+              f"| **Branch** | `{ref_name}` |\n"
+              "| **Project** | contentstudio-social-analytics-go |\n"
+              f"| **Failed Jobs** | {failed_jobs_str} |"
+          )
+
+          payload = json.dumps({"channel": "cs-build-errors", "text": message})
+          req = urllib.request.Request(
+              webhook_url,
+              data=payload.encode(),
+              headers={"Content-Type": "application/json"},
+              method="POST",
+          )
+          with urllib.request.urlopen(req) as resp:
+              print(f"Mattermost notification sent: HTTP {resp.status}")
+          PYEOF

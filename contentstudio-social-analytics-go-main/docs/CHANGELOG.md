@@ -1,0 +1,165 @@
+# Changelog
+
+## [1.2.0](https://github.com/d4interactive/contentstudio-social-analytics-go/compare/v1.1.0...v1.2.0) (2026-01-19)
+
+
+### Features
+
+* add .env file support using godotenv package for configuration management ([688529e](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/688529edcc4c2cdcca09c991b6c2d460d6bd947f))
+* add account fetcher scheduler with MongoDB integration and package initialization ([2913e4b](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/2913e4b3d2e218530497c521f35215256aebd3f6))
+* add clickhouse schema files for social media analytics ([872ffe6](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/872ffe6e420623c0afccad51ecf673ae18bb858b))
+* Add Facebook and Instagram competitor analysis ([5b83509](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/5b83509e25ab0b5f7ff41e2dd83585a21808cea2))
+* Add Facebook and Instagram competitor analysis ([aaaad58](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/aaaad589531e5f046443f4a6a4efa055f3632344))
+* add Facebook immediate processor service with real-time notifications ([7c42613](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/7c426137f5d852c3733fc2360e31189564477f46))
+* add Facebook video insights parsing and fetching support ([97dbfaf](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/97dbfaf8bc5e62ccdbab35a38710b71b3380ab99))
+* add facebook-clickhouse-sink service and update Kafka consumer interface ([001a7e1](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/001a7e191113b41fe5b03bccf02d9217acd2bcf3))
+* add immediate processor service for Instagram data processing ([3cf5a8d](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/3cf5a8d254fba14714422c27f13a5f7150d4ab61))
+* add immediate work API ([f74a4ae](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/f74a4aea5e1bfcfdf4fa36e388124ba4b1504f87))
+* add Instagram ClickHouse sink service with models and batch processing ([abe563e](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/abe563edbfe0c77f43d69b90b1de92a362940495))
+* add Instagram fetcher service and consolidate insight models ([0a127c8](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/0a127c84916edb4a9a4eff607ce27f90e4e1d971))
+* add Instagram insights fetching with daily and total metrics support ([0817201](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/0817201d0978a98fc499927c4e033f90152199f8))
+* add Instagram media insights and demographic data collection ([922a14c](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/922a14cc7d473c8a0839a536a640be84dd272a48))
+* add Instagram posts parser service with media and insights parsing ([3f6810b](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/3f6810b35789482cd100684f23e6a54ec1bc4011))
+* add LinkedIn data pipeline with parser and ClickHouse sink ([93a04fa](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/93a04fad4f204d6439123ca434f73980e592244d))
+* add LinkedIn follower demographics insights tracking ([cb68559](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/cb6855916961ea3dd5a00192f8a47a122b41e066))
+* add LinkedIn immediate processor service with Makefile integration ([84eb816](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/84eb8166905fa3d216da99663273ce431133fba5))
+* add LinkedIn URN lookup tables for seniority, industry and country codes ([e9d10a2](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/e9d10a221b0f1ef7f8bb8e76ae42608694712b6a))
+* add multi-stage Dockerfile for building and running social analytics services ([52f9661](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/52f96619463237e5fac49423c5254fce1e33f9cf))
+* add organization details fetching and improve LinkedIn post parsing ([4df0f86](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/4df0f86c4685c8f5e77a9259837c508b42a67d6e))
+* add reels detection and insights parsing to Facebook video processor ([d32098b](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/d32098bbb3d2700c7bc9ab812381cb7073ac91ef))
+* add robust token decryption and custom Facebook time parsing support ([c676c9d](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/c676c9dab64ccc2047df5a5192fe432d76e96fff))
+* add service management scripts for Facebook and Instagram microservices ([b019586](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/b0195864dd2b95d4fabd1ab6b0cb35a7c2a14a51))
+* add social media schema definitions and immediate work API service ([26e0dea](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/26e0dead4465faf8c6de3669ce230f2755b85671))
+* add structured logging to Facebook client for better observability ([97daca9](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/97daca90e32fc644104c8011010fb2a61d4aa11d))
+* add support for Facebook THANKFUL reaction type in post analytics ([0c86da9](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/0c86da968ef3b7dd0fada9c7b77943cbc23c39bd))
+* add TikTok analytics pipeline with fetcher, parser and ClickHouse sink services ([6d2dabe](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/6d2dabe42a19339d0d04aec018516f827db7a7bb))
+* add TikTok immediate processor service with Makefile integration ([1409fb5](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/1409fb5291b0cf23c0a20b48ade6eb4b925a80aa))
+* **competitors:** add Go project folders and competitor analysis modules\n\n- Add and stage api, clients, cmd/api-server, cmd/comp-jobs, db, models\n- Include services/facebook/facebook-competitor-analysis and services/instagram/instagram-competitor-analysis\n- Track utils/parsing and deployments/docker-compose.yml\n- Update Dockerfile ([aaaad58](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/aaaad589531e5f046443f4a6a4efa055f3632344))
+* crypto utils and package declarations ([e16ffa9](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/e16ffa93b8396d9ab2efadf92c47ef34a96dd31f))
+* implement ClickHouse client integration for bulk data insertion ([88ad734](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/88ad7342bfb21a13dd534ee371d2c36d046b6ee1))
+* implement ClickHouse client with bulk insert operations for Facebook data ([75bc2f1](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/75bc2f19503eff65b9b440b02c91f5d01bbb9f3a))
+* implement ClickHouse sink for Facebook analytics data ([dc1b403](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/dc1b403e77f6d66c53f2df5a5b019a79dda2d18b))
+* implement config management with Viper and add environment variable templates ([1864b39](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/1864b39fe731eb8c4eee9dbdcda5d157ea645a0c))
+* implement Facebook account model and MongoDB repository with CRUD operations ([51998ae](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/51998ae45a612961273427c68d7ba1745d09ee11))
+* implement Facebook insights fetching and parsing with parallel publishing ([6e5d2d0](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/6e5d2d02401c8ab1c013c6efe2cf7496106e88e4))
+* implement Facebook post fetching with encrypted token support ([102c048](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/102c0484dc6ce1b4fd1c076e3d8b2492b855e622))
+* implement FacebookAccountWorkOrder for optimized Kafka message payload ([b8e4148](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/b8e41487497336eefc5bf91f70e85342a3161fb4))
+* implement incremental and full sync modes for Facebook post fetching with Kafka publishing ([f4aa7de](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/f4aa7defcf3f9909ddee9831537fcaa3b1b301cd))
+* implement Instagram account fetching and data model updates ([da3dac6](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/da3dac6dbae2516144022bd9364e01bf54c76c85))
+* implement Instagram API client with media fetching and account data models ([542ff24](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/542ff24dd527a9e96e2a8b0a2d5f0dc8e998a992))
+* implement kafka consumer and facebook fetcher service with restructured project layout ([8ff00e7](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/8ff00e70cf3d2bbd0800c006206abdeb26782d32))
+* implement Kafka producer for Facebook account work orders ([73096fc](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/73096fc74d3b9246381bce9e5e6ebf9761817977))
+* implement Kafka producer with SASL authentication support ([0842061](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/08420617a05a3041cfab40835d1ffb1d64bbf6de))
+* implement LinkedIn analytics data fetching pipeline ([2c6a36b](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/2c6a36bd41f4ea5e9f99daf17efa1c982a1c5c73))
+* implement MongoTime type to handle legacy timestamp strings and BSON DateTime formats ([260a97a](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/260a97aee84dfd213758ac6444d1352eb499c2e5))
+* implement TikTok analytics with token refresh and insights generation ([65a0932](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/65a0932dbc3858fabec4013160ec5444fe81343f))
+* implement worker pool for concurrent LinkedIn message processing ([f54fabd](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/f54fabda505d44884b01ce66a19d5e1d6f4dc89a))
+* implement zerolog-based logger wrapper with configurable log levels ([ad366d3](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/ad366d3d98b6f4a6966e6dac28b0118ff92ac911))
+* initialize social media analytics pipeline project structure and architecture ([2bd17de](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/2bd17de8c8fdcda02acfbfee9893f9bcdd2a3181))
+* instagram data pipeline initial commit and code refactoring. ([17fc3ea](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/17fc3ea533f5705e0c5ff0bf1e64c3c71ed28b9e))
+* support both Instagram and Facebook Graph API endpoints based on connection type ([fab114d](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/fab114db8b0de61c2ca31439d59f70d8e09d19bc))
+* update docs workflow to use requirements.txt and add documentation section to README ([84588e6](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/84588e62906af4e2698833ee6224a5a54ec1bf95))
+* update Kafka consumer to start from earliest offset for new consumer groups ([6371884](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/6371884d79d3fbd836cabbe1fad967299a2da5a0))
+
+
+### Bug Fixes
+
+* handle timestamp fields as strings and adjust account type casing for DB queries ([1e1b168](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/1e1b168c593faeef22f04221b621527c1fc9c188))
+* remove premature channel close in Facebook posts fetcher worker pool ([12a0144](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/12a0144fcfc58f6c0f2d9ee174f017b71080e653))
+* rename instagram_parser binary to instagram-posts-parser in Dockerfile ([a25dac1](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/a25dac1fc59db49775a746f7231bab620f682f20))
+* update consumer group names to match clickhouse sink service names ([4e1b616](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/4e1b61697301d871a1f09bc37421bb8d916ef67a))
+* update Doppler secrets path to write .env file to /app directory ([aebadf3](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/aebadf3f84b3a7e75db5739b5ed48248fec75e72))
+* update Facebook video time handling to use custom FacebookTime type ([be97956](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/be97956eaebc50f3313f31f7910d4686bc46a647))
+* use background context for final batch processing during shutdown ([9a42384](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/9a423849ba7ad77beedfcf64d66122deb973eb83))
+* use configured database for MongoDB auth source instead of hardcoded admin ([e2bc085](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/e2bc0851de86d4b9b7e1844a456901058ab759b8))
+
+
+### Performance Improvements
+
+* increase channel buffer sizes from 2x to 5x max batch size ([00d2d79](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/00d2d795553f61f516b2887672f300c482eeeebf))
+* increase message buffer size and add parallel batch processors for improved throughput ([040d532](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/040d532cf4bd6d8605aa647a6af4a6aab3f4ef84))
+
+## [1.1.0](https://github.com/d4interactive/contentstudio-social-analytics-go/compare/v1.0.0...v1.1.0) (2026-01-19)
+
+
+### Features
+
+* Add Facebook and Instagram competitor analysis ([5b83509](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/5b83509e25ab0b5f7ff41e2dd83585a21808cea2))
+* Add Facebook and Instagram competitor analysis ([aaaad58](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/aaaad589531e5f046443f4a6a4efa055f3632344))
+* **competitors:** add Go project folders and competitor analysis modules\n\n- Add and stage api, clients, cmd/api-server, cmd/comp-jobs, db, models\n- Include services/facebook/facebook-competitor-analysis and services/instagram/instagram-competitor-analysis\n- Track utils/parsing and deployments/docker-compose.yml\n- Update Dockerfile ([aaaad58](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/aaaad589531e5f046443f4a6a4efa055f3632344))
+
+## 1.0.0 (2025-11-26)
+
+
+### Features
+
+* add .env file support using godotenv package for configuration management ([688529e](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/688529edcc4c2cdcca09c991b6c2d460d6bd947f))
+* add account fetcher scheduler with MongoDB integration and package initialization ([2913e4b](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/2913e4b3d2e218530497c521f35215256aebd3f6))
+* add clickhouse schema files for social media analytics ([872ffe6](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/872ffe6e420623c0afccad51ecf673ae18bb858b))
+* add Facebook immediate processor service with real-time notifications ([7c42613](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/7c426137f5d852c3733fc2360e31189564477f46))
+* add Facebook video insights parsing and fetching support ([97dbfaf](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/97dbfaf8bc5e62ccdbab35a38710b71b3380ab99))
+* add facebook-clickhouse-sink service and update Kafka consumer interface ([001a7e1](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/001a7e191113b41fe5b03bccf02d9217acd2bcf3))
+* add immediate processor service for Instagram data processing ([3cf5a8d](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/3cf5a8d254fba14714422c27f13a5f7150d4ab61))
+* add immediate work API ([f74a4ae](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/f74a4aea5e1bfcfdf4fa36e388124ba4b1504f87))
+* add Instagram ClickHouse sink service with models and batch processing ([abe563e](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/abe563edbfe0c77f43d69b90b1de92a362940495))
+* add Instagram fetcher service and consolidate insight models ([0a127c8](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/0a127c84916edb4a9a4eff607ce27f90e4e1d971))
+* add Instagram insights fetching with daily and total metrics support ([0817201](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/0817201d0978a98fc499927c4e033f90152199f8))
+* add Instagram media insights and demographic data collection ([922a14c](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/922a14cc7d473c8a0839a536a640be84dd272a48))
+* add Instagram posts parser service with media and insights parsing ([3f6810b](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/3f6810b35789482cd100684f23e6a54ec1bc4011))
+* add LinkedIn data pipeline with parser and ClickHouse sink ([93a04fa](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/93a04fad4f204d6439123ca434f73980e592244d))
+* add LinkedIn follower demographics insights tracking ([cb68559](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/cb6855916961ea3dd5a00192f8a47a122b41e066))
+* add LinkedIn immediate processor service with Makefile integration ([84eb816](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/84eb8166905fa3d216da99663273ce431133fba5))
+* add LinkedIn URN lookup tables for seniority, industry and country codes ([e9d10a2](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/e9d10a221b0f1ef7f8bb8e76ae42608694712b6a))
+* add multi-stage Dockerfile for building and running social analytics services ([52f9661](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/52f96619463237e5fac49423c5254fce1e33f9cf))
+* add organization details fetching and improve LinkedIn post parsing ([4df0f86](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/4df0f86c4685c8f5e77a9259837c508b42a67d6e))
+* add reels detection and insights parsing to Facebook video processor ([d32098b](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/d32098bbb3d2700c7bc9ab812381cb7073ac91ef))
+* add robust token decryption and custom Facebook time parsing support ([c676c9d](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/c676c9dab64ccc2047df5a5192fe432d76e96fff))
+* add service management scripts for Facebook and Instagram microservices ([b019586](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/b0195864dd2b95d4fabd1ab6b0cb35a7c2a14a51))
+* add social media schema definitions and immediate work API service ([26e0dea](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/26e0dead4465faf8c6de3669ce230f2755b85671))
+* add structured logging to Facebook client for better observability ([97daca9](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/97daca90e32fc644104c8011010fb2a61d4aa11d))
+* add support for Facebook THANKFUL reaction type in post analytics ([0c86da9](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/0c86da968ef3b7dd0fada9c7b77943cbc23c39bd))
+* add TikTok analytics pipeline with fetcher, parser and ClickHouse sink services ([6d2dabe](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/6d2dabe42a19339d0d04aec018516f827db7a7bb))
+* add TikTok immediate processor service with Makefile integration ([1409fb5](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/1409fb5291b0cf23c0a20b48ade6eb4b925a80aa))
+* crypto utils and package declarations ([e16ffa9](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/e16ffa93b8396d9ab2efadf92c47ef34a96dd31f))
+* implement ClickHouse client integration for bulk data insertion ([88ad734](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/88ad7342bfb21a13dd534ee371d2c36d046b6ee1))
+* implement ClickHouse client with bulk insert operations for Facebook data ([75bc2f1](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/75bc2f19503eff65b9b440b02c91f5d01bbb9f3a))
+* implement ClickHouse sink for Facebook analytics data ([dc1b403](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/dc1b403e77f6d66c53f2df5a5b019a79dda2d18b))
+* implement config management with Viper and add environment variable templates ([1864b39](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/1864b39fe731eb8c4eee9dbdcda5d157ea645a0c))
+* implement Facebook account model and MongoDB repository with CRUD operations ([51998ae](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/51998ae45a612961273427c68d7ba1745d09ee11))
+* implement Facebook insights fetching and parsing with parallel publishing ([6e5d2d0](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/6e5d2d02401c8ab1c013c6efe2cf7496106e88e4))
+* implement Facebook post fetching with encrypted token support ([102c048](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/102c0484dc6ce1b4fd1c076e3d8b2492b855e622))
+* implement FacebookAccountWorkOrder for optimized Kafka message payload ([b8e4148](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/b8e41487497336eefc5bf91f70e85342a3161fb4))
+* implement incremental and full sync modes for Facebook post fetching with Kafka publishing ([f4aa7de](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/f4aa7defcf3f9909ddee9831537fcaa3b1b301cd))
+* implement Instagram account fetching and data model updates ([da3dac6](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/da3dac6dbae2516144022bd9364e01bf54c76c85))
+* implement Instagram API client with media fetching and account data models ([542ff24](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/542ff24dd527a9e96e2a8b0a2d5f0dc8e998a992))
+* implement kafka consumer and facebook fetcher service with restructured project layout ([8ff00e7](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/8ff00e70cf3d2bbd0800c006206abdeb26782d32))
+* implement Kafka producer for Facebook account work orders ([73096fc](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/73096fc74d3b9246381bce9e5e6ebf9761817977))
+* implement Kafka producer with SASL authentication support ([0842061](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/08420617a05a3041cfab40835d1ffb1d64bbf6de))
+* implement LinkedIn analytics data fetching pipeline ([2c6a36b](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/2c6a36bd41f4ea5e9f99daf17efa1c982a1c5c73))
+* implement MongoTime type to handle legacy timestamp strings and BSON DateTime formats ([260a97a](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/260a97aee84dfd213758ac6444d1352eb499c2e5))
+* implement TikTok analytics with token refresh and insights generation ([65a0932](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/65a0932dbc3858fabec4013160ec5444fe81343f))
+* implement worker pool for concurrent LinkedIn message processing ([f54fabd](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/f54fabda505d44884b01ce66a19d5e1d6f4dc89a))
+* implement zerolog-based logger wrapper with configurable log levels ([ad366d3](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/ad366d3d98b6f4a6966e6dac28b0118ff92ac911))
+* initialize social media analytics pipeline project structure and architecture ([2bd17de](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/2bd17de8c8fdcda02acfbfee9893f9bcdd2a3181))
+* instagram data pipeline initial commit and code refactoring. ([17fc3ea](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/17fc3ea533f5705e0c5ff0bf1e64c3c71ed28b9e))
+* support both Instagram and Facebook Graph API endpoints based on connection type ([fab114d](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/fab114db8b0de61c2ca31439d59f70d8e09d19bc))
+* update docs workflow to use requirements.txt and add documentation section to README ([84588e6](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/84588e62906af4e2698833ee6224a5a54ec1bf95))
+* update Kafka consumer to start from earliest offset for new consumer groups ([6371884](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/6371884d79d3fbd836cabbe1fad967299a2da5a0))
+
+
+### Bug Fixes
+
+* handle timestamp fields as strings and adjust account type casing for DB queries ([1e1b168](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/1e1b168c593faeef22f04221b621527c1fc9c188))
+* remove premature channel close in Facebook posts fetcher worker pool ([12a0144](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/12a0144fcfc58f6c0f2d9ee174f017b71080e653))
+* rename instagram_parser binary to instagram-posts-parser in Dockerfile ([a25dac1](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/a25dac1fc59db49775a746f7231bab620f682f20))
+* update consumer group names to match clickhouse sink service names ([4e1b616](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/4e1b61697301d871a1f09bc37421bb8d916ef67a))
+* update Doppler secrets path to write .env file to /app directory ([aebadf3](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/aebadf3f84b3a7e75db5739b5ed48248fec75e72))
+* update Facebook video time handling to use custom FacebookTime type ([be97956](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/be97956eaebc50f3313f31f7910d4686bc46a647))
+* use background context for final batch processing during shutdown ([9a42384](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/9a423849ba7ad77beedfcf64d66122deb973eb83))
+* use configured database for MongoDB auth source instead of hardcoded admin ([e2bc085](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/e2bc0851de86d4b9b7e1844a456901058ab759b8))
+
+
+### Performance Improvements
+
+* increase channel buffer sizes from 2x to 5x max batch size ([00d2d79](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/00d2d795553f61f516b2887672f300c482eeeebf))
+* increase message buffer size and add parallel batch processors for improved throughput ([040d532](https://github.com/d4interactive/contentstudio-social-analytics-go/commit/040d532cf4bd6d8605aa647a6af4a6aab3f4ef84))

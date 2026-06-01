@@ -1,0 +1,9 @@
+{
+  "title": "Fetcher Services",
+  "pages": [
+    "facebook-fetcher",
+    "instagram-fetcher",
+    "linkedin-fetcher",
+    "tiktok-fetcher"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "pages": [
+    "index",
+    "getting-started",
+    "architecture",
+    "platforms",
+    "services",
+    "guides",
+    "reference",
+    "environment-setup"
+  ]
+}

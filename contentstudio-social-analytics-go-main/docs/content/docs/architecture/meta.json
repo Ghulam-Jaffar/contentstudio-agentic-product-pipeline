@@ -1,0 +1,8 @@
+{
+  "title": "Architecture",
+  "pages": [
+    "pipeline-architecture",
+    "code-review",
+    "integration-workflow"
+  ]
+}

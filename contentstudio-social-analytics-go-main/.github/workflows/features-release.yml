@@ -1,0 +1,293 @@
+name: Features Release
+
+on:
+  push:
+    branches:
+      - features
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+concurrency:
+  group: contentstudio-social-analytics-go-features-build
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/d4interactive/contentstudio-social-analytics-go
+
+jobs:
+  version:
+    name: Determine Features Version
+    runs-on: arc-runners-d4interactive
+    outputs:
+      feat_tag: ${{ steps.feat_version.outputs.feat_tag }}
+      base_version: ${{ steps.feat_version.outputs.base_version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: feat-version
+
+      - name: Determine features version
+        id: feat_version
+        working-directory: feat-version
+        run: |
+          # Get the latest stable tag (exclude pre-release tags)
+          LATEST_STABLE=$(git tag -l 'v*' --sort=-v:refname | grep -vE '\-(dev|feat|uat|rc)\.' | head -n1 || echo "v0.0.0")
+          echo "Latest stable tag: $LATEST_STABLE"
+
+          # Get commit messages since last stable tag
+          if [ "$LATEST_STABLE" = "v0.0.0" ]; then
+            COMMITS=$(git log --pretty=format:"%s" -20)
+          else
+            COMMITS=$(git log "$LATEST_STABLE"..HEAD --pretty=format:"%s")
+          fi
+
+          echo "Analyzing commits for version bump:"
+          echo "$COMMITS"
+
+          # Determine bump type
+          BUMP_TYPE="patch"
+          if echo "$COMMITS" | grep -qiE "^(BREAKING CHANGE|breaking|major):"; then
+            BUMP_TYPE="major"
+          elif echo "$COMMITS" | grep -qiE "^(feat|feature|minor):"; then
+            BUMP_TYPE="minor"
+          fi
+          echo "Bump type: $BUMP_TYPE"
+
+          # Parse current version
+          VERSION=${LATEST_STABLE#v}
+          IFS='.' read -ra PARTS <<< "$VERSION"
+          MAJOR=${PARTS[0]:-0}
+          MINOR=${PARTS[1]:-0}
+          PATCH=${PARTS[2]:-0}
+
+          # Apply bump
+          case $BUMP_TYPE in
+            major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+            minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+            patch) PATCH=$((PATCH + 1)) ;;
+          esac
+
+          BASE_VERSION="v${MAJOR}.${MINOR}.${PATCH}"
+          echo "Base version: $BASE_VERSION"
+
+          # Find the highest existing feat number for this base version
+          LATEST_FEAT=$(git tag -l "${BASE_VERSION}-feat.*" --sort=-v:refname | head -n1 || echo "")
+          if [ -n "$LATEST_FEAT" ]; then
+            FEAT_NUM=$(echo "$LATEST_FEAT" | sed "s/${BASE_VERSION}-feat\.//")
+            FEAT_NUM=$((FEAT_NUM + 1))
+          else
+            FEAT_NUM=1
+          fi
+
+          FEAT_TAG="${BASE_VERSION}-feat.${FEAT_NUM}"
+          echo "Features tag: $FEAT_TAG"
+
+          echo "feat_tag=$FEAT_TAG" >> "$GITHUB_OUTPUT"
+          echo "base_version=$BASE_VERSION" >> "$GITHUB_OUTPUT"
+
+  build-and-push:
+    name: Build & Push Images
+    runs-on: arc-runners-d4interactive
+    needs: [version]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          path: build-feat
+
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build and push images
+        run: |
+          sudo docker buildx build \
+            -f build-feat/Dockerfile \
+            -t ${{ env.IMAGE_PREFIX }}/analytics-pipeline:${{ needs.version.outputs.feat_tag }} \
+            -t ${{ env.IMAGE_PREFIX }}/analytics-pipeline:sha-${{ github.sha }} \
+            -t ${{ env.IMAGE_PREFIX }}/analytics-pipeline:feat-latest \
+            --push \
+            build-feat/
+
+  release:
+    name: Create Features Release & Update Manifests
+    runs-on: arc-runners-d4interactive
+    needs: [version, build-and-push]
+    if: always() && needs.version.result == 'success' && !contains(needs.*.result, 'failure')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: feat-release
+
+      - name: Configure git
+        working-directory: feat-release
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create and push features tag
+        working-directory: feat-release
+        run: |
+          FEAT_TAG="${{ needs.version.outputs.feat_tag }}"
+          if git rev-parse "$FEAT_TAG" >/dev/null 2>&1; then
+            echo "Tag $FEAT_TAG already exists, deleting and recreating"
+            git tag -d "$FEAT_TAG" || true
+            git push origin ":refs/tags/$FEAT_TAG" || true
+          fi
+          git tag -a "$FEAT_TAG" -m "Features Release $FEAT_TAG"
+          git push origin "$FEAT_TAG"
+
+      - name: Generate release notes
+        id: release_notes
+        working-directory: feat-release
+        run: |
+          FEAT_TAG="${{ needs.version.outputs.feat_tag }}"
+
+          # Get the previous tag
+          PREV_TAG=$(git tag -l 'v*' --sort=-v:refname | grep -v "$FEAT_TAG" | head -n1 || echo "")
+
+          if [ -n "$PREV_TAG" ]; then
+            COMMITS=$(git log "$PREV_TAG"..HEAD --pretty=format:"- %s (%h)")
+          else
+            COMMITS=$(git log --pretty=format:"- %s (%h)" -20)
+          fi
+
+          cat > release_notes.md << 'NOTES_EOF'
+          ## Features Release: $FEAT_TAG
+
+          ### Changes
+          NOTES_EOF
+
+          # Replace placeholder
+          sed -i "s/\$FEAT_TAG/$FEAT_TAG/" release_notes.md
+
+          echo "$COMMITS" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "### Images" >> release_notes.md
+          echo "- \`${{ env.IMAGE_PREFIX }}/analytics-pipeline:$FEAT_TAG\`" >> release_notes.md
+
+      - name: Install GitHub CLI
+        run: |
+          (type -p wget >/dev/null || (sudo apt-get update && sudo apt-get install -y wget)) \
+            && sudo mkdir -p -m 755 /etc/apt/keyrings \
+            && out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+            && cat $out | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
+            && sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+            && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+            && sudo apt-get update && sudo apt-get install -y gh
+
+      - name: Create GitHub pre-release
+        working-directory: feat-release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Delete existing release if it exists
+          gh release delete "${{ needs.version.outputs.feat_tag }}" --yes 2>/dev/null || true
+          gh release create "${{ needs.version.outputs.feat_tag }}" \
+            --title "Features Release ${{ needs.version.outputs.feat_tag }}" \
+            --notes-file release_notes.md \
+            --prerelease
+
+      - name: Update d4-k8 manifests
+        run: |
+          FEAT_TAG="${{ needs.version.outputs.feat_tag }}"
+
+          # Clone d4-k8 repo
+          D4K8_CLONE="${GITHUB_WORKSPACE}/../d4-k8-clone"
+          rm -rf "$D4K8_CLONE"
+          git clone --depth 1 "https://x-access-token:${{ secrets.D4_K8_MANIFEST_UPDATE_PAT }}@github.com/d4interactive/d4-k8.git" "$D4K8_CLONE"
+          cd "$D4K8_CLONE"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Update fullstack values
+          sed -i 's|tag: ".*"|tag: "'"$FEAT_TAG"'"|g' \
+            charts/contentstudio-fullstack/analytics-pipeline/values-features.yaml
+
+          # Update jobs values
+          sed -i 's|tag: ".*"|tag: "'"$FEAT_TAG"'"|g' \
+            charts/contentstudio-jobs/analytics-pipeline/values-features.yaml
+
+          # Update CronWorkflow image tags
+          for f in argo-cronworkflows/qa/social-analytics-go/*.yaml; do
+            sed -i 's|image: ".*"|image: "'"${{ env.IMAGE_PREFIX }}/analytics-pipeline:$FEAT_TAG"'"|g' "$f"
+          done
+
+          # Commit and push
+          git add -A
+          git commit -m "chore: update social-analytics-go features images to $FEAT_TAG [skip ci]" || echo "No manifest changes"
+          git pull --rebase origin main
+          git push origin main
+
+  notify-failure:
+    name: Notify Mattermost on Failure
+    runs-on: arc-runners-d4interactive
+    needs: [version, build-and-push, release]
+    if: failure()
+    steps:
+      - name: Send failure notification to Mattermost
+        env:
+          ACTOR: ${{ github.actor }}
+          RUN_NUMBER: ${{ github.run_number }}
+          RUN_ID: ${{ github.run_id }}
+          SERVER_URL: ${{ github.server_url }}
+          REPOSITORY: ${{ github.repository }}
+          REF_NAME: ${{ github.ref_name }}
+          VERSION_RESULT: ${{ needs.version.result }}
+          BUILD_RESULT: ${{ needs.build-and-push.result }}
+          RELEASE_RESULT: ${{ needs.release.result }}
+          WEBHOOK_URL: ${{ vars.MATTERMOST_WEBHOOK_URL }}
+        run: |
+          python3 - << 'PYEOF'
+          import os, json, urllib.request
+
+          actor = os.environ['ACTOR']
+          run_number = os.environ['RUN_NUMBER']
+          run_id = os.environ['RUN_ID']
+          server_url = os.environ['SERVER_URL']
+          repository = os.environ['REPOSITORY']
+          ref_name = os.environ['REF_NAME']
+          webhook_url = os.environ['WEBHOOK_URL']
+
+          run_url = f"{server_url}/{repository}/actions/runs/{run_id}"
+
+          job_results = {
+              "Determine Features Version": os.environ.get('VERSION_RESULT', 'unknown'),
+              "Build & Push Images": os.environ.get('BUILD_RESULT', 'unknown'),
+              "Create Features Release": os.environ.get('RELEASE_RESULT', 'unknown'),
+          }
+          failed_jobs = [j for j, s in job_results.items() if s == 'failure']
+          failed_jobs_str = ", ".join(failed_jobs) if failed_jobs else "Unknown"
+
+          message = (
+              "@kashif.ali9498 @wasay @waqasasif\n\n"
+              "| | |\n"
+              "|:---|:---|\n"
+              f"| **Action** | [#{run_number}] [Features Release] by {actor} |\n"
+              f"| **Failed Execution** | :x: [Execution #{run_number}]({run_url}) |\n"
+              "| **Pipeline** | Features Release |\n"
+              f"| **Branch** | `{ref_name}` |\n"
+              "| **Project** | contentstudio-social-analytics-go |\n"
+              f"| **Failed Jobs** | {failed_jobs_str} |"
+          )
+
+          payload = json.dumps({"channel": "cs-build-errors", "text": message})
+          req = urllib.request.Request(
+              webhook_url,
+              data=payload.encode(),
+              headers={"Content-Type": "application/json"},
+              method="POST",
+          )
+          with urllib.request.urlopen(req) as resp:
+              print(f"Mattermost notification sent: HTTP {resp.status}")
+          PYEOF

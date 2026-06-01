@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Data Studio Field Reference — ContentStudio Analytics</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; color: #1a1a2e; background: #f8f9fc; }
+    a { color: #4361ee; text-decoration: none; }
+
+    header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #fff; padding: 28px 40px 20px; }
+    header h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.3px; }
+    header p { color: #a8b2d8; font-size: 13px; margin-top: 4px; }
+
+    .conventions { background: #fff; border-left: 4px solid #4361ee; margin: 24px 40px 0; padding: 18px 22px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+    .conventions h2 { font-size: 15px; font-weight: 600; margin-bottom: 12px; color: #1a1a2e; }
+    .conventions table { border-collapse: collapse; width: 100%; }
+    .conventions td { padding: 5px 12px 5px 0; vertical-align: top; font-size: 13px; line-height: 1.5; }
+    .conventions td:first-child { white-space: nowrap; font-weight: 500; }
+    .conventions code { background: #f0f2f8; border-radius: 3px; padding: 1px 5px; font-family: "SFMono-Regular", Consolas, monospace; font-size: 12px; color: #4361ee; }
+
+    .platform-tabs { display: flex; flex-wrap: wrap; gap: 4px; padding: 20px 40px 0; }
+    .platform-tabs button { background: #fff; border: 1px solid #d4d8e8; border-radius: 6px 6px 0 0; padding: 8px 18px; font-size: 13px; font-weight: 500; cursor: pointer; color: #555; transition: all .15s; }
+    .platform-tabs button:hover { background: #eef0f8; }
+    .platform-tabs button.active { background: #4361ee; color: #fff; border-color: #4361ee; }
+
+    .platform-pane { display: none; padding: 0 40px 40px; }
+    .platform-pane.active { display: block; }
+
+    details { background: #fff; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,.06); margin-top: 12px; overflow: hidden; }
+    summary { font-size: 14px; font-weight: 600; padding: 13px 18px; cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px; color: #1a1a2e; user-select: none; }
+    summary::-webkit-details-marker { display: none; }
+    summary::before { content: "▶"; font-size: 10px; color: #4361ee; transition: transform .2s; }
+    details[open] summary::before { transform: rotate(90deg); }
+    .section-desc { font-size: 12px; color: #777; padding: 0 18px 14px; border-bottom: 1px solid #f0f2f8; }
+
+    table { width: 100%; border-collapse: collapse; }
+    thead th { background: #f5f6fb; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #888; padding: 8px 14px; text-align: left; border-bottom: 1px solid #eaecf5; }
+    tbody tr:hover { background: #fafbff; }
+    tbody td { padding: 7px 14px; font-size: 13px; border-bottom: 1px solid #f0f2f8; vertical-align: top; line-height: 1.45; }
+    tbody td:first-child { font-family: "SFMono-Regular", Consolas, monospace; font-size: 12px; color: #4361ee; white-space: nowrap; }
+    .badge { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px; }
+    .badge-metric { background: #e8f0fe; color: #1a73e8; }
+    .badge-dim { background: #e6f4ea; color: #137333; }
+    .badge-pct { background: #fff3cd; color: #856404; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Data Studio Field Reference</h1>
+  <p>ContentStudio Analytics Community Connector — complete field directory for all platforms</p>
+</header>
+
+<div class="conventions">
+  <h2>Naming Conventions</h2>
+  <table>
+    <tr><td><code>sum_curr_*</code></td><td>Aggregate total for the <strong>current</strong> selected date range. Use in scorecards alongside the matching <code>sum_prev_*</code> field.</td></tr>
+    <tr><td><code>sum_prev_*</code></td><td>Aggregate total for the <strong>previous</strong> period (same duration, shifted back). Automatically calculated by the connector.</td></tr>
+    <tr><td><code>*_rollup_curr_*</code> / <code>*_rollup_prev_*</code></td><td>Period-level rollup fields — single row, <code>period = "Current"</code>. Use for scorecards when you need current + previous in the same chart row.</td></tr>
+    <tr><td><code>*_daily</code></td><td>Per-day delta value. Use in time-series / line charts with the <code>date</code> dimension.</td></tr>
+    <tr><td><code>*_total</code></td><td>Running cumulative total up to each date. Use alongside <code>*_daily</code> in dual-axis charts.</td></tr>
+    <tr><td><code>*_diff</code></td><td>Absolute change: current period value minus previous period value.</td></tr>
+    <tr><td><code>*_growth</code></td><td>Percentage growth: (current − previous) ÷ previous × 100.</td></tr>
+    <tr><td><code>lp_*</code></td><td>Least-performing post metric — same measure as the corresponding top-post metric but for the bottom posts.</td></tr>
+    <tr><td><code>lt_*</code></td><td>Least tweet metric (Twitter/X) — mirrors the top-tweet field of the same name without the prefix.</td></tr>
+    <tr><td><code>ps_*</code></td><td>Performance-schedule metric (YouTube) — avoids routing collision with channel-level trend fields.</td></tr>
+    <tr><td><code>pub_beh_rlu_*</code></td><td>Publishing behaviour rollup — period totals broken down by media type.</td></tr>
+    <tr><td><code>tp_medass_*</code></td><td>Facebook top-post media-asset fields — one value per asset, joined with commas when a post has multiple assets.</td></tr>
+  </table>
+</div>
+
+<nav class="platform-tabs">
+  <button class="active" onclick="showPlatform('facebook')">Facebook</button>
+  <button onclick="showPlatform('instagram')">Instagram</button>
+  <button onclick="showPlatform('linkedin')">LinkedIn</button>
+  <!-- TODO: add YouTube, TikTok, Pinterest, Twitter/X, GMB tabs when ready -->
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════ FACEBOOK ═══ -->
+<div id="pane-facebook" class="platform-pane active">
+
+  <details open>
+    <summary>Summary</summary>
+    <p class="section-desc">Single-row response with current &amp; previous period totals. Add to a scorecard; pair <code>sum_curr_*</code> with <code>sum_prev_*</code> to show period-over-period change.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>period</td><td>Period</td><td><span class="badge badge-dim">Dim</span></td><td>Always "Current" — used as the row identifier in single-row scorecard sources.</td></tr>
+        <tr><td>sum_curr_fan_count</td><td>Sum Curr Fan Count</td><td><span class="badge badge-metric">Metric</span></td><td>Total page fans (likes) at the end of the current period.</td></tr>
+        <tr><td>sum_curr_doc_count</td><td>Sum Curr Doc Count</td><td><span class="badge badge-metric">Metric</span></td><td>Number of posts published during the current period.</td></tr>
+        <tr><td>sum_curr_total_engagement</td><td>Sum Curr Total Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Sum of all post-level engagement actions (reactions + comments + clicks + shares) in the current period.</td></tr>
+        <tr><td>sum_curr_reactions</td><td>Sum Curr Reactions</td><td><span class="badge badge-metric">Metric</span></td><td>Total post reactions (Like, Love, Haha, Wow, Sad, Angry, Thankful) in the current period.</td></tr>
+        <tr><td>sum_curr_comments</td><td>Sum Curr Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Total post comments in the current period.</td></tr>
+        <tr><td>sum_curr_posts_clicks</td><td>Sum Curr Posts Clicks</td><td><span class="badge badge-metric">Metric</span></td><td>Total post link clicks in the current period.</td></tr>
+        <tr><td>sum_curr_impressions</td><td>Sum Curr Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Total post impressions (all sources) in the current period.</td></tr>
+        <tr><td>sum_curr_reach</td><td>Sum Curr Reach</td><td><span class="badge badge-metric">Metric</span></td><td>Unique accounts reached by posts in the current period.</td></tr>
+        <tr><td>sum_curr_repost</td><td>Sum Curr Repost</td><td><span class="badge badge-metric">Metric</span></td><td>Total post shares (reposts) in the current period.</td></tr>
+        <tr><td>sum_curr_positive_sentiment</td><td>Sum Curr Positive Sentiment</td><td><span class="badge badge-metric">Metric</span></td><td>Positive feedback actions on page posts in the current period.</td></tr>
+        <tr><td>sum_curr_negative_sentiment</td><td>Sum Curr Negative Sentiment</td><td><span class="badge badge-metric">Metric</span></td><td>Negative feedback actions (hide post, report) in the current period.</td></tr>
+        <tr><td>sum_curr_page_impressions</td><td>Sum Curr Page Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Total page-level impressions (all content, all sources) in the current period.</td></tr>
+        <tr><td>sum_curr_page_impressions_paid</td><td>Sum Curr Page Impressions Paid</td><td><span class="badge badge-metric">Metric</span></td><td>Page impressions driven by paid/boosted content in the current period.</td></tr>
+        <tr><td>sum_curr_page_impressions_organic</td><td>Sum Curr Page Impressions Organic</td><td><span class="badge badge-metric">Metric</span></td><td>Page impressions from organic (non-paid) content in the current period.</td></tr>
+        <tr><td>sum_curr_page_engagements</td><td>Sum Curr Page Engagements</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement actions on the page (posts, stories, check-ins) in the current period.</td></tr>
+        <tr><td>sum_curr_page_positive_feedback</td><td>Sum Curr Page Positive Feedback</td><td><span class="badge badge-metric">Metric</span></td><td>Positive page-level feedback (likes, comments, shares on any page content).</td></tr>
+        <tr><td>sum_curr_page_negative_feedback</td><td>Sum Curr Page Negative Feedback</td><td><span class="badge badge-metric">Metric</span></td><td>Negative page-level feedback (hides, unlikes, spam reports).</td></tr>
+        <tr><td>sum_curr_talking_about_count</td><td>Sum Curr Talking About Count</td><td><span class="badge badge-metric">Metric</span></td><td>Number of people who created a story about the page this period (likes, posts, check-ins, etc.).</td></tr>
+        <tr><td>sum_curr_page_follows</td><td>Sum Curr Page Follows</td><td><span class="badge badge-metric">Metric</span></td><td>Total page followers (distinct from fans — people who follow without liking) at period end.</td></tr>
+        <tr><td>sum_prev_fan_count</td><td>Sum Prev Fan Count</td><td><span class="badge badge-metric">Metric</span></td><td>Page fans at the end of the previous period.</td></tr>
+        <tr><td>sum_prev_doc_count</td><td>Sum Prev Doc Count</td><td><span class="badge badge-metric">Metric</span></td><td>Posts published during the previous period.</td></tr>
+        <tr><td>sum_prev_total_engagement</td><td>Sum Prev Total Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement in the previous period.</td></tr>
+        <tr><td>sum_prev_reactions</td><td>Sum Prev Reactions</td><td><span class="badge badge-metric">Metric</span></td><td>Post reactions in the previous period.</td></tr>
+        <tr><td>sum_prev_comments</td><td>Sum Prev Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Post comments in the previous period.</td></tr>
+        <tr><td>sum_prev_posts_clicks</td><td>Sum Prev Posts Clicks</td><td><span class="badge badge-metric">Metric</span></td><td>Post link clicks in the previous period.</td></tr>
+        <tr><td>sum_prev_impressions</td><td>Sum Prev Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Post impressions in the previous period.</td></tr>
+        <tr><td>sum_prev_reach</td><td>Sum Prev Reach</td><td><span class="badge badge-metric">Metric</span></td><td>Unique accounts reached in the previous period.</td></tr>
+        <tr><td>sum_prev_repost</td><td>Sum Prev Repost</td><td><span class="badge badge-metric">Metric</span></td><td>Post shares in the previous period.</td></tr>
+        <tr><td>sum_prev_positive_sentiment</td><td>Sum Prev Positive Sentiment</td><td><span class="badge badge-metric">Metric</span></td><td>Positive feedback in the previous period.</td></tr>
+        <tr><td>sum_prev_negative_sentiment</td><td>Sum Prev Negative Sentiment</td><td><span class="badge badge-metric">Metric</span></td><td>Negative feedback in the previous period.</td></tr>
+        <tr><td>sum_prev_page_impressions</td><td>Sum Prev Page Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Page-level impressions in the previous period.</td></tr>
+        <tr><td>sum_prev_page_impressions_paid</td><td>Sum Prev Page Impressions Paid</td><td><span class="badge badge-metric">Metric</span></td><td>Paid page impressions in the previous period.</td></tr>
+        <tr><td>sum_prev_page_impressions_organic</td><td>Sum Prev Page Impressions Organic</td><td><span class="badge badge-metric">Metric</span></td><td>Organic page impressions in the previous period.</td></tr>
+        <tr><td>sum_prev_page_engagements</td><td>Sum Prev Page Engagements</td><td><span class="badge badge-metric">Metric</span></td><td>Page engagements in the previous period.</td></tr>
+        <tr><td>sum_prev_page_positive_feedback</td><td>Sum Prev Page Positive Feedback</td><td><span class="badge badge-metric">Metric</span></td><td>Positive page feedback in the previous period.</td></tr>
+        <tr><td>sum_prev_page_negative_feedback</td><td>Sum Prev Page Negative Feedback</td><td><span class="badge badge-metric">Metric</span></td><td>Negative page feedback in the previous period.</td></tr>
+        <tr><td>sum_prev_talking_about_count</td><td>Sum Prev Talking About Count</td><td><span class="badge badge-metric">Metric</span></td><td>People talking about the page in the previous period.</td></tr>
+        <tr><td>sum_prev_page_follows</td><td>Sum Prev Page Follows</td><td><span class="badge badge-metric">Metric</span></td><td>Page followers in the previous period.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Audience Growth (Daily)</summary>
+    <p class="section-desc">One row per day. Use with the <code>date</code> dimension in a time-series chart to visualise fan and engagement growth over time.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>date</td><td>Date</td><td><span class="badge badge-dim">Dim</span></td><td>Day of the data point (YYYYMMDD).</td></tr>
+        <tr><td>audience_growth_fan_count</td><td>Audience Growth Fan Count</td><td><span class="badge badge-metric">Metric</span></td><td>Cumulative fan (page like) count on this date.</td></tr>
+        <tr><td>audience_growth_page_fans_daily</td><td>Audience Growth Page Fans Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Net new fans gained on this specific day.</td></tr>
+        <tr><td>audience_growth_page_fans_by_like</td><td>Audience Growth Page Fans By Like</td><td><span class="badge badge-metric">Metric</span></td><td>Fans added via page like on this day.</td></tr>
+        <tr><td>audience_growth_page_fans_by_unlike</td><td>Audience Growth Page Fans By Unlike</td><td><span class="badge badge-metric">Metric</span></td><td>Fans lost via page unlike on this day.</td></tr>
+        <tr><td>audience_growth_page_impressions</td><td>Audience Growth Page Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Total page impressions on this day.</td></tr>
+        <tr><td>audience_growth_page_engagements</td><td>Audience Growth Page Engagements</td><td><span class="badge badge-metric">Metric</span></td><td>Total page engagements on this day.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Audience Growth Rollup</summary>
+    <p class="section-desc">Single row comparing current vs previous period fan metrics. Ideal for scorecard tiles.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>audience_growth_rollup_curr_fan_count</td><td>Audience Growth Rollup Curr Fan Count</td><td><span class="badge badge-metric">Metric</span></td><td>Fan count at the end of the current period.</td></tr>
+        <tr><td>audience_growth_rollup_curr_avg_page_fans_by_like</td><td>… Curr Avg Page Fans By Like</td><td><span class="badge badge-metric">Metric</span></td><td>Average daily fans gained by liking in the current period.</td></tr>
+        <tr><td>audience_growth_rollup_curr_avg_page_fans_by_unlike</td><td>… Curr Avg Page Fans By Unlike</td><td><span class="badge badge-metric">Metric</span></td><td>Average daily fans lost by unliking in the current period.</td></tr>
+        <tr><td>audience_growth_rollup_curr_talking_about_count</td><td>… Curr Talking About Count</td><td><span class="badge badge-metric">Metric</span></td><td>Total people talking about the page in the current period.</td></tr>
+        <tr><td>audience_growth_rollup_curr_doc_count</td><td>… Curr Doc Count</td><td><span class="badge badge-metric">Metric</span></td><td>Posts published in the current period.</td></tr>
+        <tr><td>audience_growth_rollup_prev_fan_count</td><td>… Prev Fan Count</td><td><span class="badge badge-metric">Metric</span></td><td>Fan count at the end of the previous period.</td></tr>
+        <tr><td>audience_growth_rollup_prev_avg_page_fans_by_like</td><td>… Prev Avg Page Fans By Like</td><td><span class="badge badge-metric">Metric</span></td><td>Average daily fans gained by liking in the previous period.</td></tr>
+        <tr><td>audience_growth_rollup_prev_avg_page_fans_by_unlike</td><td>… Prev Avg Page Fans By Unlike</td><td><span class="badge badge-metric">Metric</span></td><td>Average daily fans lost in the previous period.</td></tr>
+        <tr><td>audience_growth_rollup_prev_talking_about_count</td><td>… Prev Talking About Count</td><td><span class="badge badge-metric">Metric</span></td><td>People talking about the page in the previous period.</td></tr>
+        <tr><td>audience_growth_rollup_prev_doc_count</td><td>… Prev Doc Count</td><td><span class="badge badge-metric">Metric</span></td><td>Posts published in the previous period.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Publishing Behaviour (Daily)</summary>
+    <p class="section-desc">One row per day showing post volume and reach/engagement breakdown by distribution type.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>date</td><td>Date</td><td><span class="badge badge-dim">Dim</span></td><td>Day of the data point.</td></tr>
+        <tr><td>publishing_behaviour_post_count</td><td>Post Count</td><td><span class="badge badge-metric">Metric</span></td><td>Number of posts published on this day.</td></tr>
+        <tr><td>publishing_behaviour_reactions_engagement</td><td>Reactions Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total reaction actions on posts published this day.</td></tr>
+        <tr><td>publishing_behaviour_comments_engagement</td><td>Comments Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total comments on posts published this day.</td></tr>
+        <tr><td>publishing_behaviour_shares_engagement</td><td>Shares Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total shares on posts published this day.</td></tr>
+        <tr><td>publishing_behaviour_organic_reach</td><td>Organic Reach</td><td><span class="badge badge-metric">Metric</span></td><td>Unique accounts reached organically on this day.</td></tr>
+        <tr><td>publishing_behaviour_paid_reach</td><td>Paid Reach</td><td><span class="badge badge-metric">Metric</span></td><td>Unique accounts reached via paid/boosted distribution on this day.</td></tr>
+        <tr><td>publishing_behaviour_viral_reach</td><td>Viral Reach</td><td><span class="badge badge-metric">Metric</span></td><td>Unique accounts reached through a friend's interaction (viral) on this day.</td></tr>
+        <tr><td>publishing_behaviour_organic_impressions</td><td>Organic Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Total organic impressions on this day.</td></tr>
+        <tr><td>publishing_behaviour_paid_impressions</td><td>Paid Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Total paid impressions on this day.</td></tr>
+        <tr><td>publishing_behaviour_viral_impressions</td><td>Viral Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Total viral impressions on this day.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Publishing Behaviour Rollup</summary>
+    <p class="section-desc">Period totals for posting activity. Single row — use in scorecards.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>pub_beh_rlu_curr_doc_count</td><td>Pub Beh Rlu Curr Doc Count</td><td><span class="badge badge-metric">Metric</span></td><td>Posts published in the current period.</td></tr>
+        <tr><td>pub_beh_rlu_curr_total_engagement</td><td>… Curr Total Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement on all posts in the current period.</td></tr>
+        <tr><td>pub_beh_rlu_curr_reactions</td><td>… Curr Reactions</td><td><span class="badge badge-metric">Metric</span></td><td>Total reactions in the current period.</td></tr>
+        <tr><td>pub_beh_rlu_curr_comments</td><td>… Curr Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Total comments in the current period.</td></tr>
+        <tr><td>pub_beh_rlu_curr_post_clicks</td><td>… Curr Post Clicks</td><td><span class="badge badge-metric">Metric</span></td><td>Total link clicks in the current period.</td></tr>
+        <tr><td>pub_beh_rlu_curr_impressions</td><td>… Curr Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Total post impressions in the current period.</td></tr>
+        <tr><td>pub_beh_rlu_curr_shares</td><td>… Curr Shares</td><td><span class="badge badge-metric">Metric</span></td><td>Total post shares in the current period.</td></tr>
+        <tr><td>pub_beh_rlu_prev_doc_count</td><td>… Prev Doc Count</td><td><span class="badge badge-metric">Metric</span></td><td>Posts published in the previous period.</td></tr>
+        <tr><td>pub_beh_rlu_prev_total_engagement</td><td>… Prev Total Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement in the previous period.</td></tr>
+        <tr><td>pub_beh_rlu_prev_reactions</td><td>… Prev Reactions</td><td><span class="badge badge-metric">Metric</span></td><td>Reactions in the previous period.</td></tr>
+        <tr><td>pub_beh_rlu_prev_comments</td><td>… Prev Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Comments in the previous period.</td></tr>
+        <tr><td>pub_beh_rlu_prev_post_clicks</td><td>… Prev Post Clicks</td><td><span class="badge badge-metric">Metric</span></td><td>Link clicks in the previous period.</td></tr>
+        <tr><td>pub_beh_rlu_prev_impressions</td><td>… Prev Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Impressions in the previous period.</td></tr>
+        <tr><td>pub_beh_rlu_prev_shares</td><td>… Prev Shares</td><td><span class="badge badge-metric">Metric</span></td><td>Shares in the previous period.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Impressions (Daily) &amp; Rollup</summary>
+    <p class="section-desc"><code>impressions_page_impressions</code> is the daily field for time-series charts. The rollup fields give period totals and averages for scorecards.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>impressions_page_impressions</td><td>Impressions Page Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Total page impressions on this day.</td></tr>
+        <tr><td>impressions_rollup_curr_total_impressions</td><td>Rollup Curr Total Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Total page impressions for the current period.</td></tr>
+        <tr><td>impressions_rollup_curr_avg_impressions_per_day</td><td>Rollup Curr Avg / Day</td><td><span class="badge badge-metric">Metric</span></td><td>Average daily impressions in the current period.</td></tr>
+        <tr><td>impressions_rollup_curr_avg_impressions_per_week</td><td>Rollup Curr Avg / Week</td><td><span class="badge badge-metric">Metric</span></td><td>Average weekly impressions in the current period.</td></tr>
+        <tr><td>impressions_rollup_prev_total_impressions</td><td>Rollup Prev Total Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Total page impressions for the previous period.</td></tr>
+        <tr><td>impressions_rollup_prev_avg_impressions_per_day</td><td>Rollup Prev Avg / Day</td><td><span class="badge badge-metric">Metric</span></td><td>Average daily impressions in the previous period.</td></tr>
+        <tr><td>impressions_rollup_prev_avg_impressions_per_week</td><td>Rollup Prev Avg / Week</td><td><span class="badge badge-metric">Metric</span></td><td>Average weekly impressions in the previous period.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Engagement (Daily) &amp; Rollup</summary>
+    <p class="section-desc">Daily page engagement for trend charts; rollup gives current vs previous averages for scorecards.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>engagement_page_engagements</td><td>Engagement Page Engagements</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement actions on the page on this day.</td></tr>
+        <tr><td>engagement_rollup_curr_page_engagements</td><td>Rollup Curr Page Engagements</td><td><span class="badge badge-metric">Metric</span></td><td>Total page engagements for the current period.</td></tr>
+        <tr><td>engagement_rollup_curr_avg_engagements_per_day</td><td>Rollup Curr Avg / Day</td><td><span class="badge badge-metric">Metric</span></td><td>Average daily engagements in the current period.</td></tr>
+        <tr><td>engagement_rollup_curr_avg_engagements_per_week</td><td>Rollup Curr Avg / Week</td><td><span class="badge badge-metric">Metric</span></td><td>Average weekly engagements in the current period.</td></tr>
+        <tr><td>engagement_rollup_prev_page_engagements</td><td>Rollup Prev Page Engagements</td><td><span class="badge badge-metric">Metric</span></td><td>Total page engagements for the previous period.</td></tr>
+        <tr><td>engagement_rollup_prev_avg_engagements_per_day</td><td>Rollup Prev Avg / Day</td><td><span class="badge badge-metric">Metric</span></td><td>Average daily engagements in the previous period.</td></tr>
+        <tr><td>engagement_rollup_prev_avg_engagements_per_week</td><td>Rollup Prev Avg / Week</td><td><span class="badge badge-metric">Metric</span></td><td>Average weekly engagements in the previous period.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Video Insights (Daily) &amp; Rollup</summary>
+    <p class="section-desc">Daily video performance for time-series charts. Rollup fields give current vs previous period totals for scorecards.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>video_insights_total_views</td><td>Video Insights Total Views</td><td><span class="badge badge-metric">Metric</span></td><td>Total video views (all sources) on this day.</td></tr>
+        <tr><td>video_insights_organic_views</td><td>Video Insights Organic Views</td><td><span class="badge badge-metric">Metric</span></td><td>Organic video views on this day.</td></tr>
+        <tr><td>video_insights_paid_views</td><td>Video Insights Paid Views</td><td><span class="badge badge-metric">Metric</span></td><td>Paid/boosted video views on this day.</td></tr>
+        <tr><td>video_insights_total_view_time</td><td>Video Insights Total View Time</td><td><span class="badge badge-metric">Metric</span></td><td>Total video view time (ms) on this day.</td></tr>
+        <tr><td>video_insights_organic_view_time</td><td>Video Insights Organic View Time</td><td><span class="badge badge-metric">Metric</span></td><td>Organic video view time (ms) on this day.</td></tr>
+        <tr><td>video_insights_paid_view_time</td><td>Video Insights Paid View Time</td><td><span class="badge badge-metric">Metric</span></td><td>Paid video view time (ms) on this day.</td></tr>
+        <tr><td>video_insights_comments</td><td>Video Insights Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Video comments on this day.</td></tr>
+        <tr><td>video_insights_reactions</td><td>Video Insights Reactions</td><td><span class="badge badge-metric">Metric</span></td><td>Video reactions on this day.</td></tr>
+        <tr><td>video_insights_shares</td><td>Video Insights Shares</td><td><span class="badge badge-metric">Metric</span></td><td>Video shares on this day.</td></tr>
+        <tr><td>video_insights_total_posts</td><td>Video Insights Total Posts</td><td><span class="badge badge-metric">Metric</span></td><td>Number of video posts published on this day.</td></tr>
+        <tr><td>video_rollup_curr_total_views</td><td>Video Rollup Curr Total Views</td><td><span class="badge badge-metric">Metric</span></td><td>Total video views for the current period.</td></tr>
+        <tr><td>video_rollup_curr_organic_views</td><td>… Curr Organic Views</td><td><span class="badge badge-metric">Metric</span></td><td>Organic video views for the current period.</td></tr>
+        <tr><td>video_rollup_curr_paid_views</td><td>… Curr Paid Views</td><td><span class="badge badge-metric">Metric</span></td><td>Paid video views for the current period.</td></tr>
+        <tr><td>video_rollup_curr_total_view_time</td><td>… Curr Total View Time</td><td><span class="badge badge-metric">Metric</span></td><td>Total video view time for the current period.</td></tr>
+        <tr><td>video_rollup_curr_comments</td><td>… Curr Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Video comments for the current period.</td></tr>
+        <tr><td>video_rollup_curr_reactions</td><td>… Curr Reactions</td><td><span class="badge badge-metric">Metric</span></td><td>Video reactions for the current period.</td></tr>
+        <tr><td>video_rollup_curr_shares</td><td>… Curr Shares</td><td><span class="badge badge-metric">Metric</span></td><td>Video shares for the current period.</td></tr>
+        <tr><td>video_rollup_curr_total_posts</td><td>… Curr Total Posts</td><td><span class="badge badge-metric">Metric</span></td><td>Video posts published in the current period.</td></tr>
+        <tr><td>video_rollup_prev_*</td><td>… Prev …</td><td><span class="badge badge-metric">Metric</span></td><td>Same metrics as above for the previous period (<code>prev</code> versions of all <code>curr</code> fields).</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Reels (Daily) &amp; Rollup</summary>
+    <p class="section-desc">Daily Reels performance for trend charts plus period rollup for scorecards.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>reels_initial_plays</td><td>Reels Initial Plays</td><td><span class="badge badge-metric">Metric</span></td><td>Number of times a Reel started playing (initial play count) on this day.</td></tr>
+        <tr><td>reels_total_reels</td><td>Reels Total Reels</td><td><span class="badge badge-metric">Metric</span></td><td>Number of Reels published on this day.</td></tr>
+        <tr><td>reels_total_seconds_watched</td><td>Reels Total Seconds Watched</td><td><span class="badge badge-metric">Metric</span></td><td>Total seconds watched across all Reels on this day.</td></tr>
+        <tr><td>reels_engagement</td><td>Reels Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement (reactions + comments + shares) on Reels this day.</td></tr>
+        <tr><td>reels_reactions</td><td>Reels Reactions</td><td><span class="badge badge-metric">Metric</span></td><td>Reactions on Reels this day.</td></tr>
+        <tr><td>reels_comments</td><td>Reels Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Comments on Reels this day.</td></tr>
+        <tr><td>reels_shares</td><td>Reels Shares</td><td><span class="badge badge-metric">Metric</span></td><td>Shares of Reels this day.</td></tr>
+        <tr><td>reels_rollup_curr_total_reels</td><td>Reels Rollup Curr Total Reels</td><td><span class="badge badge-metric">Metric</span></td><td>Total Reels published in the current period.</td></tr>
+        <tr><td>reels_rollup_curr_initial_plays</td><td>… Curr Initial Plays</td><td><span class="badge badge-metric">Metric</span></td><td>Total initial plays in the current period.</td></tr>
+        <tr><td>reels_rollup_curr_total_seconds_watched</td><td>… Curr Total Seconds Watched</td><td><span class="badge badge-metric">Metric</span></td><td>Total seconds watched in the current period.</td></tr>
+        <tr><td>reels_rollup_curr_average_seconds_watched</td><td>… Curr Average Seconds Watched</td><td><span class="badge badge-metric">Metric</span></td><td>Average watch time per Reel play in the current period.</td></tr>
+        <tr><td>reels_rollup_curr_reach</td><td>… Curr Reach</td><td><span class="badge badge-metric">Metric</span></td><td>Unique accounts reached by Reels in the current period.</td></tr>
+        <tr><td>reels_rollup_curr_engagement</td><td>… Curr Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total Reels engagement in the current period.</td></tr>
+        <tr><td>reels_rollup_curr_reactions</td><td>… Curr Reactions</td><td><span class="badge badge-metric">Metric</span></td><td>Reels reactions in the current period.</td></tr>
+        <tr><td>reels_rollup_curr_comments</td><td>… Curr Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Reels comments in the current period.</td></tr>
+        <tr><td>reels_rollup_curr_shares</td><td>… Curr Shares</td><td><span class="badge badge-metric">Metric</span></td><td>Reels shares in the current period.</td></tr>
+        <tr><td>reels_rollup_prev_*</td><td>… Prev …</td><td><span class="badge badge-metric">Metric</span></td><td>Same nine metrics as above for the previous period.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Top Posts</summary>
+    <p class="section-desc">One row per post (top 10 by engagement). Use in a table or gallery chart. Media asset fields are comma-joined when a post has multiple assets.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>top_posts_created_time</td><td>Created Time</td><td><span class="badge badge-dim">Dim</span></td><td>Date the post was published.</td></tr>
+        <tr><td>top_posts_page_name</td><td>Page Name</td><td><span class="badge badge-dim">Dim</span></td><td>Name of the Facebook page.</td></tr>
+        <tr><td>top_posts_page_id</td><td>Page ID</td><td><span class="badge badge-dim">Dim</span></td><td>Facebook page identifier.</td></tr>
+        <tr><td>top_posts_post_id</td><td>Post ID</td><td><span class="badge badge-dim">Dim</span></td><td>Unique Facebook post identifier.</td></tr>
+        <tr><td>top_posts_permalink</td><td>Permalink</td><td><span class="badge badge-dim">Dim</span></td><td>Direct URL to the post on Facebook.</td></tr>
+        <tr><td>top_posts_status_type</td><td>Status Type</td><td><span class="badge badge-dim">Dim</span></td><td>Facebook status type (added_photos, shared_story, mobile_status_update, etc.).</td></tr>
+        <tr><td>top_posts_media_type</td><td>Media Type</td><td><span class="badge badge-dim">Dim</span></td><td>Content type of the post (photo, video, link, status, etc.).</td></tr>
+        <tr><td>top_posts_caption</td><td>Caption</td><td><span class="badge badge-dim">Dim</span></td><td>Post caption / message text.</td></tr>
+        <tr><td>top_posts_description</td><td>Description</td><td><span class="badge badge-dim">Dim</span></td><td>Post description (for link shares).</td></tr>
+        <tr><td>top_posts_full_picture</td><td>Full Picture</td><td><span class="badge badge-dim">Dim</span></td><td>URL of the post's primary image.</td></tr>
+        <tr><td>top_posts_day_of_week</td><td>Day Of Week</td><td><span class="badge badge-dim">Dim</span></td><td>Day of week the post was published (Monday–Sunday).</td></tr>
+        <tr><td>top_posts_message_tags</td><td>Message Tags</td><td><span class="badge badge-dim">Dim</span></td><td>JSON array of people/pages tagged in the post.</td></tr>
+        <tr><td>tp_medass_media_id</td><td>Media Asset ID</td><td><span class="badge badge-dim">Dim</span></td><td>ID(s) of attached media assets, comma-joined for carousel posts.</td></tr>
+        <tr><td>tp_medass_asset_type</td><td>Media Asset Type</td><td><span class="badge badge-dim">Dim</span></td><td>Type of each media asset (photo, video), comma-joined.</td></tr>
+        <tr><td>tp_medass_link</td><td>Media Asset Link</td><td><span class="badge badge-dim">Dim</span></td><td>URL(s) of media assets, comma-joined.</td></tr>
+        <tr><td>tp_medass_call_to_action</td><td>Media Asset Call To Action</td><td><span class="badge badge-dim">Dim</span></td><td>Call-to-action URL(s) on media assets, comma-joined.</td></tr>
+        <tr><td>top_posts_hour_of_day</td><td>Hour Of Day</td><td><span class="badge badge-metric">Metric</span></td><td>Hour (0–23) when the post was published.</td></tr>
+        <tr><td>top_posts_like</td><td>Like</td><td><span class="badge badge-metric">Metric</span></td><td>Number of Like reactions on the post.</td></tr>
+        <tr><td>top_posts_love</td><td>Love</td><td><span class="badge badge-metric">Metric</span></td><td>Number of Love reactions on the post.</td></tr>
+        <tr><td>top_posts_haha</td><td>Haha</td><td><span class="badge badge-metric">Metric</span></td><td>Number of Haha reactions on the post.</td></tr>
+        <tr><td>top_posts_wow</td><td>Wow</td><td><span class="badge badge-metric">Metric</span></td><td>Number of Wow reactions on the post.</td></tr>
+        <tr><td>top_posts_sad</td><td>Sad</td><td><span class="badge badge-metric">Metric</span></td><td>Number of Sad reactions on the post.</td></tr>
+        <tr><td>top_posts_angry</td><td>Angry</td><td><span class="badge badge-metric">Metric</span></td><td>Number of Angry reactions on the post.</td></tr>
+        <tr><td>top_posts_total</td><td>Total Reactions</td><td><span class="badge badge-metric">Metric</span></td><td>Sum of all reaction types on the post.</td></tr>
+        <tr><td>top_posts_shares</td><td>Shares</td><td><span class="badge badge-metric">Metric</span></td><td>Number of times the post was shared.</td></tr>
+        <tr><td>top_posts_comments</td><td>Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Number of comments on the post.</td></tr>
+        <tr><td>top_posts_post_clicks</td><td>Post Clicks</td><td><span class="badge badge-metric">Metric</span></td><td>Total link clicks on the post.</td></tr>
+        <tr><td>top_posts_total_engagement</td><td>Total Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Sum of all engagement actions on the post.</td></tr>
+        <tr><td>top_posts_post_impressions</td><td>Post Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Total impressions for this post (all sources).</td></tr>
+        <tr><td>top_posts_post_impressions_paid</td><td>Post Impressions Paid</td><td><span class="badge badge-metric">Metric</span></td><td>Paid/boosted impressions for this post.</td></tr>
+        <tr><td>top_posts_post_impressions_organic</td><td>Post Impressions Organic</td><td><span class="badge badge-metric">Metric</span></td><td>Organic impressions for this post.</td></tr>
+        <tr><td>top_posts_post_impressions_viral</td><td>Post Impressions Viral</td><td><span class="badge badge-metric">Metric</span></td><td>Viral impressions (from friend interactions) for this post.</td></tr>
+        <tr><td>top_posts_post_video_views</td><td>Post Video Views</td><td><span class="badge badge-metric">Metric</span></td><td>Video views for this post (if video content).</td></tr>
+        <tr><td>top_posts_total_impressions</td><td>Total Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Total impressions including all organic, paid, and viral sources.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Active Users (Day of Week)</summary>
+    <p class="section-desc">Shows which days of the week your audience is most active. Use in a bar chart with <code>active_users_days_buckets</code> as the dimension.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>active_users_days_buckets</td><td>Active Users Days Buckets</td><td><span class="badge badge-dim">Dim</span></td><td>Day of week label (e.g. "Monday").</td></tr>
+        <tr><td>active_users_days_values</td><td>Active Users Days Values</td><td><span class="badge badge-metric">Metric</span></td><td>Relative activity level for this day of week.</td></tr>
+        <tr><td>active_users_days_highest_value</td><td>Highest Value</td><td><span class="badge badge-metric">Metric</span></td><td>Peak activity value across all days — repeated on every row for reference.</td></tr>
+        <tr><td>active_users_days_highest_day</td><td>Highest Day</td><td><span class="badge badge-dim">Dim</span></td><td>Name of the most active day — repeated on every row for reference.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Demographics — Age, Gender, Location</summary>
+    <p class="section-desc">Each section produces one row per bucket. Use in a pie or bar chart.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>audience_age_fans_age_bracket</td><td>Age Bracket</td><td><span class="badge badge-dim">Dim</span></td><td>Age range of fans (e.g. "18-24", "25-34").</td></tr>
+        <tr><td>audience_age_fans_age_count</td><td>Age Count</td><td><span class="badge badge-metric">Metric</span></td><td>Number of fans in this age bracket.</td></tr>
+        <tr><td>audience_gender_gender</td><td>Gender</td><td><span class="badge badge-dim">Dim</span></td><td>Gender segment (F, M, U).</td></tr>
+        <tr><td>audience_gender_count</td><td>Gender Count</td><td><span class="badge badge-metric">Metric</span></td><td>Number of fans in this gender segment.</td></tr>
+        <tr><td>audience_city_city</td><td>City</td><td><span class="badge badge-dim">Dim</span></td><td>City name of page fans.</td></tr>
+        <tr><td>audience_city_count</td><td>City Count</td><td><span class="badge badge-metric">Metric</span></td><td>Number of fans from this city.</td></tr>
+        <tr><td>audience_country_country</td><td>Country</td><td><span class="badge badge-dim">Dim</span></td><td>Country of page fans.</td></tr>
+        <tr><td>audience_country_count</td><td>Country Count</td><td><span class="badge badge-metric">Metric</span></td><td>Number of fans from this country.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+</div><!-- /facebook -->
+
+<!-- ══════════════════════════════════════════════════════════ INSTAGRAM ══ -->
+<div id="pane-instagram" class="platform-pane">
+
+  <details open>
+    <summary>Summary</summary>
+    <p class="section-desc">Single-row response with current &amp; previous period totals for all key Instagram metrics.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>period</td><td>Period</td><td><span class="badge badge-dim">Dim</span></td><td>Always "Current" — row identifier for single-row scorecard sources.</td></tr>
+        <tr><td>sum_curr_total_posts</td><td>Sum Curr Total Posts</td><td><span class="badge badge-metric">Metric</span></td><td>Posts published in the current period.</td></tr>
+        <tr><td>sum_curr_post_engagement</td><td>Sum Curr Post Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total post-level engagement (likes + comments + saves + shares) in the current period.</td></tr>
+        <tr><td>sum_curr_post_reactions</td><td>Sum Curr Post Reactions</td><td><span class="badge badge-metric">Metric</span></td><td>Total likes on posts in the current period.</td></tr>
+        <tr><td>sum_curr_post_comments</td><td>Sum Curr Post Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Total comments on posts in the current period.</td></tr>
+        <tr><td>sum_curr_post_saves</td><td>Sum Curr Post Saves</td><td><span class="badge badge-metric">Metric</span></td><td>Total saves on posts in the current period.</td></tr>
+        <tr><td>sum_curr_post_reach</td><td>Sum Curr Post Reach</td><td><span class="badge badge-metric">Metric</span></td><td>Unique accounts reached by posts in the current period.</td></tr>
+        <tr><td>sum_curr_profile_impressions</td><td>Sum Curr Profile Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Total profile-level impressions in the current period.</td></tr>
+        <tr><td>sum_curr_post_views</td><td>Sum Curr Post Views</td><td><span class="badge badge-metric">Metric</span></td><td>Total video/reel views on posts in the current period.</td></tr>
+        <tr><td>sum_curr_total_stories</td><td>Sum Curr Total Stories</td><td><span class="badge badge-metric">Metric</span></td><td>Stories published in the current period.</td></tr>
+        <tr><td>sum_curr_profile_views</td><td>Sum Curr Profile Views</td><td><span class="badge badge-metric">Metric</span></td><td>Total profile page visits in the current period.</td></tr>
+        <tr><td>sum_curr_followers_count</td><td>Sum Curr Followers Count</td><td><span class="badge badge-metric">Metric</span></td><td>Follower count at the end of the current period.</td></tr>
+        <tr><td>sum_curr_follows_count</td><td>Sum Curr Follows Count</td><td><span class="badge badge-metric">Metric</span></td><td>Number of accounts this profile follows at period end.</td></tr>
+        <tr><td>sum_curr_accounts_engaged</td><td>Sum Curr Accounts Engaged</td><td><span class="badge badge-metric">Metric</span></td><td>Unique accounts that engaged with the profile in the current period.</td></tr>
+        <tr><td>sum_curr_profile_engagement</td><td>Sum Curr Profile Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total profile-level engagement actions in the current period.</td></tr>
+        <tr><td>sum_curr_profile_reach</td><td>Sum Curr Profile Reach</td><td><span class="badge badge-metric">Metric</span></td><td>Unique accounts that saw any profile content in the current period.</td></tr>
+        <tr><td>sum_curr_eng_rate</td><td>Sum Curr Eng Rate</td><td><span class="badge badge-pct">%</span></td><td>Engagement rate: total engagement ÷ reach × 100 for the current period.</td></tr>
+        <tr><td>sum_prev_*</td><td>Sum Prev …</td><td><span class="badge badge-metric">Metric</span></td><td>Same 17 metrics as above but for the previous period.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Audience Growth (Daily) &amp; Rollup</summary>
+    <p class="section-desc">Daily follower count for trend charts; rollup gives period totals for scorecards.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>audience_growth_followers</td><td>Audience Growth Followers</td><td><span class="badge badge-metric">Metric</span></td><td>Cumulative follower count on this date.</td></tr>
+        <tr><td>audience_growth_followers_daily</td><td>Audience Growth Followers Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Net new followers gained on this specific day.</td></tr>
+        <tr><td>audience_growth_rollup_curr_follower_count</td><td>Rollup Curr Follower Count</td><td><span class="badge badge-metric">Metric</span></td><td>Follower count at the end of the current period.</td></tr>
+        <tr><td>audience_growth_rollup_curr_follower_gained</td><td>Rollup Curr Follower Gained</td><td><span class="badge badge-metric">Metric</span></td><td>Net followers gained during the current period.</td></tr>
+        <tr><td>audience_growth_rollup_prev_follower_count</td><td>Rollup Prev Follower Count</td><td><span class="badge badge-metric">Metric</span></td><td>Follower count at the end of the previous period.</td></tr>
+        <tr><td>audience_growth_rollup_prev_follower_gained</td><td>Rollup Prev Follower Gained</td><td><span class="badge badge-metric">Metric</span></td><td>Net followers gained during the previous period.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Publishing Behaviour (Daily) &amp; Rollup</summary>
+    <p class="section-desc">Daily posting performance for trend charts. Rollup is broken down by media type (IMAGE, VIDEO, CAROUSEL_ALBUM, REELS) — one row per type per period.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>publishing_behaviour_total_posts</td><td>Total Posts</td><td><span class="badge badge-metric">Metric</span></td><td>Posts published on this day.</td></tr>
+        <tr><td>publishing_behaviour_likes</td><td>Likes</td><td><span class="badge badge-metric">Metric</span></td><td>Likes on posts published this day.</td></tr>
+        <tr><td>publishing_behaviour_comments</td><td>Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Comments on posts published this day.</td></tr>
+        <tr><td>publishing_behaviour_saved</td><td>Saved</td><td><span class="badge badge-metric">Metric</span></td><td>Saves on posts published this day.</td></tr>
+        <tr><td>publishing_behaviour_engagement</td><td>Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement on posts published this day.</td></tr>
+        <tr><td>publishing_behaviour_reach</td><td>Reach</td><td><span class="badge badge-metric">Metric</span></td><td>Unique accounts reached by posts on this day.</td></tr>
+        <tr><td>publishing_behaviour_impressions</td><td>Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Total impressions on posts published this day.</td></tr>
+        <tr><td>publishing_behaviour_views</td><td>Views</td><td><span class="badge badge-metric">Metric</span></td><td>Video/Reel views on posts published this day.</td></tr>
+        <tr><td>pub_beh_rlu_media_type</td><td>Pub Beh Rlu Media Type</td><td><span class="badge badge-dim">Dim</span></td><td>Media type for the rollup row (IMAGE, VIDEO, CAROUSEL_ALBUM, REELS).</td></tr>
+        <tr><td>pub_beh_rlu_curr_total_posts</td><td>Rollup Curr Total Posts</td><td><span class="badge badge-metric">Metric</span></td><td>Posts of this media type published in the current period.</td></tr>
+        <tr><td>pub_beh_rlu_curr_likes</td><td>… Curr Likes</td><td><span class="badge badge-metric">Metric</span></td><td>Likes on this media type in the current period.</td></tr>
+        <tr><td>pub_beh_rlu_curr_comments</td><td>… Curr Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Comments on this media type in the current period.</td></tr>
+        <tr><td>pub_beh_rlu_curr_saved</td><td>… Curr Saved</td><td><span class="badge badge-metric">Metric</span></td><td>Saves on this media type in the current period.</td></tr>
+        <tr><td>pub_beh_rlu_curr_engagement</td><td>… Curr Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement on this media type in the current period.</td></tr>
+        <tr><td>pub_beh_rlu_curr_reach</td><td>… Curr Reach</td><td><span class="badge badge-metric">Metric</span></td><td>Reach for this media type in the current period.</td></tr>
+        <tr><td>pub_beh_rlu_curr_views</td><td>… Curr Views</td><td><span class="badge badge-metric">Metric</span></td><td>Views for this media type in the current period.</td></tr>
+        <tr><td>pub_beh_rlu_prev_*</td><td>… Prev …</td><td><span class="badge badge-metric">Metric</span></td><td>Same 7 metrics as above for the previous period.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Stories Performance (Daily) &amp; Rollup</summary>
+    <p class="section-desc">Daily story metrics for trend charts; rollup for scorecards.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>stories_performance_published_stories</td><td>Published Stories</td><td><span class="badge badge-metric">Metric</span></td><td>Stories published on this day.</td></tr>
+        <tr><td>stories_performance_story_impressions</td><td>Story Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Total story impressions on this day.</td></tr>
+        <tr><td>stories_performance_avg_story_impressions</td><td>Avg Story Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Average impressions per story on this day.</td></tr>
+        <tr><td>stories_performance_story_reach</td><td>Story Reach</td><td><span class="badge badge-metric">Metric</span></td><td>Unique accounts that viewed stories on this day.</td></tr>
+        <tr><td>stories_performance_story_reply</td><td>Story Replies</td><td><span class="badge badge-metric">Metric</span></td><td>Replies sent to stories on this day.</td></tr>
+        <tr><td>stories_performance_story_exits</td><td>Story Exits</td><td><span class="badge badge-metric">Metric</span></td><td>Number of times viewers exited the story on this day.</td></tr>
+        <tr><td>stories_performance_story_taps_forward</td><td>Story Taps Forward</td><td><span class="badge badge-metric">Metric</span></td><td>Forward taps (skips to next story) on this day.</td></tr>
+        <tr><td>stories_performance_story_taps_back</td><td>Story Taps Back</td><td><span class="badge badge-metric">Metric</span></td><td>Back taps (replay previous story) on this day.</td></tr>
+        <tr><td>stories_rollup_curr_*</td><td>Rollup Curr …</td><td><span class="badge badge-metric">Metric</span></td><td>Period total for each of the 8 story metrics above (current period).</td></tr>
+        <tr><td>stories_rollup_prev_*</td><td>Rollup Prev …</td><td><span class="badge badge-metric">Metric</span></td><td>Period total for each of the 8 story metrics above (previous period).</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Reels (Daily) &amp; Rollup</summary>
+    <p class="section-desc">Daily Reels metrics for trend charts; rollup for scorecards.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>reels_total_posts</td><td>Reels Total Posts</td><td><span class="badge badge-metric">Metric</span></td><td>Reels published on this day.</td></tr>
+        <tr><td>reels_engagement</td><td>Reels Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement on Reels this day.</td></tr>
+        <tr><td>reels_likes</td><td>Reels Likes</td><td><span class="badge badge-metric">Metric</span></td><td>Likes on Reels this day.</td></tr>
+        <tr><td>reels_comments</td><td>Reels Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Comments on Reels this day.</td></tr>
+        <tr><td>reels_saves</td><td>Reels Saves</td><td><span class="badge badge-metric">Metric</span></td><td>Saves on Reels this day.</td></tr>
+        <tr><td>reels_shares</td><td>Reels Shares</td><td><span class="badge badge-metric">Metric</span></td><td>Shares of Reels this day.</td></tr>
+        <tr><td>reels_avg_watch_time</td><td>Reels Avg Watch Time</td><td><span class="badge badge-metric">Metric</span></td><td>Average seconds watched per Reel play on this day.</td></tr>
+        <tr><td>reels_total_watch_time</td><td>Reels Total Watch Time</td><td><span class="badge badge-metric">Metric</span></td><td>Total seconds watched across all Reels on this day.</td></tr>
+        <tr><td>reels_rollup_curr_*</td><td>Reels Rollup Curr …</td><td><span class="badge badge-metric">Metric</span></td><td>Period total for each of the 8 Reels metrics above (current period).</td></tr>
+        <tr><td>reels_rollup_prev_*</td><td>Reels Rollup Prev …</td><td><span class="badge badge-metric">Metric</span></td><td>Period total for each of the 8 Reels metrics above (previous period).</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Top Hashtags &amp; Rollup</summary>
+    <p class="section-desc">One row per hashtag used in the period. Rollup gives overall hashtag activity totals for scorecards.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>top_hashtags_name</td><td>Top Hashtags Name</td><td><span class="badge badge-dim">Dim</span></td><td>The hashtag text (without #).</td></tr>
+        <tr><td>top_hashtags_posts</td><td>Top Hashtags Posts</td><td><span class="badge badge-metric">Metric</span></td><td>Number of posts using this hashtag.</td></tr>
+        <tr><td>top_hashtags_engagement</td><td>Top Hashtags Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement on posts using this hashtag.</td></tr>
+        <tr><td>top_hashtags_likes</td><td>Top Hashtags Likes</td><td><span class="badge badge-metric">Metric</span></td><td>Likes on posts using this hashtag.</td></tr>
+        <tr><td>top_hashtags_comments</td><td>Top Hashtags Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Comments on posts using this hashtag.</td></tr>
+        <tr><td>top_hashtags_saved</td><td>Top Hashtags Saved</td><td><span class="badge badge-metric">Metric</span></td><td>Saves on posts using this hashtag.</td></tr>
+        <tr><td>top_hashtags_rollup_curr_total_engagement</td><td>Rollup Curr Total Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement across all hashtagged posts in the current period.</td></tr>
+        <tr><td>top_hashtags_rollup_curr_total_unique_hashtags</td><td>Rollup Curr Total Unique Hashtags</td><td><span class="badge badge-metric">Metric</span></td><td>Number of distinct hashtags used in the current period.</td></tr>
+        <tr><td>top_hashtags_rollup_curr_total_hashtag_uses</td><td>Rollup Curr Total Hashtag Uses</td><td><span class="badge badge-metric">Metric</span></td><td>Total hashtag instances (a post with 5 hashtags counts as 5) in the current period.</td></tr>
+        <tr><td>top_hashtags_rollup_prev_*</td><td>Rollup Prev …</td><td><span class="badge badge-metric">Metric</span></td><td>Same 6 rollup metrics for the previous period.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Impressions &amp; Engagement (Daily + Rollup)</summary>
+    <p class="section-desc">Daily impressions and engagement for trend charts, plus rollup totals for scorecards.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>impressions_impressions</td><td>Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Total profile impressions on this day.</td></tr>
+        <tr><td>impressions_rollup_curr_total_impressions</td><td>Rollup Curr Total Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Total impressions for the current period.</td></tr>
+        <tr><td>impressions_rollup_curr_avg_impressions</td><td>Rollup Curr Avg Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Average daily impressions in the current period.</td></tr>
+        <tr><td>impressions_rollup_prev_*</td><td>Rollup Prev …</td><td><span class="badge badge-metric">Metric</span></td><td>Same 2 rollup metrics for the previous period.</td></tr>
+        <tr><td>engagements_engagement</td><td>Engagements Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement actions on this day.</td></tr>
+        <tr><td>engagements_comments</td><td>Engagements Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Comments received on this day.</td></tr>
+        <tr><td>engagements_reactions</td><td>Engagements Reactions</td><td><span class="badge badge-metric">Metric</span></td><td>Reactions (likes) received on this day.</td></tr>
+        <tr><td>engagements_rollup_curr_engagement</td><td>Rollup Curr Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement for the current period.</td></tr>
+        <tr><td>engagements_rollup_curr_avg_engagement</td><td>Rollup Curr Avg Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Average daily engagement in the current period.</td></tr>
+        <tr><td>engagements_rollup_curr_saved</td><td>Rollup Curr Saved</td><td><span class="badge badge-metric">Metric</span></td><td>Total saves in the current period.</td></tr>
+        <tr><td>engagements_rollup_curr_count</td><td>Rollup Curr Count</td><td><span class="badge badge-metric">Metric</span></td><td>Number of posts with engagement data in the current period.</td></tr>
+        <tr><td>engagements_rollup_prev_*</td><td>Rollup Prev …</td><td><span class="badge badge-metric">Metric</span></td><td>Same 6 rollup engagement metrics for the previous period.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Active Users (Days &amp; Hours)</summary>
+    <p class="section-desc">Audience activity heatmap data. Use in bar charts — <code>active_users_days_buckets</code> or <code>active_users_hours_buckets</code> as the dimension.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>active_users_days_buckets</td><td>Active Users Days Buckets</td><td><span class="badge badge-dim">Dim</span></td><td>Day of week (Monday–Sunday).</td></tr>
+        <tr><td>active_users_days_values</td><td>Active Users Days Values</td><td><span class="badge badge-metric">Metric</span></td><td>Relative follower activity level for this day.</td></tr>
+        <tr><td>active_users_days_highest_value</td><td>Highest Day Value</td><td><span class="badge badge-metric">Metric</span></td><td>Peak activity value across all days (repeated on each row).</td></tr>
+        <tr><td>active_users_days_highest_day</td><td>Highest Day</td><td><span class="badge badge-dim">Dim</span></td><td>Most active day of the week (repeated on each row).</td></tr>
+        <tr><td>active_users_hours_buckets</td><td>Active Users Hours Buckets</td><td><span class="badge badge-metric">Metric</span></td><td>Hour of day (0–23).</td></tr>
+        <tr><td>active_users_hours_values</td><td>Active Users Hours Values</td><td><span class="badge badge-metric">Metric</span></td><td>Relative follower activity level for this hour.</td></tr>
+        <tr><td>active_users_hours_highest_value</td><td>Highest Hour Value</td><td><span class="badge badge-metric">Metric</span></td><td>Peak activity value across all hours (repeated on each row).</td></tr>
+        <tr><td>active_users_hours_highest_hour</td><td>Highest Hour</td><td><span class="badge badge-metric">Metric</span></td><td>Most active hour of the day (repeated on each row).</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Top Posts</summary>
+    <p class="section-desc">One row per post (top 100 by views). Use in a table or gallery chart.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>top_posts_post_created_at</td><td>Post Created At</td><td><span class="badge badge-dim">Dim</span></td><td>Date the post was published.</td></tr>
+        <tr><td>top_posts_instagram_id</td><td>Instagram ID</td><td><span class="badge badge-dim">Dim</span></td><td>Instagram account identifier.</td></tr>
+        <tr><td>top_posts_media_id</td><td>Media ID</td><td><span class="badge badge-dim">Dim</span></td><td>Unique Instagram media identifier for this post.</td></tr>
+        <tr><td>top_posts_caption</td><td>Caption</td><td><span class="badge badge-dim">Dim</span></td><td>Post caption text.</td></tr>
+        <tr><td>top_posts_media_type</td><td>Media Type</td><td><span class="badge badge-dim">Dim</span></td><td>Content type (IMAGE, VIDEO, CAROUSEL_ALBUM, REELS).</td></tr>
+        <tr><td>top_posts_entity_type</td><td>Entity Type</td><td><span class="badge badge-dim">Dim</span></td><td>Post entity category (post, story, reel).</td></tr>
+        <tr><td>top_posts_media_url</td><td>Media URL</td><td><span class="badge badge-dim">Dim</span></td><td>Direct URL(s) of the media file, comma-joined for carousels.</td></tr>
+        <tr><td>top_posts_permalink</td><td>Permalink</td><td><span class="badge badge-dim">Dim</span></td><td>Permanent URL of the post on Instagram.</td></tr>
+        <tr><td>top_posts_hashtags</td><td>Hashtags</td><td><span class="badge badge-dim">Dim</span></td><td>Comma-joined hashtags used in the caption.</td></tr>
+        <tr><td>top_posts_day_of_week</td><td>Day Of Week</td><td><span class="badge badge-dim">Dim</span></td><td>Day of week the post was published.</td></tr>
+        <tr><td>top_posts_hour_of_day</td><td>Hour Of Day</td><td><span class="badge badge-metric">Metric</span></td><td>Hour (0–23) the post was published.</td></tr>
+        <tr><td>top_posts_like_count</td><td>Like Count</td><td><span class="badge badge-metric">Metric</span></td><td>Total likes on the post.</td></tr>
+        <tr><td>top_posts_comments_count</td><td>Comments Count</td><td><span class="badge badge-metric">Metric</span></td><td>Total comments on the post.</td></tr>
+        <tr><td>top_posts_saved</td><td>Saved</td><td><span class="badge badge-metric">Metric</span></td><td>Times the post was saved.</td></tr>
+        <tr><td>top_posts_engagement</td><td>Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement (likes + comments + saves + shares).</td></tr>
+        <tr><td>top_posts_reach</td><td>Reach</td><td><span class="badge badge-metric">Metric</span></td><td>Unique accounts that saw this post.</td></tr>
+        <tr><td>top_posts_impressions</td><td>Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Total times this post was displayed.</td></tr>
+        <tr><td>top_posts_views</td><td>Views</td><td><span class="badge badge-metric">Metric</span></td><td>Total video/reel play count.</td></tr>
+        <tr><td>top_posts_reels_avg_watch_time</td><td>Reels Avg Watch Time</td><td><span class="badge badge-metric">Metric</span></td><td>Average seconds watched per Reel play (Reels only).</td></tr>
+        <tr><td>top_posts_exits</td><td>Exits</td><td><span class="badge badge-metric">Metric</span></td><td>Times viewers exited from this story (Stories only).</td></tr>
+        <tr><td>top_posts_replies</td><td>Replies</td><td><span class="badge badge-metric">Metric</span></td><td>Replies to this story (Stories only).</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Demographics — Age, Gender, Location</summary>
+    <p class="section-desc">One row per demographic bucket. Use in pie or bar charts.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>audience_age_bracket</td><td>Age Bracket</td><td><span class="badge badge-dim">Dim</span></td><td>Age range (e.g. "18-24", "35-44").</td></tr>
+        <tr><td>audience_age_count</td><td>Age Count</td><td><span class="badge badge-metric">Metric</span></td><td>Number of followers in this age bracket.</td></tr>
+        <tr><td>audience_gender_gender</td><td>Gender</td><td><span class="badge badge-dim">Dim</span></td><td>Gender segment (F, M, U).</td></tr>
+        <tr><td>audience_gender_count</td><td>Gender Count</td><td><span class="badge badge-metric">Metric</span></td><td>Followers in this gender segment.</td></tr>
+        <tr><td>audience_city_city</td><td>City</td><td><span class="badge badge-dim">Dim</span></td><td>City of followers.</td></tr>
+        <tr><td>audience_city_count</td><td>City Count</td><td><span class="badge badge-metric">Metric</span></td><td>Followers from this city.</td></tr>
+        <tr><td>audience_country_country</td><td>Country</td><td><span class="badge badge-dim">Dim</span></td><td>Country of followers.</td></tr>
+        <tr><td>audience_country_count</td><td>Country Count</td><td><span class="badge badge-metric">Metric</span></td><td>Followers from this country.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+</div><!-- /instagram -->
+
+<!-- ═══════════════════════════════════════════════════════════ LINKEDIN ══ -->
+<div id="pane-linkedin" class="platform-pane">
+
+  <details open>
+    <summary>Summary</summary>
+    <p class="section-desc">Single-row response with current &amp; previous period totals for LinkedIn page and post metrics.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>period</td><td>Period</td><td><span class="badge badge-dim">Dim</span></td><td>Always "Current" — row identifier for single-row scorecard sources.</td></tr>
+        <tr><td>sum_curr_followers</td><td>Sum Curr Followers</td><td><span class="badge badge-metric">Metric</span></td><td>Follower count at the end of the current period.</td></tr>
+        <tr><td>sum_curr_total_posts</td><td>Sum Curr Total Posts</td><td><span class="badge badge-metric">Metric</span></td><td>Posts published in the current period.</td></tr>
+        <tr><td>sum_curr_post_likes</td><td>Sum Curr Post Likes</td><td><span class="badge badge-metric">Metric</span></td><td>Total likes on posts in the current period.</td></tr>
+        <tr><td>sum_curr_post_comments</td><td>Sum Curr Post Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Total comments on posts in the current period.</td></tr>
+        <tr><td>sum_curr_post_shares</td><td>Sum Curr Post Shares</td><td><span class="badge badge-metric">Metric</span></td><td>Total shares on posts in the current period.</td></tr>
+        <tr><td>sum_curr_post_clicks</td><td>Sum Curr Post Clicks</td><td><span class="badge badge-metric">Metric</span></td><td>Total link/content clicks on posts in the current period.</td></tr>
+        <tr><td>sum_curr_total_engagement</td><td>Sum Curr Total Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Sum of all engagement actions (likes + comments + shares + clicks) in the current period.</td></tr>
+        <tr><td>sum_curr_engagement_rate</td><td>Sum Curr Engagement Rate</td><td><span class="badge badge-pct">%</span></td><td>Page-level engagement rate for the current period.</td></tr>
+        <tr><td>sum_curr_post_engagement_rate</td><td>Sum Curr Post Engagement Rate</td><td><span class="badge badge-pct">%</span></td><td>Post-level engagement rate for the current period.</td></tr>
+        <tr><td>sum_curr_page_impressions</td><td>Sum Curr Page Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Total page-level impressions in the current period.</td></tr>
+        <tr><td>sum_curr_page_reach</td><td>Sum Curr Page Reach</td><td><span class="badge badge-metric">Metric</span></td><td>Unique members who saw page content in the current period.</td></tr>
+        <tr><td>sum_curr_page_views</td><td>Sum Curr Page Views</td><td><span class="badge badge-metric">Metric</span></td><td>Total page visits in the current period.</td></tr>
+        <tr><td>sum_curr_page_unique_visitors</td><td>Sum Curr Page Unique Visitors</td><td><span class="badge badge-metric">Metric</span></td><td>Unique visitors to the page in the current period.</td></tr>
+        <tr><td>sum_prev_*</td><td>Sum Prev …</td><td><span class="badge badge-metric">Metric</span></td><td>Same 16 metrics as above for the previous period.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Audience Growth (Daily) &amp; Rollup</summary>
+    <p class="section-desc">Daily organic and paid follower growth for trend charts; rollup for scorecards.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>audience_growth_total_follower_count</td><td>Total Follower Count</td><td><span class="badge badge-metric">Metric</span></td><td>Cumulative total follower count on this date.</td></tr>
+        <tr><td>audience_growth_total_followers_daily</td><td>Total Followers Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Net new followers (organic + paid) on this day.</td></tr>
+        <tr><td>audience_growth_organic_follower_count</td><td>Organic Follower Count</td><td><span class="badge badge-metric">Metric</span></td><td>Cumulative organic follower count on this date.</td></tr>
+        <tr><td>audience_growth_organic_followers_daily</td><td>Organic Followers Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Organic new followers gained on this day.</td></tr>
+        <tr><td>audience_growth_paid_follower_count</td><td>Paid Follower Count</td><td><span class="badge badge-metric">Metric</span></td><td>Cumulative paid follower count on this date.</td></tr>
+        <tr><td>audience_growth_paid_followers_daily</td><td>Paid Followers Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Paid new followers gained on this day.</td></tr>
+        <tr><td>audience_growth_rollup_curr_total_follower_count</td><td>Rollup Curr Total Followers</td><td><span class="badge badge-metric">Metric</span></td><td>Total follower count at the end of the current period.</td></tr>
+        <tr><td>audience_growth_rollup_curr_organic_follower_count</td><td>Rollup Curr Organic Followers</td><td><span class="badge badge-metric">Metric</span></td><td>Organic follower count at the end of the current period.</td></tr>
+        <tr><td>audience_growth_rollup_curr_paid_follower_count</td><td>Rollup Curr Paid Followers</td><td><span class="badge badge-metric">Metric</span></td><td>Paid follower count at the end of the current period.</td></tr>
+        <tr><td>audience_growth_rollup_curr_avg_follower_count</td><td>Rollup Curr Avg Followers</td><td><span class="badge badge-metric">Metric</span></td><td>Average daily follower count in the current period.</td></tr>
+        <tr><td>audience_growth_rollup_prev_*</td><td>Rollup Prev …</td><td><span class="badge badge-metric">Metric</span></td><td>Same 4 rollup metrics for the previous period.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Publishing Behaviour (Daily) &amp; Rollup</summary>
+    <p class="section-desc">Daily posting and engagement metrics for trend charts. Rollup is broken down by media type — one row per type per period.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>publishing_behaviour_total_posts</td><td>Total Posts</td><td><span class="badge badge-metric">Metric</span></td><td>Posts published on this day.</td></tr>
+        <tr><td>publishing_behaviour_impressions</td><td>Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Total post impressions on this day.</td></tr>
+        <tr><td>publishing_behaviour_engagement</td><td>Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total post engagement on this day.</td></tr>
+        <tr><td>publishing_behaviour_likes</td><td>Likes</td><td><span class="badge badge-metric">Metric</span></td><td>Total likes on posts this day.</td></tr>
+        <tr><td>publishing_behaviour_comments</td><td>Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Total comments on posts this day.</td></tr>
+        <tr><td>publishing_behaviour_shares</td><td>Shares</td><td><span class="badge badge-metric">Metric</span></td><td>Total reshares of posts this day.</td></tr>
+        <tr><td>publishing_behaviour_clicks</td><td>Clicks</td><td><span class="badge badge-metric">Metric</span></td><td>Total link/content clicks on posts this day.</td></tr>
+        <tr><td>publishing_behaviour_reach</td><td>Reach</td><td><span class="badge badge-metric">Metric</span></td><td>Unique members reached by posts this day.</td></tr>
+        <tr><td>publishing_behaviour_engagement_rate</td><td>Engagement Rate</td><td><span class="badge badge-pct">%</span></td><td>Engagement rate for posts this day.</td></tr>
+        <tr><td>pub_beh_rlu_media_type</td><td>Pub Beh Rlu Media Type</td><td><span class="badge badge-dim">Dim</span></td><td>Media type for the rollup row (ARTICLE, IMAGE, VIDEO, etc.).</td></tr>
+        <tr><td>pub_beh_rlu_curr_*</td><td>Rollup Curr …</td><td><span class="badge badge-metric">Metric</span></td><td>Period totals per media type for the current period: total_posts, likes, comments, shares, clicks, engagements, impressions, reach.</td></tr>
+        <tr><td>pub_beh_rlu_prev_*</td><td>Rollup Prev …</td><td><span class="badge badge-metric">Metric</span></td><td>Same 8 rollup metrics for the previous period.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Page Views (Daily) &amp; Rollup</summary>
+    <p class="section-desc">LinkedIn page visit data split by device type.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>page_views_total_page_views_daily</td><td>Total Page Views Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Total page visits on this day.</td></tr>
+        <tr><td>page_views_desktop_page_views_daily</td><td>Desktop Page Views Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Desktop page visits on this day.</td></tr>
+        <tr><td>page_views_mobile_page_views_daily</td><td>Mobile Page Views Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Mobile page visits on this day.</td></tr>
+        <tr><td>page_views_rollup_curr_total_page_views</td><td>Rollup Curr Total Page Views</td><td><span class="badge badge-metric">Metric</span></td><td>Total page visits for the current period.</td></tr>
+        <tr><td>page_views_rollup_curr_desktop_page_views</td><td>Rollup Curr Desktop Page Views</td><td><span class="badge badge-metric">Metric</span></td><td>Desktop visits for the current period.</td></tr>
+        <tr><td>page_views_rollup_curr_mobile_page_views</td><td>Rollup Curr Mobile Page Views</td><td><span class="badge badge-metric">Metric</span></td><td>Mobile visits for the current period.</td></tr>
+        <tr><td>page_views_rollup_curr_avg_page_views</td><td>Rollup Curr Avg Page Views</td><td><span class="badge badge-metric">Metric</span></td><td>Average daily page visits in the current period.</td></tr>
+        <tr><td>page_views_rollup_prev_*</td><td>Rollup Prev …</td><td><span class="badge badge-metric">Metric</span></td><td>Same 4 rollup metrics for the previous period.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Top Hashtags &amp; Rollup</summary>
+    <p class="section-desc">One row per hashtag. Rollup gives overall hashtag activity totals for scorecards.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>hashtag</td><td>Hashtag</td><td><span class="badge badge-dim">Dim</span></td><td>Hashtag text with # prefix (e.g. "#marketing").</td></tr>
+        <tr><td>top_hashtags_posts</td><td>Top Hashtags Posts</td><td><span class="badge badge-metric">Metric</span></td><td>Posts using this hashtag.</td></tr>
+        <tr><td>top_hashtags_engagements</td><td>Top Hashtags Engagements</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement on posts using this hashtag.</td></tr>
+        <tr><td>top_hashtags_likes</td><td>Top Hashtags Likes</td><td><span class="badge badge-metric">Metric</span></td><td>Likes on posts using this hashtag.</td></tr>
+        <tr><td>top_hashtags_comments</td><td>Top Hashtags Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Comments on posts using this hashtag.</td></tr>
+        <tr><td>top_hashtags_shares</td><td>Top Hashtags Shares</td><td><span class="badge badge-metric">Metric</span></td><td>Shares of posts using this hashtag.</td></tr>
+        <tr><td>top_hashtags_rollup_curr_total_hashtags</td><td>Rollup Curr Total Hashtags</td><td><span class="badge badge-metric">Metric</span></td><td>Unique hashtags used in the current period.</td></tr>
+        <tr><td>top_hashtags_rollup_curr_total_times_used</td><td>Rollup Curr Total Times Used</td><td><span class="badge badge-metric">Metric</span></td><td>Total hashtag instances in the current period.</td></tr>
+        <tr><td>top_hashtags_rollup_curr_total_engagement</td><td>Rollup Curr Total Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement on hashtagged posts in the current period.</td></tr>
+        <tr><td>top_hashtags_rollup_curr_total_impressions</td><td>Rollup Curr Total Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Total impressions on hashtagged posts in the current period.</td></tr>
+        <tr><td>top_hashtags_rollup_curr_total_reach</td><td>Rollup Curr Total Reach</td><td><span class="badge badge-metric">Metric</span></td><td>Total reach of hashtagged posts in the current period.</td></tr>
+        <tr><td>top_hashtags_rollup_prev_*</td><td>Rollup Prev …</td><td><span class="badge badge-metric">Metric</span></td><td>Same 8 rollup metrics for the previous period.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Top Posts</summary>
+    <p class="section-desc">One row per post (top 50 by total engagement). Use in a table chart.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>top_posts_published_at</td><td>Published At</td><td><span class="badge badge-dim">Dim</span></td><td>Date the post was published.</td></tr>
+        <tr><td>top_posts_linkedin_id</td><td>LinkedIn ID</td><td><span class="badge badge-dim">Dim</span></td><td>LinkedIn page identifier.</td></tr>
+        <tr><td>top_posts_post_id</td><td>Post ID</td><td><span class="badge badge-dim">Dim</span></td><td>Unique LinkedIn post URN.</td></tr>
+        <tr><td>top_posts_activity</td><td>Activity</td><td><span class="badge badge-dim">Dim</span></td><td>Post activity type (ARTICLE, IMAGE_SHARE, VIDEO, etc.).</td></tr>
+        <tr><td>top_posts_media_type</td><td>Media Type</td><td><span class="badge badge-dim">Dim</span></td><td>Media format of the post.</td></tr>
+        <tr><td>top_posts_title</td><td>Title</td><td><span class="badge badge-dim">Dim</span></td><td>Post title or headline.</td></tr>
+        <tr><td>top_posts_hashtags</td><td>Hashtags</td><td><span class="badge badge-dim">Dim</span></td><td>Comma-joined hashtags used in the post.</td></tr>
+        <tr><td>top_posts_image</td><td>Image</td><td><span class="badge badge-dim">Dim</span></td><td>URL of the post's primary image.</td></tr>
+        <tr><td>top_posts_article_url</td><td>Article URL</td><td><span class="badge badge-dim">Dim</span></td><td>URL of the linked article (for article shares).</td></tr>
+        <tr><td>top_posts_day_of_week</td><td>Day Of Week</td><td><span class="badge badge-dim">Dim</span></td><td>Day of week the post was published.</td></tr>
+        <tr><td>top_posts_hour_of_day</td><td>Hour Of Day</td><td><span class="badge badge-metric">Metric</span></td><td>Hour (0–23) the post was published.</td></tr>
+        <tr><td>top_posts_favorites</td><td>Favorites (Likes)</td><td><span class="badge badge-metric">Metric</span></td><td>Total likes/reactions on the post.</td></tr>
+        <tr><td>top_posts_comments</td><td>Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Total comments on the post.</td></tr>
+        <tr><td>top_posts_total_engagement</td><td>Total Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Sum of all engagement actions on the post.</td></tr>
+        <tr><td>top_posts_reach</td><td>Reach</td><td><span class="badge badge-metric">Metric</span></td><td>Unique members who saw the post.</td></tr>
+        <tr><td>top_posts_repost</td><td>Repost</td><td><span class="badge badge-metric">Metric</span></td><td>Number of times the post was reshared.</td></tr>
+        <tr><td>top_posts_post_clicks</td><td>Post Clicks</td><td><span class="badge badge-metric">Metric</span></td><td>Link clicks on the post.</td></tr>
+        <tr><td>top_posts_impressions</td><td>Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Total post impressions.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Posts Per Day (Day of Week)</summary>
+    <p class="section-desc">Posting frequency by day of week. Use in a bar chart with <code>day_of_week</code> as the dimension.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>day_of_week</td><td>Day of Week</td><td><span class="badge badge-dim">Dim</span></td><td>Day name (Monday–Sunday).</td></tr>
+        <tr><td>posts_per_days_posts</td><td>Posts Per Days Posts</td><td><span class="badge badge-metric">Metric</span></td><td>Number of posts published on this day of week in the selected period.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Follower Demographics</summary>
+    <p class="section-desc">Audience breakdown by country, city, industry, and seniority. Each row represents one demographic bucket. Use in bar or pie charts — filter by <code>follower_demographics_category</code> to isolate a breakdown type.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>follower_demographics_category</td><td>Category</td><td><span class="badge badge-dim">Dim</span></td><td>Demographic type: "country", "city", "industry", or "seniority".</td></tr>
+        <tr><td>follower_demographics_label</td><td>Label</td><td><span class="badge badge-dim">Dim</span></td><td>The bucket label within the category (e.g. "United States", "Marketing").</td></tr>
+        <tr><td>follower_demographics_country</td><td>Country</td><td><span class="badge badge-dim">Dim</span></td><td>Country value — populated only when category = "country".</td></tr>
+        <tr><td>follower_demographics_city</td><td>City</td><td><span class="badge badge-dim">Dim</span></td><td>City value — populated only when category = "city".</td></tr>
+        <tr><td>follower_demographics_industry</td><td>Industry</td><td><span class="badge badge-dim">Dim</span></td><td>Industry label — populated only when category = "industry".</td></tr>
+        <tr><td>follower_demographics_seniority</td><td>Seniority</td><td><span class="badge badge-dim">Dim</span></td><td>Seniority label (e.g. "Senior", "Manager") — populated only when category = "seniority".</td></tr>
+        <tr><td>follower_demographics_count</td><td>Count</td><td><span class="badge badge-metric">Metric</span></td><td>Number of followers in this demographic bucket.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+</div><!-- /linkedin -->
+
+<!-- ═══════════════════════════════════════════════════════════ YOUTUBE ══ -->
+<!-- TODO: YouTube, TikTok, Pinterest, Twitter/X, GMB panes — hidden until ready -->
+<!--
+<div id="pane-youtube" class="platform-pane">
+
+  <details open>
+    <summary>Summary</summary>
+    <p class="section-desc">Single row with current and previous period channel-level metrics. Note: the YouTube API returns engagement metrics in singular form (like, dislike, comment, share) — these are mapped to plural display names in Data Studio.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>period</td><td>Period</td><td><span class="badge badge-dim">Dim</span></td><td>Always "Current" — row identifier for single-row scorecard sources.</td></tr>
+        <tr><td>subscribers</td><td>Subscribers</td><td><span class="badge badge-metric">Metric</span></td><td>Total channel subscribers at period end.</td></tr>
+        <tr><td>total_posts</td><td>Total Videos</td><td><span class="badge badge-metric">Metric</span></td><td>Videos published in the current period (API field: <code>videos</code>).</td></tr>
+        <tr><td>views</td><td>Views</td><td><span class="badge badge-metric">Metric</span></td><td>Total video views in the current period.</td></tr>
+        <tr><td>watch_time</td><td>Watch Time (min)</td><td><span class="badge badge-metric">Metric</span></td><td>Total watch time in minutes in the current period.</td></tr>
+        <tr><td>avg_view_duration</td><td>Avg View Duration (s)</td><td><span class="badge badge-metric">Metric</span></td><td>Average view duration in seconds across all videos.</td></tr>
+        <tr><td>likes</td><td>Likes</td><td><span class="badge badge-metric">Metric</span></td><td>Total likes in the current period (API field: <code>like</code>).</td></tr>
+        <tr><td>dislikes</td><td>Dislikes</td><td><span class="badge badge-metric">Metric</span></td><td>Total dislikes in the current period (API field: <code>dislike</code>).</td></tr>
+        <tr><td>comments</td><td>Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Total comments in the current period (API field: <code>comment</code>).</td></tr>
+        <tr><td>shares</td><td>Shares</td><td><span class="badge badge-metric">Metric</span></td><td>Total shares in the current period (API field: <code>share</code>).</td></tr>
+        <tr><td>engagement</td><td>Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement (likes + dislikes + comments + shares) in the current period.</td></tr>
+        <tr><td>prev_subscribers</td><td>Prev Subscribers</td><td><span class="badge badge-metric">Metric</span></td><td>Subscriber count at the end of the previous period.</td></tr>
+        <tr><td>prev_total_posts</td><td>Prev Total Videos</td><td><span class="badge badge-metric">Metric</span></td><td>Videos published in the previous period.</td></tr>
+        <tr><td>prev_views</td><td>Prev Views</td><td><span class="badge badge-metric">Metric</span></td><td>Total views in the previous period.</td></tr>
+        <tr><td>prev_watch_time</td><td>Prev Watch Time</td><td><span class="badge badge-metric">Metric</span></td><td>Total watch time in the previous period.</td></tr>
+        <tr><td>prev_likes / prev_dislikes / prev_comments / prev_shares / prev_engagement</td><td>Prev …</td><td><span class="badge badge-metric">Metric</span></td><td>Same engagement metrics as above for the previous period.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Subscriber Trend (Daily)</summary>
+    <p class="section-desc">One row per day. Use in a dual-axis chart: <code>subscribers_gained_daily</code> as a bar and <code>subscribers_total</code> as a line.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>date</td><td>Date</td><td><span class="badge badge-dim">Dim</span></td><td>Day of the data point.</td></tr>
+        <tr><td>subscribers_gained_daily</td><td>Subscribers Gained Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Net new subscribers gained on this day.</td></tr>
+        <tr><td>subscribers_total</td><td>Subscribers Total</td><td><span class="badge badge-metric">Metric</span></td><td>Cumulative subscriber count on this date.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Engagement Trend (Daily)</summary>
+    <p class="section-desc">Daily and cumulative engagement metrics. <code>*_daily</code> = per-day delta; <code>*_total</code> = running total up to that date.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>like_daily</td><td>Likes Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Likes received on this day.</td></tr>
+        <tr><td>like_total</td><td>Likes Total</td><td><span class="badge badge-metric">Metric</span></td><td>Cumulative likes up to this date.</td></tr>
+        <tr><td>dislike_daily</td><td>Dislikes Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Dislikes received on this day.</td></tr>
+        <tr><td>dislike_total</td><td>Dislikes Total</td><td><span class="badge badge-metric">Metric</span></td><td>Cumulative dislikes up to this date.</td></tr>
+        <tr><td>share_daily</td><td>Shares Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Shares on this day.</td></tr>
+        <tr><td>share_total</td><td>Shares Total</td><td><span class="badge badge-metric">Metric</span></td><td>Cumulative shares up to this date.</td></tr>
+        <tr><td>comment_daily</td><td>Comments Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Comments received on this day.</td></tr>
+        <tr><td>comment_total</td><td>Comments Total</td><td><span class="badge badge-metric">Metric</span></td><td>Cumulative comments up to this date.</td></tr>
+        <tr><td>engagement_daily</td><td>Engagement Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement actions on this day.</td></tr>
+        <tr><td>engagement_total</td><td>Engagement Total</td><td><span class="badge badge-metric">Metric</span></td><td>Cumulative engagement up to this date.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Views Trend (Daily)</summary>
+    <p class="section-desc">Daily subscriber vs non-subscriber views breakdown.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>subscriber_views_daily</td><td>Subscriber Views Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Views from subscribers on this day.</td></tr>
+        <tr><td>subscriber_views_total</td><td>Subscriber Views Total</td><td><span class="badge badge-metric">Metric</span></td><td>Cumulative subscriber views up to this date.</td></tr>
+        <tr><td>non_subscriber_views_daily</td><td>Non-Subscriber Views Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Views from non-subscribers on this day.</td></tr>
+        <tr><td>non_subscriber_views_total</td><td>Non-Subscriber Views Total</td><td><span class="badge badge-metric">Metric</span></td><td>Cumulative non-subscriber views up to this date.</td></tr>
+        <tr><td>video_views_daily</td><td>Video Views Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Total video views on this day (all audience types).</td></tr>
+        <tr><td>video_views_total</td><td>Video Views Total</td><td><span class="badge badge-metric">Metric</span></td><td>Cumulative total video views up to this date.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Watch Time Trend (Daily)</summary>
+    <p class="section-desc">Daily watch time in minutes, split by subscriber status, plus average watch time per view.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>subscriber_watch_time_daily</td><td>Subscriber Watch Time Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Watch time (min) from subscribers on this day.</td></tr>
+        <tr><td>subscriber_watch_time_total</td><td>Subscriber Watch Time Total</td><td><span class="badge badge-metric">Metric</span></td><td>Cumulative subscriber watch time up to this date.</td></tr>
+        <tr><td>non_subscriber_watch_time_daily</td><td>Non-Subscriber Watch Time Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Watch time (min) from non-subscribers on this day.</td></tr>
+        <tr><td>non_subscriber_watch_time_total</td><td>Non-Subscriber Watch Time Total</td><td><span class="badge badge-metric">Metric</span></td><td>Cumulative non-subscriber watch time up to this date.</td></tr>
+        <tr><td>average_watch_time</td><td>Average Watch Time</td><td><span class="badge badge-metric">Metric</span></td><td>Average watch time per view (min) on this day.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Traffic Sources &amp; Video Sharing</summary>
+    <p class="section-desc">Where viewers found your videos (traffic sources) and how they shared them (sharing platforms). Each section produces one row per source/platform.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>traffic_source</td><td>Traffic Source</td><td><span class="badge badge-dim">Dim</span></td><td>Source name (e.g. "YouTube Search", "External", "Suggested Videos").</td></tr>
+        <tr><td>sharing_platform</td><td>Sharing Platform</td><td><span class="badge badge-dim">Dim</span></td><td>Platform where the video was shared (e.g. "Twitter", "WhatsApp", "Facebook").</td></tr>
+        <tr><td>source_value</td><td>Source Value</td><td><span class="badge badge-metric">Metric</span></td><td>Number of views from this traffic source / sharing platform.</td></tr>
+        <tr><td>source_perc</td><td>Source %</td><td><span class="badge badge-pct">%</span></td><td>Percentage of total views from this source.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Top Videos</summary>
+    <p class="section-desc">One row per video (top 15 by views). Use in a table or gallery chart.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>video_id</td><td>Video ID</td><td><span class="badge badge-dim">Dim</span></td><td>YouTube video identifier.</td></tr>
+        <tr><td>video_title</td><td>Video Title</td><td><span class="badge badge-dim">Dim</span></td><td>Video title (API field: <code>title</code>).</td></tr>
+        <tr><td>permalink</td><td>Video URL</td><td><span class="badge badge-dim">Dim</span></td><td>Share URL for the video (API field: <code>share_url</code>).</td></tr>
+        <tr><td>video_description</td><td>Video Description</td><td><span class="badge badge-dim">Dim</span></td><td>Full video description.</td></tr>
+        <tr><td>video_thumbnail_url</td><td>Video Thumbnail URL</td><td><span class="badge badge-dim">Dim</span></td><td>Thumbnail image URL.</td></tr>
+        <tr><td>video_embed_url</td><td>Video Embed URL</td><td><span class="badge badge-dim">Dim</span></td><td>iFrame embed URL for the video (API field: <code>iframe_embed_url</code>).</td></tr>
+        <tr><td>like_count</td><td>Video Likes</td><td><span class="badge badge-metric">Metric</span></td><td>Likes on this video (API field: <code>like</code>).</td></tr>
+        <tr><td>dislike_count</td><td>Video Dislikes</td><td><span class="badge badge-metric">Metric</span></td><td>Dislikes on this video (API field: <code>dislike</code>).</td></tr>
+        <tr><td>comments_count</td><td>Video Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Comments on this video (API field: <code>comment</code>).</td></tr>
+        <tr><td>video_views</td><td>Video Views</td><td><span class="badge badge-metric">Metric</span></td><td>Total views for this video (API field: <code>views</code>).</td></tr>
+        <tr><td>minutes_watched</td><td>Minutes Watched</td><td><span class="badge badge-metric">Metric</span></td><td>Total watch time in minutes for this video.</td></tr>
+        <tr><td>video_avg_duration</td><td>Avg View Duration (s)</td><td><span class="badge badge-metric">Metric</span></td><td>Average view duration in seconds (API field: <code>average_view_duration</code>).</td></tr>
+        <tr><td>engagement_rate</td><td>Engagement Rate</td><td><span class="badge badge-pct">%</span></td><td>Engagement rate for this video.</td></tr>
+        <tr><td>video_engagement</td><td>Video Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement actions on this video.</td></tr>
+        <tr><td>video_shares</td><td>Video Shares</td><td><span class="badge badge-metric">Metric</span></td><td>Total shares of this video (API field: <code>share</code>).</td></tr>
+        <tr><td>video_avg_view_percentage</td><td>Video Avg View %</td><td><span class="badge badge-pct">%</span></td><td>Average percentage of the video watched per view (API field: <code>average_view_percentage</code>).</td></tr>
+        <tr><td>video_subscribers_gained</td><td>Subscribers Gained</td><td><span class="badge badge-metric">Metric</span></td><td>Subscribers gained directly from this video.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Least Videos (lp_ prefix)</summary>
+    <p class="section-desc">Bottom-performing videos ordered by views and by engagement. All metric fields use the <code>lp_</code> prefix to prevent routing collision with top-video fields. Dimension fields (video_id, video_title, permalink, etc.) share the same IDs as Top Videos. <code>lp_sort_by</code> indicates which sort produced each row ("views" or "engagement").</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>lp_sort_by</td><td>Least Posts Sort By</td><td><span class="badge badge-dim">Dim</span></td><td>"views" or "engagement" — indicates which sort order produced this row.</td></tr>
+        <tr><td>lp_like_count</td><td>Least Post Likes</td><td><span class="badge badge-metric">Metric</span></td><td>Likes on this least-performing video.</td></tr>
+        <tr><td>lp_dislike_count</td><td>Least Post Dislikes</td><td><span class="badge badge-metric">Metric</span></td><td>Dislikes on this least-performing video.</td></tr>
+        <tr><td>lp_comments_count</td><td>Least Post Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Comments on this least-performing video.</td></tr>
+        <tr><td>lp_video_views</td><td>Least Post Views</td><td><span class="badge badge-metric">Metric</span></td><td>Views for this least-performing video.</td></tr>
+        <tr><td>lp_minutes_watched</td><td>Least Post Min Watched</td><td><span class="badge badge-metric">Metric</span></td><td>Watch time in minutes for this least-performing video.</td></tr>
+        <tr><td>lp_avg_duration</td><td>Least Post Avg Duration</td><td><span class="badge badge-metric">Metric</span></td><td>Average view duration for this least-performing video.</td></tr>
+        <tr><td>lp_engagement_rate</td><td>Least Post Eng Rate</td><td><span class="badge badge-pct">%</span></td><td>Engagement rate for this least-performing video.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Performance &amp; Posting Schedule (ps_ prefix)</summary>
+    <p class="section-desc">Daily posting volume and engagement, plus subscriber vs non-subscriber views. All fields use the <code>ps_</code> prefix to avoid routing collision with channel-level daily trend fields. Use in a time-series chart with the <code>date</code> dimension.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>ps_count</td><td>PS Post Count</td><td><span class="badge badge-metric">Metric</span></td><td>Videos published on this day (API field: <code>count</code>).</td></tr>
+        <tr><td>ps_likes</td><td>PS Likes</td><td><span class="badge badge-metric">Metric</span></td><td>Likes on videos published on this day.</td></tr>
+        <tr><td>ps_dislikes</td><td>PS Dislikes</td><td><span class="badge badge-metric">Metric</span></td><td>Dislikes on videos published on this day.</td></tr>
+        <tr><td>ps_shares</td><td>PS Shares</td><td><span class="badge badge-metric">Metric</span></td><td>Shares of videos published on this day.</td></tr>
+        <tr><td>ps_comments</td><td>PS Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Comments on videos published on this day.</td></tr>
+        <tr><td>ps_engagement</td><td>PS Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement on videos published on this day.</td></tr>
+        <tr><td>ps_sub_views</td><td>PS Subscriber Views</td><td><span class="badge badge-metric">Metric</span></td><td>Subscriber views on this day (API: <code>subscriber_views</code>).</td></tr>
+        <tr><td>ps_non_sub_views</td><td>PS Non-Subscriber Views</td><td><span class="badge badge-metric">Metric</span></td><td>Non-subscriber views on this day (API: <code>non_subscriber_views</code>).</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+</div><!-- /youtube -->
+
+<!-- ════════════════════════════════════════════════════════════ TIKTOK ══ -->
+<div id="pane-tiktok" class="platform-pane">
+
+  <details open>
+    <summary>Summary</summary>
+    <p class="section-desc">Single row with current period totals and period-over-period change (<code>*_diff</code>) and growth (<code>*_growth</code>) fields. No separate previous-period rows — comparison data is embedded in the same row.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>period</td><td>Period</td><td><span class="badge badge-dim">Dim</span></td><td>Always "Current" — row identifier.</td></tr>
+        <tr><td>followers</td><td>Followers</td><td><span class="badge badge-metric">Metric</span></td><td>Total followers at the end of the current period (API: <code>total_followers</code>).</td></tr>
+        <tr><td>total_followings</td><td>Followings</td><td><span class="badge badge-metric">Metric</span></td><td>Accounts this profile follows.</td></tr>
+        <tr><td>total_posts</td><td>Total Videos</td><td><span class="badge badge-metric">Metric</span></td><td>Total videos published by this account.</td></tr>
+        <tr><td>video_views</td><td>Video Views</td><td><span class="badge badge-metric">Metric</span></td><td>Total video views in the current period (API: <code>total_video_views</code>).</td></tr>
+        <tr><td>likes</td><td>Likes</td><td><span class="badge badge-metric">Metric</span></td><td>Total likes in the current period (API: <code>total_likes</code>).</td></tr>
+        <tr><td>comments</td><td>Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Total comments in the current period (API: <code>total_comments</code>).</td></tr>
+        <tr><td>shares</td><td>Shares</td><td><span class="badge badge-metric">Metric</span></td><td>Total shares in the current period (API: <code>total_shares</code>).</td></tr>
+        <tr><td>engagement</td><td>Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement in the current period (API: <code>total_engagements</code>).</td></tr>
+        <tr><td>eng_rate</td><td>Engagement Rate</td><td><span class="badge badge-pct">%</span></td><td>Engagement rate for the current period.</td></tr>
+        <tr><td>total_likes_diff</td><td>Likes Diff</td><td><span class="badge badge-metric">Metric</span></td><td>Change in likes: current period minus previous period.</td></tr>
+        <tr><td>total_comments_diff</td><td>Comments Diff</td><td><span class="badge badge-metric">Metric</span></td><td>Change in comments vs previous period.</td></tr>
+        <tr><td>total_shares_diff</td><td>Shares Diff</td><td><span class="badge badge-metric">Metric</span></td><td>Change in shares vs previous period.</td></tr>
+        <tr><td>total_engagements_diff</td><td>Engagements Diff</td><td><span class="badge badge-metric">Metric</span></td><td>Change in total engagement vs previous period.</td></tr>
+        <tr><td>total_posts_diff</td><td>Posts Diff</td><td><span class="badge badge-metric">Metric</span></td><td>Change in post count vs previous period.</td></tr>
+        <tr><td>total_followers_diff</td><td>Followers Diff</td><td><span class="badge badge-metric">Metric</span></td><td>Change in followers vs previous period.</td></tr>
+        <tr><td>total_video_views_diff</td><td>Video Views Diff</td><td><span class="badge badge-metric">Metric</span></td><td>Change in video views vs previous period.</td></tr>
+        <tr><td>total_likes_growth</td><td>Likes Growth %</td><td><span class="badge badge-pct">%</span></td><td>Percentage growth in likes vs previous period.</td></tr>
+        <tr><td>total_comments_growth</td><td>Comments Growth %</td><td><span class="badge badge-pct">%</span></td><td>Percentage growth in comments vs previous period.</td></tr>
+        <tr><td>total_shares_growth</td><td>Shares Growth %</td><td><span class="badge badge-pct">%</span></td><td>Percentage growth in shares vs previous period.</td></tr>
+        <tr><td>total_engagements_growth</td><td>Engagements Growth %</td><td><span class="badge badge-pct">%</span></td><td>Percentage growth in engagement vs previous period.</td></tr>
+        <tr><td>total_posts_growth</td><td>Posts Growth %</td><td><span class="badge badge-pct">%</span></td><td>Percentage growth in post count vs previous period.</td></tr>
+        <tr><td>total_followers_growth</td><td>Followers Growth %</td><td><span class="badge badge-pct">%</span></td><td>Percentage growth in followers vs previous period.</td></tr>
+        <tr><td>total_video_views_growth</td><td>Video Views Growth %</td><td><span class="badge badge-pct">%</span></td><td>Percentage growth in video views vs previous period.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Audience (Daily Followers &amp; Profile Views)</summary>
+    <p class="section-desc">One row per day. Use in time-series charts. Only days with a non-zero follower count are returned.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>date</td><td>Date</td><td><span class="badge badge-dim">Dim</span></td><td>Day of the data point.</td></tr>
+        <tr><td>followers</td><td>Followers</td><td><span class="badge badge-metric">Metric</span></td><td>Cumulative follower count on this date (API: <code>followers_count</code>).</td></tr>
+        <tr><td>followers_daily</td><td>Followers Daily Change</td><td><span class="badge badge-metric">Metric</span></td><td>Net new followers on this day (API: <code>followers_count_diff</code>).</td></tr>
+        <tr><td>profile_views</td><td>Profile Views</td><td><span class="badge badge-metric">Metric</span></td><td>Profile page views on this day (API: <code>views_per_day</code>).</td></tr>
+        <tr><td>profile_views_diff</td><td>Profile Views Daily Change</td><td><span class="badge badge-metric">Metric</span></td><td>Day-over-day change in profile views (API: <code>views_per_day_diff</code>).</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Daily Engagements</summary>
+    <p class="section-desc">Per-day engagement deltas plus cumulative totals for trend charts. Use <code>*_daily</code> fields in bar charts and <code>total_*</code> fields in line charts.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>likes</td><td>Likes</td><td><span class="badge badge-metric">Metric</span></td><td>Likes gained on this day (API: <code>daily_video_likes</code>).</td></tr>
+        <tr><td>comments</td><td>Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Comments received on this day (API: <code>daily_video_comments</code>).</td></tr>
+        <tr><td>shares</td><td>Shares</td><td><span class="badge badge-metric">Metric</span></td><td>Shares on this day (API: <code>daily_video_shares</code>).</td></tr>
+        <tr><td>engagement</td><td>Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement actions on this day (API: <code>daily_engagement</code>).</td></tr>
+        <tr><td>total_video_likes</td><td>Total Video Likes</td><td><span class="badge badge-metric">Metric</span></td><td>Cumulative likes up to this date.</td></tr>
+        <tr><td>total_video_comments</td><td>Total Video Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Cumulative comments up to this date.</td></tr>
+        <tr><td>total_video_shares</td><td>Total Video Shares</td><td><span class="badge badge-metric">Metric</span></td><td>Cumulative shares up to this date.</td></tr>
+        <tr><td>total_engagement</td><td>Total Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Cumulative engagement up to this date.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Posts &amp; Engagements (Daily)</summary>
+    <p class="section-desc">Daily posting activity with per-day engagement metrics. Use in time-series charts.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>video_views</td><td>Video Views</td><td><span class="badge badge-metric">Metric</span></td><td>Video views on this day (API: <code>sum_view_count</code>).</td></tr>
+        <tr><td>likes</td><td>Likes</td><td><span class="badge badge-metric">Metric</span></td><td>Likes on this day (API: <code>sum_like_count</code>).</td></tr>
+        <tr><td>comments</td><td>Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Comments on this day (API: <code>sum_comments_count</code>).</td></tr>
+        <tr><td>shares</td><td>Shares</td><td><span class="badge badge-metric">Metric</span></td><td>Shares on this day (API: <code>sum_share_count</code>).</td></tr>
+        <tr><td>engagement</td><td>Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement on this day (API: <code>sum_engagement_count</code>).</td></tr>
+        <tr><td>total_posts</td><td>Total Videos</td><td><span class="badge badge-metric">Metric</span></td><td>Videos published on this day (API: <code>post_count</code>).</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Top Posts</summary>
+    <p class="section-desc">One row per top-performing video. Use in a table or gallery chart.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>date</td><td>Date</td><td><span class="badge badge-dim">Dim</span></td><td>Date the video was created (API: <code>created_time</code>).</td></tr>
+        <tr><td>post_id</td><td>Post ID</td><td><span class="badge badge-dim">Dim</span></td><td>Unique TikTok video identifier.</td></tr>
+        <tr><td>post_title</td><td>Post Title</td><td><span class="badge badge-dim">Dim</span></td><td>Video title.</td></tr>
+        <tr><td>post_description</td><td>Post Description</td><td><span class="badge badge-dim">Dim</span></td><td>Video description / caption.</td></tr>
+        <tr><td>media_type</td><td>Media Type</td><td><span class="badge badge-dim">Dim</span></td><td>Content category (API: <code>category</code>).</td></tr>
+        <tr><td>permalink</td><td>Video URL</td><td><span class="badge badge-dim">Dim</span></td><td>Public URL of the video (API: <code>share_url</code>).</td></tr>
+        <tr><td>embed_link</td><td>Embed Link</td><td><span class="badge badge-dim">Dim</span></td><td>iFrame embed URL for the video.</td></tr>
+        <tr><td>cover_image_url</td><td>Cover Image URL</td><td><span class="badge badge-dim">Dim</span></td><td>Thumbnail/cover image URL.</td></tr>
+        <tr><td>hashtags</td><td>Hashtags</td><td><span class="badge badge-dim">Dim</span></td><td>Comma-joined hashtags used in the video description.</td></tr>
+        <tr><td>like_count</td><td>Post Likes</td><td><span class="badge badge-metric">Metric</span></td><td>Likes on this video (API: <code>likes_count</code>).</td></tr>
+        <tr><td>comments_count</td><td>Post Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Comments on this video.</td></tr>
+        <tr><td>post_views</td><td>Post Views</td><td><span class="badge badge-metric">Metric</span></td><td>Views for this video (API: <code>views_count</code>).</td></tr>
+        <tr><td>post_shares</td><td>Post Shares</td><td><span class="badge badge-metric">Metric</span></td><td>Shares of this video (API: <code>shares_count</code>).</td></tr>
+        <tr><td>post_engagement</td><td>Post Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement on this video (API: <code>engagements_count</code>).</td></tr>
+        <tr><td>engagement_rate</td><td>Post Engagement Rate</td><td><span class="badge badge-pct">%</span></td><td>Engagement rate for this video.</td></tr>
+        <tr><td>total_follower_count</td><td>Post Follower Count</td><td><span class="badge badge-metric">Metric</span></td><td>Channel follower count at the time this video was published.</td></tr>
+        <tr><td>duration</td><td>Post Duration</td><td><span class="badge badge-metric">Metric</span></td><td>Video duration in seconds.</td></tr>
+        <tr><td>lp_like_count</td><td>Least Post Likes</td><td><span class="badge badge-metric">Metric</span></td><td>Likes on this least-performing video.</td></tr>
+        <tr><td>lp_comments_count</td><td>Least Post Comments</td><td><span class="badge badge-metric">Metric</span></td><td>Comments on this least-performing video.</td></tr>
+        <tr><td>lp_post_views</td><td>Least Post Views</td><td><span class="badge badge-metric">Metric</span></td><td>Views for this least-performing video.</td></tr>
+        <tr><td>lp_post_shares</td><td>Least Post Shares</td><td><span class="badge badge-metric">Metric</span></td><td>Shares of this least-performing video.</td></tr>
+        <tr><td>lp_post_engagement</td><td>Least Post Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement on this least-performing video.</td></tr>
+        <tr><td>lp_engagement_rate</td><td>Least Post Engagement Rate</td><td><span class="badge badge-pct">%</span></td><td>Engagement rate for this least-performing video.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+</div><!-- /tiktok -->
+
+<!-- ══════════════════ PINTEREST ══════════════════ -->
+<div id="pane-pinterest" class="platform-pane">
+  <h2>Pinterest</h2>
+  <p>Account param: <code>&amp;pinterest_id=…</code> &nbsp;|&nbsp; Base prefix: <code>analytics/overview/pinterest/</code></p>
+
+  <details open>
+    <summary>Summary — account overview (current &amp; previous period)</summary>
+    <p>Endpoint: <code>overviewSummary</code>. Returns two rows: <code>period = 'Current'</code> and <code>period = 'Previous'</code>. Discriminating fields: <code>total_engagement</code>, <code>prev_follower_count</code>.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>period</td><td>Period</td><td><span class="badge badge-dim">Dim</span></td><td><code>'Current'</code> or <code>'Previous'</code>.</td></tr>
+        <tr><td>follower_count</td><td>Followers</td><td><span class="badge badge-metric">Metric</span></td><td>Total profile followers for the period.</td></tr>
+        <tr><td>impressions</td><td>Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Total pin impressions for the period.</td></tr>
+        <tr><td>pin_clicks</td><td>Pin Clicks</td><td><span class="badge badge-metric">Metric</span></td><td>Clicks on pins for the period.</td></tr>
+        <tr><td>outbound_clicks</td><td>Outbound Clicks</td><td><span class="badge badge-metric">Metric</span></td><td>Clicks through to destination URLs.</td></tr>
+        <tr><td>saves</td><td>Saves</td><td><span class="badge badge-metric">Metric</span></td><td>Pins saved to boards by users.</td></tr>
+        <tr><td>total_engagement</td><td>Total Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Sum of all engagement actions for the period.</td></tr>
+        <tr><td>prev_follower_count</td><td>Prev Followers</td><td><span class="badge badge-metric">Metric</span></td><td>Follower count for the previous period.</td></tr>
+        <tr><td>prev_impressions</td><td>Prev Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Impressions for the previous period.</td></tr>
+        <tr><td>prev_pin_clicks</td><td>Prev Pin Clicks</td><td><span class="badge badge-metric">Metric</span></td><td>Pin clicks for the previous period.</td></tr>
+        <tr><td>prev_outbound_clicks</td><td>Prev Outbound Clicks</td><td><span class="badge badge-metric">Metric</span></td><td>Outbound clicks for the previous period.</td></tr>
+        <tr><td>prev_saves</td><td>Prev Saves</td><td><span class="badge badge-metric">Metric</span></td><td>Saves for the previous period.</td></tr>
+        <tr><td>prev_total_engagement</td><td>Prev Total Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement for the previous period.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Follower Trend — daily</summary>
+    <p>Endpoint: <code>overviewFollowers</code>. One row per day. Discriminating fields: <code>followers_daily</code>, <code>followers_gained</code>.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>date</td><td>Date</td><td><span class="badge badge-dim">Dim</span></td><td>Date (YYYYMMDD).</td></tr>
+        <tr><td>followers_daily</td><td>Followers Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Follower count change for the day.</td></tr>
+        <tr><td>followers_gained</td><td>Followers Gained</td><td><span class="badge badge-metric">Metric</span></td><td>New followers gained that day.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Impressions Trend — daily</summary>
+    <p>Endpoint: <code>overviewImpressions</code>. One row per day. Discriminating fields: <code>impressions_daily</code>, <code>impressions_total</code>.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>date</td><td>Date</td><td><span class="badge badge-dim">Dim</span></td><td>Date (YYYYMMDD).</td></tr>
+        <tr><td>impressions_daily</td><td>Impressions Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Pin impressions for the day.</td></tr>
+        <tr><td>impressions_total</td><td>Impressions Total</td><td><span class="badge badge-metric">Metric</span></td><td>Cumulative impressions up to and including this day.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Engagement Trend — daily</summary>
+    <p>Endpoint: <code>overviewEngagement</code>. One row per day. Discriminating fields: <code>saves_daily</code>, <code>pin_clicks_daily</code>, <code>outbound_clicks_daily</code>, <code>saves_total</code>.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>date</td><td>Date</td><td><span class="badge badge-dim">Dim</span></td><td>Date (YYYYMMDD).</td></tr>
+        <tr><td>saves_daily</td><td>Saves Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Saves for the day.</td></tr>
+        <tr><td>pin_clicks_daily</td><td>Pin Clicks Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Pin clicks for the day.</td></tr>
+        <tr><td>outbound_clicks_daily</td><td>Outbound Clicks Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Outbound clicks for the day.</td></tr>
+        <tr><td>engagement_daily</td><td>Engagement Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement for the day.</td></tr>
+        <tr><td>saves_total</td><td>Saves Total</td><td><span class="badge badge-metric">Metric</span></td><td>Cumulative saves up to and including this day.</td></tr>
+        <tr><td>pin_clicks_total</td><td>Pin Clicks Total</td><td><span class="badge badge-metric">Metric</span></td><td>Cumulative pin clicks up to and including this day.</td></tr>
+        <tr><td>outbound_clicks_total</td><td>Outbound Clicks Total</td><td><span class="badge badge-metric">Metric</span></td><td>Cumulative outbound clicks up to and including this day.</td></tr>
+        <tr><td>engagement_total</td><td>Engagement Total</td><td><span class="badge badge-metric">Metric</span></td><td>Cumulative total engagement up to and including this day.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Pin Posting Rollup — current &amp; previous period</summary>
+    <p>Endpoint: <code>overviewPinPostingRollup</code>. Returns two rows (Current / Previous). Discriminating fields: <code>total_pins</code>, <code>video_views</code>, <code>avg_watch_time</code>, <code>quartile_95s_percent_view</code>.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>period</td><td>Period</td><td><span class="badge badge-dim">Dim</span></td><td><code>'Current'</code> or <code>'Previous'</code>.</td></tr>
+        <tr><td>total_pins</td><td>Total Pins</td><td><span class="badge badge-metric">Metric</span></td><td>Total pins published in the period.</td></tr>
+        <tr><td>impressions</td><td>Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Impressions for pins published in the period.</td></tr>
+        <tr><td>pin_clicks</td><td>Pin Clicks</td><td><span class="badge badge-metric">Metric</span></td><td>Pin clicks for pins published in the period.</td></tr>
+        <tr><td>outbound_clicks</td><td>Outbound Clicks</td><td><span class="badge badge-metric">Metric</span></td><td>Outbound clicks for pins published in the period.</td></tr>
+        <tr><td>saves</td><td>Saves</td><td><span class="badge badge-metric">Metric</span></td><td>Saves for pins published in the period.</td></tr>
+        <tr><td>video_views</td><td>Video Views</td><td><span class="badge badge-metric">Metric</span></td><td>Video views for video pins in the period.</td></tr>
+        <tr><td>avg_watch_time</td><td>Avg Watch Time</td><td><span class="badge badge-metric">Metric</span></td><td>Average watch time in seconds for video pins.</td></tr>
+        <tr><td>quartile_95s_percent_view</td><td>Quartile 95% View</td><td><span class="badge badge-pct">%</span></td><td>Percentage of viewers who watched 95% of video pins.</td></tr>
+        <tr><td>video_10s_view</td><td>Video 10s View</td><td><span class="badge badge-metric">Metric</span></td><td>Number of views lasting at least 10 seconds.</td></tr>
+        <tr><td>prev_total_pins</td><td>Prev Total Pins</td><td><span class="badge badge-metric">Metric</span></td><td>Total pins for the previous period.</td></tr>
+        <tr><td>prev_video_views</td><td>Prev Video Views</td><td><span class="badge badge-metric">Metric</span></td><td>Video views for the previous period.</td></tr>
+        <tr><td>prev_avg_watch_time</td><td>Prev Avg Watch Time</td><td><span class="badge badge-metric">Metric</span></td><td>Avg watch time for the previous period.</td></tr>
+        <tr><td>prev_quartile_95s_percent_view</td><td>Prev Quartile 95% View</td><td><span class="badge badge-pct">%</span></td><td>95% view rate for the previous period.</td></tr>
+        <tr><td>prev_video_10s_view</td><td>Prev Video 10s View</td><td><span class="badge badge-metric">Metric</span></td><td>10-second view count for the previous period.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Top Pins — top 10 by engagement</summary>
+    <p>Endpoint: <code>overviewTopPins?limit=10</code>. One row per pin. Discriminating fields: <code>pin_id</code>, <code>pin_board_name</code>, <code>pin_impressions</code>, <code>pin_saves</code>, <code>pin_clicks_top</code>. Note: <code>pin_clicks_top</code> maps from API field <code>pin.pin_clicks</code> — prefixed to avoid routing collision with the summary <code>pin_clicks</code> field. <code>pin_engagement</code> maps from API field <code>pin.total_engagement</code>.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>pin_id</td><td>Pin ID</td><td><span class="badge badge-dim">Dim</span></td><td>Unique identifier for this pin.</td></tr>
+        <tr><td>pin_board_name</td><td>Board Name</td><td><span class="badge badge-dim">Dim</span></td><td>Name of the board the pin belongs to.</td></tr>
+        <tr><td>pin_embed_link</td><td>Pin Embed Link</td><td><span class="badge badge-dim">Dim</span></td><td>Embed URL for the pin.</td></tr>
+        <tr><td>pin_title</td><td>Pin Title</td><td><span class="badge badge-dim">Dim</span></td><td>Title of the pin.</td></tr>
+        <tr><td>pin_description</td><td>Pin Description</td><td><span class="badge badge-dim">Dim</span></td><td>Description text of the pin.</td></tr>
+        <tr><td>pin_board_owner</td><td>Board Owner</td><td><span class="badge badge-dim">Dim</span></td><td>Username of the board owner.</td></tr>
+        <tr><td>pin_cover_image_url</td><td>Pin Cover Image URL</td><td><span class="badge badge-dim">Dim</span></td><td>URL of the pin's cover image.</td></tr>
+        <tr><td>pin_dominant_color</td><td>Pin Dominant Color</td><td><span class="badge badge-dim">Dim</span></td><td>Dominant hex color of the pin image.</td></tr>
+        <tr><td>pin_creative_type</td><td>Pin Creative Type</td><td><span class="badge badge-dim">Dim</span></td><td>Creative format of the pin (e.g. <code>REGULAR</code>, <code>VIDEO</code>).</td></tr>
+        <tr><td>pin_product_tags</td><td>Pin Product Tags</td><td><span class="badge badge-dim">Dim</span></td><td>Comma-joined product tags on the pin (API: <code>pin.product_tags[]</code>).</td></tr>
+        <tr><td>permalink</td><td>Pin URL</td><td><span class="badge badge-dim">Dim</span></td><td>Canonical URL of the pin.</td></tr>
+        <tr><td>media_type</td><td>Pin Type</td><td><span class="badge badge-dim">Dim</span></td><td>Media type of the pin (e.g. <code>image</code>, <code>video</code>).</td></tr>
+        <tr><td>pin_impressions</td><td>Pin Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Impressions for this pin.</td></tr>
+        <tr><td>pin_saves</td><td>Pin Saves</td><td><span class="badge badge-metric">Metric</span></td><td>Saves for this pin.</td></tr>
+        <tr><td>pin_clicks_top</td><td>Pin Clicks</td><td><span class="badge badge-metric">Metric</span></td><td>Clicks on this pin (API: <code>pin.pin_clicks</code>).</td></tr>
+        <tr><td>pin_outbound_clicks</td><td>Pin Outbound Clicks</td><td><span class="badge badge-metric">Metric</span></td><td>Outbound clicks from this pin.</td></tr>
+        <tr><td>pin_engagement</td><td>Pin Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement on this pin (API: <code>pin.total_engagement</code>).</td></tr>
+        <tr><td>pin_engagement_rate</td><td>Pin Engagement Rate</td><td><span class="badge badge-pct">%</span></td><td>Engagement rate for this pin.</td></tr>
+        <tr><td>pin_height</td><td>Pin Height</td><td><span class="badge badge-metric">Metric</span></td><td>Height of the pin image in pixels.</td></tr>
+        <tr><td>pin_width</td><td>Pin Width</td><td><span class="badge badge-metric">Metric</span></td><td>Width of the pin image in pixels.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Pin Posting Performance — daily</summary>
+    <p>Endpoint: <code>overviewPinPostingPerformance</code>. One row per day. Discriminating fields: <code>pins_count</code>, <code>pin_performance_engagement</code>, <code>pin_performance_impressions</code>. The <code>pin_performance_*</code> prefix avoids routing collision with account-level impression/engagement fields.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>date</td><td>Date</td><td><span class="badge badge-dim">Dim</span></td><td>Date (YYYYMMDD).</td></tr>
+        <tr><td>pins_count</td><td>Pins Count</td><td><span class="badge badge-metric">Metric</span></td><td>Number of pins published that day.</td></tr>
+        <tr><td>pin_clicks</td><td>Pin Clicks</td><td><span class="badge badge-metric">Metric</span></td><td>Pin clicks for pins published that day.</td></tr>
+        <tr><td>outbound_clicks</td><td>Outbound Clicks</td><td><span class="badge badge-metric">Metric</span></td><td>Outbound clicks for pins published that day.</td></tr>
+        <tr><td>saves</td><td>Saves</td><td><span class="badge badge-metric">Metric</span></td><td>Saves for pins published that day.</td></tr>
+        <tr><td>pin_performance_engagement</td><td>Perf Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement for pins published that day (API: <code>engagements</code>).</td></tr>
+        <tr><td>pin_performance_impressions</td><td>Perf Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Total impressions for pins published that day (API: <code>impressions</code>).</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Pin Posting Per Day</summary>
+    <p>Endpoint: <code>overviewPinPostingPerDay</code>. One row per day. Discriminating field: <code>pins_posting_count</code> (unique — prevents routing collision with <code>pins_count</code> in the performance group).</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>date</td><td>Date</td><td><span class="badge badge-dim">Dim</span></td><td>Date (YYYYMMDD).</td></tr>
+        <tr><td>pins_posting_count</td><td>Pins Posted Per Day</td><td><span class="badge badge-metric">Metric</span></td><td>Total number of pins posted on this day.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+</div><!-- /pinterest -->
+
+<!-- ══════════════════ TWITTER / X ══════════════════ -->
+<div id="pane-twitter" class="platform-pane">
+  <h2>Twitter / X</h2>
+  <p>Account param: <code>&amp;twitter_id=…</code> &nbsp;|&nbsp; Base prefix: <code>analytics/overview/twitter/</code></p>
+
+  <details open>
+    <summary>Summary — account overview</summary>
+    <p>Endpoint: <code>getPageAndPostsInsights</code>. Returns one row with current-period totals plus <code>*_diff</code> (absolute change) and <code>*_growth</code> (% change) vs previous period. Discriminating fields: <code>followers_count</code>, <code>eng_rate</code>, any <code>*_diff</code> / <code>*_growth</code> field.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>period</td><td>Period</td><td><span class="badge badge-dim">Dim</span></td><td><code>'Current'</code>.</td></tr>
+        <tr><td>followers_count</td><td>Followers</td><td><span class="badge badge-metric">Metric</span></td><td>Total followers for the period.</td></tr>
+        <tr><td>following_count</td><td>Following</td><td><span class="badge badge-metric">Metric</span></td><td>Total accounts followed.</td></tr>
+        <tr><td>tweet_count</td><td>Total Tweets</td><td><span class="badge badge-metric">Metric</span></td><td>Total tweets posted for the period.</td></tr>
+        <tr><td>total_engagement</td><td>Total Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Sum of all engagement actions for the period.</td></tr>
+        <tr><td>impressions</td><td>Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Total tweet impressions for the period.</td></tr>
+        <tr><td>eng_rate</td><td>Engagement Rate</td><td><span class="badge badge-pct">%</span></td><td>Engagement rate for the period.</td></tr>
+        <tr><td>like_count</td><td>Likes</td><td><span class="badge badge-metric">Metric</span></td><td>Total likes for the period.</td></tr>
+        <tr><td>retweet_count</td><td>Retweets</td><td><span class="badge badge-metric">Metric</span></td><td>Total retweets for the period.</td></tr>
+        <tr><td>reply_count</td><td>Replies</td><td><span class="badge badge-metric">Metric</span></td><td>Total replies for the period.</td></tr>
+        <tr><td>quote_count</td><td>Quotes</td><td><span class="badge badge-metric">Metric</span></td><td>Total quote tweets for the period.</td></tr>
+        <tr><td>bookmark_count</td><td>Bookmarks</td><td><span class="badge badge-metric">Metric</span></td><td>Total bookmarks for the period.</td></tr>
+        <tr><td>followers_count_diff</td><td>Followers Diff</td><td><span class="badge badge-metric">Metric</span></td><td>Absolute follower change vs previous period.</td></tr>
+        <tr><td>following_count_diff</td><td>Following Diff</td><td><span class="badge badge-metric">Metric</span></td><td>Absolute following change vs previous period.</td></tr>
+        <tr><td>tweet_count_diff</td><td>Tweets Diff</td><td><span class="badge badge-metric">Metric</span></td><td>Absolute tweet count change vs previous period.</td></tr>
+        <tr><td>total_engagement_diff</td><td>Engagement Diff</td><td><span class="badge badge-metric">Metric</span></td><td>Absolute engagement change vs previous period.</td></tr>
+        <tr><td>like_count_diff</td><td>Likes Diff</td><td><span class="badge badge-metric">Metric</span></td><td>Absolute like count change vs previous period.</td></tr>
+        <tr><td>retweet_count_diff</td><td>Retweets Diff</td><td><span class="badge badge-metric">Metric</span></td><td>Absolute retweet count change vs previous period.</td></tr>
+        <tr><td>reply_count_diff</td><td>Replies Diff</td><td><span class="badge badge-metric">Metric</span></td><td>Absolute reply count change vs previous period.</td></tr>
+        <tr><td>quote_count_diff</td><td>Quotes Diff</td><td><span class="badge badge-metric">Metric</span></td><td>Absolute quote count change vs previous period.</td></tr>
+        <tr><td>bookmark_count_diff</td><td>Bookmarks Diff</td><td><span class="badge badge-metric">Metric</span></td><td>Absolute bookmark count change vs previous period.</td></tr>
+        <tr><td>followers_count_growth</td><td>Followers Growth %</td><td><span class="badge badge-pct">%</span></td><td>Percentage follower growth vs previous period.</td></tr>
+        <tr><td>total_engagement_growth</td><td>Engagement Growth %</td><td><span class="badge badge-pct">%</span></td><td>Percentage engagement growth vs previous period.</td></tr>
+        <tr><td>like_count_growth</td><td>Likes Growth %</td><td><span class="badge badge-pct">%</span></td><td>Percentage like count growth vs previous period.</td></tr>
+        <tr><td>retweet_count_growth</td><td>Retweets Growth %</td><td><span class="badge badge-pct">%</span></td><td>Percentage retweet count growth vs previous period.</td></tr>
+        <tr><td>reply_count_growth</td><td>Replies Growth %</td><td><span class="badge badge-pct">%</span></td><td>Percentage reply count growth vs previous period.</td></tr>
+        <tr><td>tweet_count_growth</td><td>Tweets Growth %</td><td><span class="badge badge-pct">%</span></td><td>Percentage tweet count growth vs previous period.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Follower Trend — daily</summary>
+    <p>Endpoint: <code>getFollowersTrendData</code>. One row per day where follower count &gt; 0. Discriminating fields: <code>followers</code>, <code>followers_daily</code>. Note: <code>followers</code> (cumulative count, API: <code>follower_count</code>) differs from <code>followers_count</code> (summary total).</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>date</td><td>Date</td><td><span class="badge badge-dim">Dim</span></td><td>Date (YYYYMMDD).</td></tr>
+        <tr><td>followers</td><td>Followers (Daily)</td><td><span class="badge badge-metric">Metric</span></td><td>Cumulative follower count for the day (API: <code>follower_count</code>).</td></tr>
+        <tr><td>followers_daily</td><td>Followers Daily Change</td><td><span class="badge badge-metric">Metric</span></td><td>Day-over-day change in followers (API: <code>follower_count_daily</code>).</td></tr>
+        <tr><td>following_count_daily</td><td>Following Daily Change</td><td><span class="badge badge-metric">Metric</span></td><td>Day-over-day change in following count.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Daily Engagement — per-day metrics</summary>
+    <p>Endpoint: <code>getEngagementImpressionData</code>. One row per tweet date. Discriminating fields: <code>tweets_daily</code>, <code>bookmarks_daily</code>, <code>quotes_daily</code>. Key API aliases: <code>impression_count</code> → <code>impressions</code>, <code>tweet_count</code> → <code>tweets_daily</code>, <code>bookmark_count</code> → <code>bookmarks_daily</code>, <code>quote_count</code> → <code>quotes_daily</code>. <code>reach</code> is always 0 (not available from the Twitter API per day).</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>date</td><td>Date</td><td><span class="badge badge-dim">Dim</span></td><td>Date (YYYYMMDD).</td></tr>
+        <tr><td>engagement</td><td>Daily Engagement</td><td><span class="badge badge-metric">Metric</span></td><td>Total engagement for tweets on this day (API: <code>total_engagement</code>).</td></tr>
+        <tr><td>impressions</td><td>Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Total impressions on this day (API: <code>impression_count</code>).</td></tr>
+        <tr><td>reach</td><td>Daily Reach</td><td><span class="badge badge-metric">Metric</span></td><td>Always 0 — Twitter API does not provide per-day reach.</td></tr>
+        <tr><td>like_count</td><td>Likes</td><td><span class="badge badge-metric">Metric</span></td><td>Likes on this day.</td></tr>
+        <tr><td>retweet_count</td><td>Retweets</td><td><span class="badge badge-metric">Metric</span></td><td>Retweets on this day.</td></tr>
+        <tr><td>reply_count</td><td>Replies</td><td><span class="badge badge-metric">Metric</span></td><td>Replies on this day.</td></tr>
+        <tr><td>tweets_daily</td><td>Tweets Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Tweets posted on this day (API: <code>tweet_count</code>).</td></tr>
+        <tr><td>bookmarks_daily</td><td>Bookmarks Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Bookmarks on this day (API: <code>bookmark_count</code>).</td></tr>
+        <tr><td>quotes_daily</td><td>Quotes Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Quote tweets on this day (API: <code>quote_count</code>).</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Top Tweets — top 10 by engagement</summary>
+    <p>Endpoint: <code>getTopTweets?limit=10&amp;order_by=total_engagement</code>. One row per tweet. Discriminating field: <code>tweet_id</code>. API aliases: <code>post.id</code> → <code>tweet_id</code>, <code>post.impression_count</code> → <code>impressions</code>, <code>post.media_url[]</code> → <code>tweet_media_url</code> (joined with comma).</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>date</td><td>Date</td><td><span class="badge badge-dim">Dim</span></td><td>Date the tweet was posted.</td></tr>
+        <tr><td>permalink</td><td>Tweet URL</td><td><span class="badge badge-dim">Dim</span></td><td>Canonical URL of the tweet.</td></tr>
+        <tr><td>tweet_id</td><td>Tweet ID</td><td><span class="badge badge-dim">Dim</span></td><td>Unique tweet identifier (API: <code>post.id</code>).</td></tr>
+        <tr><td>tweet_text</td><td>Tweet Text</td><td><span class="badge badge-dim">Dim</span></td><td>Text content of the tweet.</td></tr>
+        <tr><td>tweet_type</td><td>Tweet Type</td><td><span class="badge badge-dim">Dim</span></td><td>Type of tweet (e.g. original, retweet, reply).</td></tr>
+        <tr><td>tweet_media_url</td><td>Tweet Media URLs</td><td><span class="badge badge-dim">Dim</span></td><td>Comma-joined media URLs attached to the tweet (API: <code>post.media_url[]</code>).</td></tr>
+        <tr><td>like_count</td><td>Likes</td><td><span class="badge badge-metric">Metric</span></td><td>Likes on this tweet.</td></tr>
+        <tr><td>retweet_count</td><td>Retweets</td><td><span class="badge badge-metric">Metric</span></td><td>Retweets of this tweet.</td></tr>
+        <tr><td>reply_count</td><td>Replies</td><td><span class="badge badge-metric">Metric</span></td><td>Replies to this tweet.</td></tr>
+        <tr><td>quote_count</td><td>Quotes</td><td><span class="badge badge-metric">Metric</span></td><td>Quote tweets of this tweet.</td></tr>
+        <tr><td>bookmark_count</td><td>Bookmarks</td><td><span class="badge badge-metric">Metric</span></td><td>Bookmarks of this tweet.</td></tr>
+        <tr><td>impressions</td><td>Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Impressions on this tweet (API: <code>post.impression_count</code>).</td></tr>
+        <tr><td>listed_count</td><td>Listed Count</td><td><span class="badge badge-metric">Metric</span></td><td>Number of lists this tweet's author appears in.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Least Tweets — bottom 10 by engagement</summary>
+    <p>Endpoint: <code>getLeastTweets?limit=10&amp;order_by=total_engagement</code>. Same shape as Top Tweets but all fields use the <code>lt_</code> prefix to prevent <code>bestMatch()</code> routing confusion. Discriminating field: <code>lt_permalink</code>.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>lt_permalink</td><td>Least Tweet URL</td><td><span class="badge badge-dim">Dim</span></td><td>Canonical URL of this least-performing tweet.</td></tr>
+        <tr><td>lt_tweet_id</td><td>Least Tweet ID</td><td><span class="badge badge-dim">Dim</span></td><td>Tweet ID (API: <code>post.id</code>).</td></tr>
+        <tr><td>lt_tweet_text</td><td>Least Tweet Text</td><td><span class="badge badge-dim">Dim</span></td><td>Text content of this tweet.</td></tr>
+        <tr><td>lt_tweet_type</td><td>Least Tweet Type</td><td><span class="badge badge-dim">Dim</span></td><td>Type of tweet.</td></tr>
+        <tr><td>lt_tweet_media_url</td><td>Least Tweet Media URLs</td><td><span class="badge badge-dim">Dim</span></td><td>Comma-joined media URLs (API: <code>post.media_url[]</code>).</td></tr>
+        <tr><td>lt_like_count</td><td>Least Likes</td><td><span class="badge badge-metric">Metric</span></td><td>Likes on this tweet.</td></tr>
+        <tr><td>lt_retweet_count</td><td>Least Retweets</td><td><span class="badge badge-metric">Metric</span></td><td>Retweets of this tweet.</td></tr>
+        <tr><td>lt_reply_count</td><td>Least Replies</td><td><span class="badge badge-metric">Metric</span></td><td>Replies to this tweet.</td></tr>
+        <tr><td>lt_quote_count</td><td>Least Quotes</td><td><span class="badge badge-metric">Metric</span></td><td>Quote tweets of this tweet.</td></tr>
+        <tr><td>lt_bookmark_count</td><td>Least Bookmarks</td><td><span class="badge badge-metric">Metric</span></td><td>Bookmarks of this tweet.</td></tr>
+        <tr><td>lt_impressions</td><td>Least Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Impressions on this tweet (API: <code>post.impression_count</code>).</td></tr>
+        <tr><td>lt_listed_count</td><td>Least Listed Count</td><td><span class="badge badge-metric">Metric</span></td><td>List membership count for the tweet's author.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Credits Used</summary>
+    <p>Endpoint: <code>getCreditsUsedCount</code>. Returns one row. Discriminating field: <code>credits_used</code>. Useful for Twitter API usage monitoring.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>credits_used</td><td>Credits Used</td><td><span class="badge badge-metric">Metric</span></td><td>Total Twitter API credits consumed for this account (API: <code>j.data.credits_used</code>).</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+</div><!-- /twitter -->
+
+<!-- ══════════════════ GOOGLE BUSINESS PROFILE ══════════════════ -->
+<div id="pane-gmb" class="platform-pane">
+  <h2>Google Business Profile (GMB)</h2>
+  <p>Account param: <code>&amp;gmb_id=…</code> &nbsp;|&nbsp; Base prefix: <code>analytics/overview/gmb/</code></p>
+  <p><strong>API field aliases:</strong> <code>search_impressions</code> → <code>search_views</code>, <code>maps_impressions</code> → <code>map_views</code>, <code>call_clicks</code> → <code>phone_calls</code>, <code>photo_count_daily</code> → <code>photo_views</code>.</p>
+
+  <details open>
+    <summary>Summary — account overview (current &amp; previous period)</summary>
+    <p>Endpoint: <code>summary</code>. Returns two rows: <code>period = 'Current'</code> and <code>period = 'Previous'</code>. Discriminating fields: <code>period</code>, <code>avg_rating</code>, <code>review_count</code>.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>period</td><td>Period</td><td><span class="badge badge-dim">Dim</span></td><td><code>'Current'</code> or <code>'Previous'</code>.</td></tr>
+        <tr><td>search_views</td><td>Search Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Business profile views via Google Search (API: <code>search_impressions</code>).</td></tr>
+        <tr><td>map_views</td><td>Maps Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Business profile views via Google Maps (API: <code>maps_impressions</code>).</td></tr>
+        <tr><td>total_views</td><td>Total Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Total profile views across Search and Maps (API: <code>total_impressions</code>).</td></tr>
+        <tr><td>direction_requests</td><td>Direction Requests</td><td><span class="badge badge-metric">Metric</span></td><td>Requests for directions to the business location.</td></tr>
+        <tr><td>phone_calls</td><td>Call Clicks</td><td><span class="badge badge-metric">Metric</span></td><td>Clicks on the phone number to call (API: <code>call_clicks</code>).</td></tr>
+        <tr><td>website_clicks</td><td>Website Clicks</td><td><span class="badge badge-metric">Metric</span></td><td>Clicks on the website link.</td></tr>
+        <tr><td>total_actions</td><td>Total Actions</td><td><span class="badge badge-metric">Metric</span></td><td>Sum of call clicks, website clicks, direction requests, and other actions.</td></tr>
+        <tr><td>total_posts</td><td>Total Posts</td><td><span class="badge badge-metric">Metric</span></td><td>Total GMB posts published in the period.</td></tr>
+        <tr><td>review_count</td><td>Review Count</td><td><span class="badge badge-metric">Metric</span></td><td>Total reviews for the period (API: <code>total_reviews</code>).</td></tr>
+        <tr><td>avg_rating</td><td>Avg Rating</td><td><span class="badge badge-metric">Metric</span></td><td>Average star rating (API: <code>average_rating</code>).</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Daily Impressions — search &amp; maps views per day</summary>
+    <p>Endpoint: <code>impressions</code>. One row per day. Discriminating fields: <code>search_views</code>, <code>map_views</code>, <code>total_views</code>. Desktop and mobile impressions are summed into a single daily value per channel.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>date</td><td>Date</td><td><span class="badge badge-dim">Dim</span></td><td>Date (YYYYMMDD).</td></tr>
+        <tr><td>search_views</td><td>Search Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Search impressions for the day (desktop + mobile, API: <code>desktop_search_daily + mobile_search_daily</code>).</td></tr>
+        <tr><td>map_views</td><td>Maps Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Maps impressions for the day (desktop + mobile, API: <code>desktop_maps_daily + mobile_maps_daily</code>).</td></tr>
+        <tr><td>total_views</td><td>Total Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Total impressions for the day (API: <code>total_impressions_daily</code>).</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Daily Actions — customer actions per day</summary>
+    <p>Endpoint: <code>actions</code>. One row per day. Discriminating fields: <code>direction_requests</code>, <code>phone_calls</code>, <code>website_clicks</code>, <code>total_actions</code>.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>date</td><td>Date</td><td><span class="badge badge-dim">Dim</span></td><td>Date (YYYYMMDD).</td></tr>
+        <tr><td>direction_requests</td><td>Direction Requests</td><td><span class="badge badge-metric">Metric</span></td><td>Direction requests for the day.</td></tr>
+        <tr><td>phone_calls</td><td>Call Clicks</td><td><span class="badge badge-metric">Metric</span></td><td>Call clicks for the day (API: <code>call_clicks</code>).</td></tr>
+        <tr><td>website_clicks</td><td>Website Clicks</td><td><span class="badge badge-metric">Metric</span></td><td>Website clicks for the day.</td></tr>
+        <tr><td>total_actions</td><td>Total Actions</td><td><span class="badge badge-metric">Metric</span></td><td>Sum of call clicks, website clicks, direction requests, and other actions for the day.</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Reviews — current &amp; previous period</summary>
+    <p>Endpoint: <code>reviews</code>. Returns two rows (Current / Previous). Discriminating fields: <code>review_count</code>, <code>avg_rating</code>, <code>new_reviews</code>.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>period</td><td>Period</td><td><span class="badge badge-dim">Dim</span></td><td><code>'Current'</code> or <code>'Previous'</code>.</td></tr>
+        <tr><td>review_count</td><td>Review Count</td><td><span class="badge badge-metric">Metric</span></td><td>Total reviews for the period (API: <code>total_reviews</code>).</td></tr>
+        <tr><td>avg_rating</td><td>Avg Rating</td><td><span class="badge badge-metric">Metric</span></td><td>Average star rating for the period.</td></tr>
+        <tr><td>new_reviews</td><td>New Reviews</td><td><span class="badge badge-metric">Metric</span></td><td>New reviews received in the period (always 0 — not yet available from GMB API).</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Search Keywords — top search terms</summary>
+    <p>Endpoint: <code>searchKeywords</code>. One row per keyword. Discriminating fields: <code>keyword</code>, <code>keyword_impressions</code>. API response shape: <code>j.keywords[].{keyword, impressions_value}</code>.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>keyword</td><td>Search Keyword</td><td><span class="badge badge-dim">Dim</span></td><td>Search term that led users to this business profile.</td></tr>
+        <tr><td>keyword_impressions</td><td>Keyword Impressions</td><td><span class="badge badge-metric">Metric</span></td><td>Number of impressions for this keyword (API: <code>impressions_value</code>).</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Top Posts</summary>
+    <p>Endpoint: <code>topPosts</code>. One row per post. Discriminating fields: <code>post_name</code>, <code>topic_type</code>. API response: <code>j.posts[]</code>.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>date</td><td>Date</td><td><span class="badge badge-dim">Dim</span></td><td>Date the post was created (API: <code>post.created_at</code>).</td></tr>
+        <tr><td>post_name</td><td>Post Name</td><td><span class="badge badge-dim">Dim</span></td><td>Post title or summary text (API: <code>post.post_name</code> or <code>post.summary</code>).</td></tr>
+        <tr><td>topic_type</td><td>Post Type</td><td><span class="badge badge-dim">Dim</span></td><td>GMB post topic type (e.g. <code>STANDARD</code>, <code>EVENT</code>, <code>OFFER</code>).</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Publishing Behavior — posts per day</summary>
+    <p>Endpoint: <code>publishingBehavior</code>. One row per day. Discriminating field: <code>total_posts</code>. API response: <code>j.publishing_behaviour.{buckets[], post_count[]}</code>.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>date</td><td>Date</td><td><span class="badge badge-dim">Dim</span></td><td>Date (YYYYMMDD).</td></tr>
+        <tr><td>total_posts</td><td>Total Posts</td><td><span class="badge badge-metric">Metric</span></td><td>Number of GMB posts published on this day (API: <code>post_count</code>).</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Media Activity — photo &amp; video counts per day</summary>
+    <p>Endpoint: <code>mediaActivity</code>. One row per day. Discriminating fields: <code>photo_views</code>, <code>video_count</code>. API response: <code>j.media_activity.{buckets[], photo_count_daily[], video_count_daily[]}</code>.</p>
+    <table>
+      <thead><tr><th>Field ID</th><th>Display Name</th><th>Kind</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>date</td><td>Date</td><td><span class="badge badge-dim">Dim</span></td><td>Date (YYYYMMDD).</td></tr>
+        <tr><td>photo_views</td><td>Photo Count Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Photos added or active on this day (API: <code>photo_count_daily</code>).</td></tr>
+        <tr><td>video_count</td><td>Video Count Daily</td><td><span class="badge badge-metric">Metric</span></td><td>Videos added or active on this day (API: <code>video_count_daily</code>).</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+</div><!-- /gmb -->
+-->
+
+</main>
+
+<script>
+function showPlatform(id) {
+  document.querySelectorAll('.platform-pane').forEach(function(el) {
+    el.classList.remove('active');
+  });
+  document.querySelectorAll('.platform-tabs button').forEach(function(btn) {
+    btn.classList.remove('active');
+  });
+  var pane = document.getElementById('pane-' + id);
+  if (pane) pane.classList.add('active');
+  var btn = document.querySelector('[onclick="showPlatform(\'' + id + '\')"]');
+  if (btn) btn.classList.add('active');
+}
+// Activate Facebook tab on load
+showPlatform('facebook');
+</script>
+
+</body>
+</html>

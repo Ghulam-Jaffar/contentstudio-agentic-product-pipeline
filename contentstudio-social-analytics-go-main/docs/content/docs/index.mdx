@@ -1,0 +1,137 @@
+---
+title: ContentStudio Social Analytics Go
+description: High-performance microservices-based data pipeline for social media analytics
+---
+
+A high-performance microservices-based data pipeline for extracting, processing, and storing social media analytics data from multiple platforms into ClickHouse for real-time analytics.
+
+## Quick Start
+
+<Cards>
+  <Card
+    title="Overview"
+    href="/docs/getting-started"
+    description="Project overview and getting started"
+  />
+  <Card
+    title="Onboarding"
+    href="/docs/getting-started/onboarding"
+    description="Engineer onboarding guide"
+  />
+  <Card
+    title="Architecture"
+    href="/docs/architecture/pipeline-architecture"
+    description="Complete pipeline architecture deep dive"
+  />
+</Cards>
+
+## Platform Integrations
+
+<Cards>
+  <Card
+    title="Facebook"
+    href="/docs/platforms/facebook"
+    description="Facebook data pipeline and analytics"
+  />
+  <Card
+    title="Instagram"
+    href="/docs/platforms/instagram"
+    description="Instagram integration guide"
+  />
+  <Card
+    title="LinkedIn"
+    href="/docs/platforms/linkedin"
+    description="LinkedIn analytics pipeline"
+  />
+  <Card
+    title="TikTok"
+    href="/docs/platforms/tiktok"
+    description="TikTok data processing"
+  />
+</Cards>
+
+## Services Documentation
+
+Our pipeline consists of five stages, each with platform-specific services:
+
+<Cards>
+  <Card
+    title="Scheduler"
+    href="/docs/services/scheduler"
+    description="Account fetchers and work scheduling"
+  />
+  <Card
+    title="URL Refresher"
+    href="/docs/services/url-refresher"
+    description="Refresh stale media URLs and thumbnails"
+  />
+  <Card
+    title="Fetcher"
+    href="/docs/services/fetcher"
+    description="API data fetching services"
+  />
+  <Card
+    title="Parser"
+    href="/docs/services/parser"
+    description="Data transformation services"
+  />
+  <Card
+    title="Processor"
+    href="/docs/services/processor"
+    description="Data enrichment and processing"
+  />
+  <Card
+    title="Sink"
+    href="/docs/services/sink"
+    description="ClickHouse storage services"
+  />
+  <Card
+    title="API Services"
+    href="/docs/services/immediate-work-api"
+    description="Immediate work API"
+  />
+</Cards>
+
+## Developer Resources
+
+<Cards>
+  <Card
+    title="Migration Guide"
+    href="/docs/guides/migration-plan"
+    description="Python to Go migration plan"
+  />
+  <Card
+    title="Kafka Topics"
+    href="/docs/reference/kafka-topics"
+    description="Kafka topic reference"
+  />
+  <Card
+    title="Improvements"
+    href="/docs/reference/improvements"
+    description="Performance improvements"
+  />
+  <Card
+    title="Integration Workflow"
+    href="/docs/architecture/integration-workflow"
+    description="Social media integration workflow"
+  />
+</Cards>
+
+## Environment Setup
+
+<Cards>
+    <Card
+        title="Local Setup"
+        href="/docs/environment/local-setup"
+        description="Local Enviroment setup guide"
+    />
+</Cards>
+
+## Key Features
+
+- **Microservices Architecture**: 17+ independent services per platform
+- **Event-Driven Design**: Kafka-based asynchronous communication
+- **Five-Stage Pipeline**: Scheduler → Fetcher → Parser → Processor → Sink
+- **Multi-Platform Support**: Facebook, Instagram, LinkedIn, TikTok
+- **High Performance**: 15,000 items/second processing capability
+- **Python-to-Go Migration**: Preserving business logic while improving performance

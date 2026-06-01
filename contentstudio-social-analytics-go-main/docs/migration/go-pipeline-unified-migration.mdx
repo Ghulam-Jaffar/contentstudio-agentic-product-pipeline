@@ -1,0 +1,465 @@
+---
+title: Go Pipeline Unified Migration
+description: Migration guide for updating the Go pipeline to use the unified social_integrations collection
+---
+
+# Go Pipeline Migration to Unified Social Integrations Collection
+
+Owner: Bilal Tariq  
+Created: 2025-09-08  
+Updated: 2025-09-08  
+Status: **Migration Complete - Clean Implementation**
+
+## Executive Summary
+
+This document outlines the migration plan for updating the ContentStudio Social Analytics Go pipeline to use the unified `social_integrations` collection with clean, consistent field naming. Since the Go pipeline hasn't been deployed to production, we can implement the ideal structure without backward compatibility concerns.
+
+## Migration Goals
+
+- **Unified Data Access**: Single collection for all social platform accounts
+- **Clean Field Structure**: Use `platform_identifier` consistently, no legacy field names
+- **Simplified Codebase**: Single repository pattern for all platforms
+- **Performance Optimization**: Single query for multi-platform operations
+- **Future-Proof Design**: Consistent patterns for adding new platforms
+
+## Collection Mapping
+
+| Old Collection              | New Collection        | Platform Filter              |
+| --------------------------- | --------------------- | ---------------------------- |
+| `facebook_accounts`         | `social_integrations` | `platform_type: "facebook"`  |
+| `instagram_accounts`        | `social_integrations` | `platform_type: "instagram"` |
+| `linkedin_accounts`         | `social_integrations` | `platform_type: "linkedin"`  |
+| `twitter_accounts`          | `social_integrations` | `platform_type: "twitter"`   |
+| `googlemybusiness_accounts` | `social_integrations` | `platform_type: "gmb"`       |
+| `pinterest_accounts`        | `social_integrations` | `platform_type: "pinterest"` |
+
+## Components to Update
+
+### 1. MongoDB Models (`/src/pkg/models/mongo/`)
+
+#### Current Structure
+
+- Separate structs: `FacebookAccount`, `InstagramAccount`, `LinkedinAccount`
+- Platform-specific fields in each struct
+- Individual field names (e.g., `facebook_id`, `instagram_id`)
+
+#### New Unified Structure (Clean Implementation)
+
+```go
+// SocialIntegration represents a unified social platform account
+type SocialIntegration struct {
+    // Core fields (all platforms)
+    ID                    primitive.ObjectID `bson:"_id,omitempty"`
+    PlatformType         string             `bson:"platform_type"`
+    PlatformIdentifier   string             `bson:"platform_identifier"`  // The primary platform ID
+    PlatformName         string             `bson:"platform_name"`
+    PlatformURL          string             `bson:"platform_url,omitempty"`
+    PlatformLogo         string             `bson:"platform_logo,omitempty"`
+    Type                 string             `bson:"type"`  // e.g., "Page", "Profile", "Business"
+    WorkspaceID          primitive.ObjectID `bson:"workspace_id"`
+    UserID               primitive.ObjectID `bson:"user_id"`
+    AddedBy              primitive.ObjectID `bson:"added_by"`
+    State                string             `bson:"state"`     // "Added", "Deleted", "Disabled"
+    Validity             string             `bson:"validity"`  // "valid", "invalid", "expired"
+    CreatedAt            *MongoTime         `bson:"created_at"`
+    UpdatedAt            *MongoTime         `bson:"updated_at"`
+
+    // Token fields
+    AccessToken          string             `bson:"access_token,omitempty"`
+    RefreshToken         string             `bson:"refresh_token,omitempty"`
+    LongAccessToken      string             `bson:"long_access_token,omitempty"`      // Facebook
+    OAuthToken           string             `bson:"oauth_token,omitempty"`            // Twitter
+    OAuthTokenSecret     string             `bson:"oauth_token_secret,omitempty"`     // Twitter
+    TokenExpiresAt       *MongoTime         `bson:"token_expires_at,omitempty"`
+    TokenIssuedAt        *MongoTime         `bson:"token_issued_at,omitempty"`
+    ExpiresIn            int64              `bson:"expires_in,omitempty"`
+    RefreshExpiresIn     int64              `bson:"refresh_expires_in,omitempty"`
+    Scope                string             `bson:"scope,omitempty"`
+
+    // Analytics timestamps
+    LastAnalyticsUpdatedAt           *MongoTime `bson:"last_analytics_updated_at,omitempty"`
+    LastInsightsAnalyticsUpdatedAt   *MongoTime `bson:"last_insights_analytics_updated_at,omitempty"`
+    LastFansAnalyticsUpdatedAt       *MongoTime `bson:"last_fans_analytics_updated_at,omitempty"`      // Facebook
+    LastVideoAnalyticsUpdatedAt      *MongoTime `bson:"last_video_analytics_updated_at,omitempty"`     // Facebook
+    LastGroupAnalyticsUpdatedAt      *MongoTime `bson:"last_group_analytics_updated_at,omitempty"`     // Facebook
+    LastLinkPreviewUpdatedAt         *MongoTime `bson:"last_link_preview_updated_at,omitempty"`        // LinkedIn
+
+    // Platform-specific fields
+    FanCount             int                `bson:"fan_count,omitempty"`         // Facebook
+    Permissions          []string           `bson:"permissions,omitempty"`       // Facebook
+    PostedAs             interface{}        `bson:"posted_as,omitempty"`         // Facebook
+    UserDetails          interface{}        `bson:"user_details,omitempty"`      // Instagram
+    IsBusiness           bool               `bson:"is_business,omitempty"`       // Instagram
+    Username             string             `bson:"username,omitempty"`          // Instagram/Twitter/Pinterest
+    ScreenName           string             `bson:"screen_name,omitempty"`       // Twitter
+    Headline             string             `bson:"headline,omitempty"`          // LinkedIn
+    LinkedinProfileID    string             `bson:"linkedin_profile_id,omitempty"` // LinkedIn URN
+    Verified             bool               `bson:"verified,omitempty"`          // Twitter
+    VerifiedType         string             `bson:"verified_type,omitempty"`     // Twitter
+    SubscriptionType     string             `bson:"subscription_type,omitempty"` // Twitter API tier
+    DeveloperAppID       string             `bson:"developer_app_id,omitempty"`  // Twitter
+    APIKey               string             `bson:"api_key,omitempty"`           // Twitter
+    APISecret            string             `bson:"api_secret,omitempty"`        // Twitter
+    MetaData             interface{}        `bson:"meta_data,omitempty"`         // GMB
+    Locality             string             `bson:"locality,omitempty"`          // GMB
+    PostalCode           string             `bson:"postal_code,omitempty"`       // GMB
+    RegionCode           string             `bson:"region_code,omitempty"`       // GMB
+    LanguageCode         string             `bson:"language_code,omitempty"`     // GMB
+    ProfileID            string             `bson:"profile_id,omitempty"`        // Pinterest
+    BoardID              string             `bson:"board_id,omitempty"`          // Pinterest
+    LinkedTo             primitive.ObjectID `bson:"linked_to,omitempty"`         // Pinterest boards linked to profiles
+    URL                  string             `bson:"url,omitempty"`               // Pinterest
+
+    // Scheduling
+    QueueSlots           []interface{}      `bson:"QueueSlots,omitempty"`
+
+    // Validity tracking
+    InvalidTries         int                `bson:"invalid_tries,omitempty"`
+    SentInvalidEmail     int                `bson:"sent_invalid_email,omitempty"`
+    ValidityError        string             `bson:"validity_error,omitempty"`
+    ValidityStatus       int                `bson:"validity_status,omitempty"`
+    LimitExceedTries     int                `bson:"limit_exceed_tries,omitempty"`
+
+    // External connections
+    ConnectionViaLink    bool               `bson:"connection_via_link,omitempty"`
+    ConnectionLinkID     primitive.ObjectID `bson:"connection_link_id,omitempty"`
+
+    // Preferences and extra data
+    Preferences          map[string]interface{} `bson:"preferences,omitempty"`
+    ExtraData            map[string]interface{} `bson:",inline"`
+}
+```
+
+### 2. Repository Layer (`/src/internal/repository/mongodb/`)
+
+#### Current Implementation
+
+- Separate repositories: `FacebookAccountRepository`, `InstagramAccountRepository`, `LinkedinAccountRepository`
+- Platform-specific collection names hardcoded
+- Duplicate methods across repositories
+
+#### New Unified Repository (Clean Implementation)
+
+```go
+// UnifiedSocialRepository handles all social platform accounts
+type UnifiedSocialRepository interface {
+    // Core methods
+    FindByID(ctx context.Context, id primitive.ObjectID) (*SocialIntegration, error)
+    GetByPlatformID(ctx context.Context, platformType, platformID string) (*SocialIntegration, error)
+    GetValidAccounts(ctx context.Context, platformType, accountType string) ([]SocialIntegration, error)
+    GetAccountsByWorkspace(ctx context.Context, workspaceID primitive.ObjectID, platforms []string) ([]SocialIntegration, error)
+    GetAccountsNeedingUpdate(ctx context.Context, platformType string, lastUpdateField string, hours int) ([]SocialIntegration, error)
+
+    // Update methods
+    Update(ctx context.Context, id primitive.ObjectID, updates primitive.M) error
+    UpdateAnalyticsTimestamp(ctx context.Context, id primitive.ObjectID, timestampType string, timestamp time.Time) error
+    UpdateTokens(ctx context.Context, id primitive.ObjectID, tokens map[string]string) error
+    UpdateState(ctx context.Context, id primitive.ObjectID, newState string) error
+    UpdateValidity(ctx context.Context, id primitive.ObjectID, newValidity string) error
+
+    // Create and Delete
+    Create(ctx context.Context, account *SocialIntegration) (primitive.ObjectID, error)
+    Delete(ctx context.Context, id primitive.ObjectID) error
+}
+```
+
+### 3. Account Fetcher Services (`/src/cmd/scheduler/account_fetcher/`)
+
+#### Changes Required
+
+##### Facebook Account Fetcher
+
+- Update to use `UnifiedSocialRepository`
+- Add `platform_type: "facebook"` filter
+- Use `platform_identifier` as the Facebook ID in work orders
+- Access tokens from main `access_token` or `long_access_token` fields
+
+##### Instagram Account Fetcher
+
+- Update to use `UnifiedSocialRepository`
+- Add `platform_type: "instagram"` filter
+- Use `platform_identifier` as the Instagram ID
+- Handle nested `user_details.access_token` for encrypted tokens
+
+##### LinkedIn Account Fetcher
+
+- Update to use `UnifiedSocialRepository`
+- Add `platform_type: "linkedin"` filter
+- Use `platform_identifier` as the LinkedIn ID
+- Use `linkedin_profile_id` for URN if needed
+
+### 4. Configuration Management
+
+Since we're implementing a clean solution without backward compatibility, the configuration is simplified:
+
+#### Environment Variables
+
+```bash
+# MongoDB collection name (no migration flags needed)
+SOCIAL_INTEGRATIONS_COLLECTION=social_integrations
+
+# Standard MongoDB configuration
+APP_MONGO_HOST=localhost
+APP_MONGO_PORT=27017
+APP_MONGO_DATABASE=contentstudio_db
+```
+
+#### Configuration Structure
+
+```go
+type SocialDataConfig struct {
+    CollectionName string  // "social_integrations"
+    Database       string  // MongoDB database name
+    // No migration flags or legacy support needed
+}
+```
+
+## Implementation Steps
+
+### Step 1: Create Unified Model and Repository
+
+1. **Create Unified Model**
+
+   - [ ] Define `SocialIntegration` struct in `/src/pkg/models/mongo/social_integration.go`
+   - [ ] Include all platform-specific fields
+   - [ ] Use consistent field naming (`platform_identifier`, `platform_name`, etc.)
+
+2. **Implement Unified Repository**
+   - [ ] Create `UnifiedSocialRepository` interface in `/src/internal/repository/mongodb/`
+   - [ ] Implement all CRUD operations
+   - [ ] Add platform-filtered query methods
+   - [ ] Include proper logging and error handling
+
+### Step 2: Update Account Fetchers
+
+3. **Update Facebook Account Fetcher**
+
+   - [ ] Replace `FacebookAccountRepository` with `UnifiedSocialRepository`
+   - [ ] Add `platform_type: "facebook"` filter to queries
+   - [ ] Use `platform_identifier` for Facebook ID
+   - [ ] Update work order structure
+
+4. **Update Instagram Account Fetcher**
+
+   - [ ] Replace `InstagramAccountRepository` with `UnifiedSocialRepository`
+   - [ ] Add `platform_type: "instagram"` filter
+   - [ ] Handle `user_details.access_token` decryption
+   - [ ] Use `platform_identifier` for Instagram ID
+
+5. **Update LinkedIn Account Fetcher**
+   - [ ] Replace `LinkedinAccountRepository` with `UnifiedSocialRepository`
+   - [ ] Add `platform_type: "linkedin"` filter
+   - [ ] Use `platform_identifier` for LinkedIn ID
+   - [ ] Handle `linkedin_profile_id` for URN if needed
+
+### Step 3: Testing and Deployment
+
+6. **Testing**
+
+   - [ ] Unit tests for unified repository
+   - [ ] Integration tests with actual MongoDB
+   - [ ] Verify work order generation
+   - [ ] Test token decryption
+
+7. **Deployment**
+   - [ ] Deploy to staging environment
+   - [ ] Run full pipeline tests
+   - [ ] Monitor for any issues
+   - [ ] Deploy to production when ready
+
+### Step 4: Cleanup
+
+8. **Remove Legacy Code**
+   - [ ] Delete old repository files (`facebook_account_repository.go`, etc.)
+   - [ ] Remove old model structs
+   - [ ] Update all references in the codebase
+   - [ ] Update documentation
+
+## Field Mapping Reference
+
+### Unified Field Structure
+
+All platforms use the same core fields:
+
+| Field                 | Purpose                     | Example                                   |
+| --------------------- | --------------------------- | ----------------------------------------- |
+| `platform_type`       | Platform identifier         | `"facebook"`, `"instagram"`, `"linkedin"` |
+| `platform_identifier` | Platform-specific unique ID | Facebook page ID, Instagram user ID, etc. |
+| `platform_name`       | Display name                | Page/Profile/Account name                 |
+| `platform_logo`       | Profile image URL           | Avatar/logo URL                           |
+| `platform_url`        | Profile URL                 | Link to social profile                    |
+| `state`               | Account state               | `"Added"`, `"Deleted"`, `"Disabled"`      |
+| `validity`            | Token status                | `"valid"`, `"invalid"`, `"expired"`       |
+
+### Platform-Specific Field Usage
+
+#### Facebook
+
+- `platform_identifier` = Facebook Page/Group ID
+- `long_access_token` = Page long-lived token
+- `fan_count` = Number of page fans
+- `permissions` = Granted FB permissions array
+
+#### Instagram
+
+- `platform_identifier` = Instagram account ID
+- `user_details` = Nested object with profile info
+- `is_business` = Business account flag
+- Token may be in `user_details.access_token` (encrypted)
+
+#### LinkedIn
+
+- `platform_identifier` = LinkedIn ID
+- `linkedin_profile_id` = LinkedIn URN (if different)
+- `headline` = Profile headline
+
+#### Google My Business
+
+- `platform_identifier` = Location ID (was `name` field)
+- `platform_name` = Location name (was `location_name`)
+- `platform_logo` = Location image (was `account_image`)
+- `meta_data` = Location metadata
+
+## Query Examples
+
+### Before (Multiple Collections)
+
+```go
+// Facebook accounts
+fbRepo := mongodb.NewFacebookAccountRepository(db, logger)
+fbAccounts, _ := fbRepo.GetValidAccounts(ctx, "Page")
+
+// Instagram accounts
+igRepo := mongodb.NewInstagramAccountRepository(db, logger)
+igAccounts, _ := igRepo.GetValidAccounts(ctx)
+
+// LinkedIn accounts
+liRepo := mongodb.NewLinkedInAccountRepository(db, logger)
+liAccounts, _ := liRepo.GetValidAccounts(ctx)
+```
+
+### After (Unified Collection)
+
+```go
+// Single repository for all platforms
+unifiedRepo := mongodb.NewUnifiedSocialRepository(db, logger)
+
+// Facebook accounts
+fbAccounts, _ := unifiedRepo.GetValidAccounts(ctx, "facebook", "Page")
+
+// Instagram accounts
+igAccounts, _ := unifiedRepo.GetValidAccounts(ctx, "instagram", "")
+
+// All accounts for a workspace
+allAccounts, _ := unifiedRepo.GetAccountsByWorkspace(ctx, workspaceID,
+    []string{"facebook", "instagram", "linkedin"})
+```
+
+## Performance Benefits
+
+1. **Reduced Database Connections**: Single collection access
+2. **Bulk Operations**: Query multiple platforms in one call
+3. **Simplified Caching**: Single cache layer for all platforms
+4. **Reduced Code Complexity**: One repository handles all platforms
+5. **Easier Maintenance**: Single point of update for common operations
+
+## Considerations and Best Practices
+
+### Key Implementation Notes
+
+1. **Token Decryption**
+
+   - Tokens remain encrypted in the same format
+   - Instagram may have nested token in `user_details.access_token`
+   - Decryption logic stays unchanged
+
+2. **Performance Optimization**
+
+   - Ensure index on `platform_type` field for efficient filtering
+   - Use compound index on `[platform_type, validity, state]` for common queries
+   - Batch operations when fetching multiple platforms
+
+3. **Data Validation**
+
+   - Always validate `platform_type` before queries
+   - Check for required fields based on platform
+   - Handle missing or null fields gracefully
+
+4. **Error Handling**
+   - Log platform type with all errors for easier debugging
+   - Include account ID and platform identifier in error messages
+   - Implement proper retry logic for transient failures
+
+## Testing Strategy
+
+### Unit Tests
+
+- [ ] Model field mapping tests
+- [ ] Repository query tests
+- [ ] Configuration flag tests
+- [ ] Adapter translation tests
+
+### Integration Tests
+
+- [ ] Full pipeline test with unified collection
+- [ ] Multi-platform query tests
+- [ ] Token decryption verification
+- [ ] Work order generation validation
+
+### Performance Tests
+
+- [ ] Query performance comparison
+- [ ] Memory usage analysis
+- [ ] Throughput benchmarks
+- [ ] Concurrent access tests
+
+## Success Metrics
+
+- **Zero Data Loss**: No missing accounts or fields
+- **Performance Improvement**: <10ms query latency
+- **Code Reduction**: ~40% less repository code
+- **Error Rate**: <0.01% error rate
+- **Migration Time**: Complete in 4 weeks
+
+## Implementation Checklist
+
+### Preparation
+
+- [ ] Review unified collection schema
+- [ ] Verify indexes on `social_integrations` collection
+- [ ] Set up local development environment
+- [ ] Prepare test data
+
+### Implementation
+
+- [ ] Create unified model struct
+- [ ] Implement unified repository
+- [ ] Update Facebook account fetcher
+- [ ] Update Instagram account fetcher
+- [ ] Update LinkedIn account fetcher
+- [ ] Write unit tests
+- [ ] Write integration tests
+
+### Deployment
+
+- [ ] Deploy to staging
+- [ ] Run full pipeline tests
+- [ ] Monitor logs and metrics
+- [ ] Deploy to production
+
+### Cleanup
+
+- [ ] Remove old repository files
+- [ ] Remove old model structs
+- [ ] Update all documentation
+- [ ] Archive legacy code
+
+## References
+
+- [Python Services Migration Guide](./python-services-migration.md)
+- [Social Integrations Field Reference](./social-integrations-field-reference.md)
+- [Original MongoDB Collections Schema](./legacy-collections-schema.md)
+
+---
+
+**Note**: Since the Go pipeline hasn't been deployed to production yet, we're implementing a clean solution using only `platform_identifier` without maintaining legacy field names. This approach results in cleaner, more maintainable code and consistent field naming across all platforms.

@@ -172,10 +172,28 @@
       "Read(//home/tehreem/code/**)",
       "Bash(mkdir -p /home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories/chrome-ext-content-category-search)",
       "Bash(mkdir -p /home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories/content-category-sort-filter)",
-      "Bash(mkdir -p /home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories/social-listening-data-banner)"
+      "Bash(mkdir -p /home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories/social-listening-data-banner)",
+      "Bash(env)",
+      "Read(//home/tehreem/.config/gh/**)",
+      "Bash(cat /home/tehreem/.claude/settings.json 2>/dev/null | grep -i \"github\\\\|token\\\\|auth\" | head -10)",
+      "Read(//home/tehreem/.claude/**)",
+      "Bash(ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null && ssh -T git@github.com 2>&1)",
+      "Bash(find /home/tehreem -name \"*.env\" -o -name \".env*\" 2>/dev/null | grep -v \"node_modules\" | head -10)",
+      "Read(//home/tehreem/**)",
+      "Bash(cat ~/.gitconfig 2>/dev/null; cat /etc/gitconfig 2>/dev/null | grep -v \"^$\")",
+      "Read(//etc/**)",
+      "Bash(git-credential-manager --version)",
+      "Read(//usr/lib/git-core/**)",
+      "Read(//usr/bin/**)",
+      "Bash(secret-tool lookup *)",
+      "Bash(keyctl list *)",
+      "Bash(secret-tool search *)",
+      "Bash(ls /usr/lib/git-core/git-credential-libsecret 2>/dev/null || ls /usr/share/doc/git/contrib/credential/libsecret 2>/dev/null || echo \"libsecret helper not found\"; git config --system credential.helper 2>/dev/null || echo \"no system helper\")",
+      "Read(//usr/share/doc/git/contrib/credential/libsecret/**)"
     ],
     "additionalDirectories": [
-      "/home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories"
+      "/home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories",
+      "/home/tehreem/.ssh"
     ]
   }
 }

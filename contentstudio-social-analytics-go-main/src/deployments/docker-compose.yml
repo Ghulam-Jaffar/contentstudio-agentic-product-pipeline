@@ -1,0 +1,550 @@
+version: '3.8'
+
+services:
+#  zookeeper:
+#    image: confluentinc/cp-zookeeper:7.5.0
+#    container_name: zookeeper
+#    ports:
+#      - "2181:2181"
+#    environment:
+#      ZOOKEEPER_CLIENT_PORT: 2181
+#      ZOOKEEPER_TICK_TIME: 2000
+#    networks:
+#      - kafka-net
+#  kafka:
+#    image: confluentinc/cp-kafka:7.5.0
+#    container_name: kafka
+#    ports:
+#      - "9092:9092"
+#    expose:
+#      - '29092'
+#    environment:
+#      KAFKA_BROKER_ID: 1
+#      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+#      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+#      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+#      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+#      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+#    depends_on:
+#      - zookeeper
+#    networks:
+#      - kafka-net
+#
+#  init-kafka:
+#    image: apache/kafka:3.8.0
+#    container_name: init-kafka
+#    depends_on:
+#      - kafka
+#    networks:
+#      - kafka-net
+#    volumes:
+#      - .create-topics.sh:/tmp/create-topics.sh
+#    entrypoint: >
+#      bash -c "
+#        echo 'Waiting for Kafka...';
+#        until /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --list > /dev/null 2>&1; do
+#          sleep 2;
+#        done;
+#        echo 'Kafka ready. Creating topics...';
+#        bash /tmp/create-topics.sh;
+#      "
+#
+#  clickhouse:
+#    image: clickhouse/clickhouse-server:25.12
+#    container_name: clickhouse
+#    environment:
+#      CLICKHOUSE_USER: default
+#      CLICKHOUSE_PASSWORD: mypassword123
+#    ports:
+#      - "8123:8123"
+#      - "9000:9000"
+#    volumes:
+#      - clickhouse_data:/var/lib/clickhouse
+#    networks:
+#      - kafka-net
+#
+#  clickhouse-client:
+#    image: clickhouse/clickhouse-client:25.12
+#    container_name: clickhouse-client
+#    depends_on:
+#      - clickhouse
+#    volumes:
+#      - ./clickhouse/schema:/scripts/sql
+#      - .init_clickhouse.sh:/init_clickhouse.sh
+#    entrypoint: ["bash", "/init_clickhouse.sh"]
+#    networks:
+#      - kafka-net
+#
+#
+#  mongodb:
+#    image: mongo:latest
+#    container_name: mongodb
+#    ports:
+#      - "27017:27017"
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: admin
+#      MONGO_INITDB_ROOT_PASSWORD: password
+#    volumes:
+#      - mongo_data:/data/db
+#    networks:
+#      - kafka-net
+#  seed-mongo:
+#    image: mongo:latest
+#    depends_on:
+#      - mongodb
+#    volumes:
+#      - ./mongodb/dumps:/dump:ro
+#      - ./mongodb/.seed-mongo.sh:/seed-mongo.sh:ro
+#    entrypoint: [ "bash", "/seed-mongo.sh" ]
+#    networks:
+#      - kafka-net
+#
+#
+#    #OLD: Per-platform account fetcher (deprecated - use unified_account_fetcher)
+#  account_fetcher:
+#    build:
+#      context: ../..
+#      dockerfile: Dockerfile
+#      args:
+#        DOPPLER_SECRET: ${DOPPLER_SECRET}
+#    entrypoint: ["/wait-for-services.sh"]
+#    command: ["account_fetcher", "-socialNetwork=linkedin", "-syncType=incremental", "-accountType=page"]
+#    networks:
+#      - kafka-net
+
+  # NEW: Unified Account Fetcher - Fetches accounts for ALL platforms in parallel
+  # Scale: 24K FB + 16K IG + 8K LI + 4K others = ~52K accounts
+  # Run as cron job, exits when complete
+#  unified_account_fetcher:
+#    build:
+#      context: ../..
+#      dockerfile: Dockerfile
+#      args:
+#        DOPPLER_SECRET: ${DOPPLER_SECRET}
+#    entrypoint: ["/wait-for-services.sh"]
+#    command: ["unified_account_fetcher", "-syncType=incremental", "-platforms=linkedin,youtube,instagram,facebook,pinterest"]
+##    depends_on:
+##      - kafka
+##      - clickhouse
+##      - mongodb
+#    networks:
+#      - kafka-net
+#
+#  facebook_fetcher:
+#    build:
+#      context: ../..
+#      dockerfile: Dockerfile
+#      args:
+#        DOPPLER_SECRET: ${DOPPLER_SECRET}
+#    environment:
+#      - KAFKA_HOST=${APP_KAFKA_BROKERS}
+#    entrypoint: ["/wait-for-services.sh"]
+#    command: ["facebook_fetcher"]
+##    depends_on:
+##      - kafka
+##      - clickhouse
+##      - mongodb
+#    networks:
+#      - kafka-net
+#
+#  instagram_fetcher:
+#    build:
+#      context: ../..
+#      dockerfile: Dockerfile
+#      args:
+#        DOPPLER_SECRET: ${DOPPLER_SECRET}
+#    entrypoint: ["/wait-for-services.sh"]
+#    command: ["instagram_fetcher"]
+##    depends_on:
+##    - kafka
+##    - clickhouse
+##    - mongodb
+#    networks:
+#      - kafka-net
+#
+#  linkedin_fetcher:
+#    build:
+#      context: ../..
+#      dockerfile: Dockerfile
+#      args:
+#        DOPPLER_SECRET: ${DOPPLER_SECRET}
+#    entrypoint: ["/wait-for-services.sh"]
+#    command: ["linkedin_fetcher"]
+##    depends_on:
+##      - kafka
+##      - clickhouse
+##      - mongodb
+#    networks:
+#      - kafka-net
+#
+#  youtube_fetcher:
+#    build:
+#      context: ../..
+#      dockerfile: Dockerfile
+#      args:
+#        DOPPLER_SECRET: ${DOPPLER_SECRET}
+#    entrypoint: ["/wait-for-services.sh"]
+#    command: ["youtube_fetcher"]
+##    depends_on:
+##    - kafka
+##    - clickhouse
+##    - mongodb
+#    networks:
+#      - kafka-net
+#
+#  pinterest_fetcher:
+#    build:
+#      context: ../..
+#      dockerfile: Dockerfile
+#      args:
+#        DOPPLER_SECRET: ${DOPPLER_SECRET}
+#    entrypoint: ["/wait-for-services.sh"]
+#    command: ["pinterest_fetcher"]
+##    depends_on:
+##      - kafka
+##      - clickhouse
+##      - mongodb
+#    networks:
+#      - kafka-net
+#
+#  tiktok_fetcher:
+#   build:
+#     context: ../..
+#     dockerfile: Dockerfile
+#     args:
+#       DOPPLER_SECRET: ${DOPPLER_SECRET}
+#   entrypoint: ["/wait-for-services.sh"]
+#   command: ["tiktok_fetcher"]
+##   depends_on:
+##     - kafka
+##     - clickhouse
+##     - mongodb
+#   networks:
+#     - kafka-net
+
+  immediate_work_api:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        DOPPLER_SECRET: ${DOPPLER_SECRET}
+    entrypoint: ["/wait-for-services.sh"]
+    command: ["immediate_work_api"]
+#    depends_on:
+#    - kafka
+#    - clickhouse
+#    - mongodb
+    ports:
+      - "7085:8080"
+    networks:
+      - kafka-net
+
+  # =============================================================================
+  # UNIFIED SERVICES
+  # =============================================================================
+
+  # Unified Immediate Processor - Handles real-time requests for ALL platforms
+  # Worst-case: 50K accounts at once
+  # Per-platform worker pools: FB=40, IG=30, LI=15, TikTok=8, others=5 each
+  # Total ~108 workers, use -workerMultiplier=2 to double
+  unified_immediate_processor:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        DOPPLER_SECRET: ${DOPPLER_SECRET}
+    entrypoint: ["/wait-for-services.sh"]
+    command: ["unified_immediate_processor", "-workerMultiplier=1.0"]
+#    depends_on:
+#    - kafka
+#    - clickhouse
+#    - mongodb
+    networks:
+      - kafka-net
+
+  # =============================================================================
+  # END UNIFIED SERVICES
+  # =============================================================================
+
+  # =============================================================================
+  # MERGED PARSER+SINK SERVICES (analytics-sink)
+  # These replace separate parser and clickhouse-sink services
+  # =============================================================================
+
+  # Instagram Analytics Sink - Merged parser + ClickHouse sink
+  # Consumes from raw-instagram-media and raw-instagram-insights
+  # Inserts directly to ClickHouse (no intermediate parsed-* topics)
+#  instagram_analytics_sink:
+#    build:
+#      context: ../..
+#      dockerfile: Dockerfile
+#      args:
+#        DOPPLER_SECRET: ${DOPPLER_SECRET}
+#    entrypoint: ["/wait-for-services.sh"]
+#    command: ["instagram_analytics_sink"]
+##    depends_on:
+##      - kafka
+##      - clickhouse
+##      - mongodb
+#    networks:
+#      - kafka-net
+#  #
+#  #  # Facebook Analytics Sink - Merged parser + ClickHouse sink
+#  #  # Consumes from raw-facebook-posts, raw-facebook-videos, raw-facebook-insights
+#  #  # Inserts directly to ClickHouse (no intermediate parsed-* topics)
+#  facebook_analytics_sink:
+#    build:
+#      context: ../..
+#      dockerfile: Dockerfile
+#      args:
+#        DOPPLER_SECRET: ${DOPPLER_SECRET}
+#    entrypoint: ["/wait-for-services.sh"]
+#    command: ["facebook_analytics_sink"]
+##    depends_on:
+##      - kafka
+##      - clickhouse
+##      - mongodb
+#    networks:
+#      - kafka-net
+#  #
+#  #  # LinkedIn Analytics Sink - Merged parser + ClickHouse sink
+#  #  # Consumes from raw-linkedin-page-posts, raw-linkedin-page-insights,
+#  #  # raw-linkedin-profile-posts, raw-linkedin-profile-insights
+#  #  # Inserts directly to ClickHouse (no intermediate parsed-* topics)
+#  linkedin_analytics_sink:
+#    build:
+#      context: ../..
+#      dockerfile: Dockerfile
+#      args:
+#        DOPPLER_SECRET: ${DOPPLER_SECRET}
+#    entrypoint: ["/wait-for-services.sh"]
+#    command: ["linkedin_analytics_sink"]
+##    depends_on:
+##      - kafka
+##      - clickhouse
+##      - mongodb
+#    networks:
+#      - kafka-net
+#
+#  # YouTube Analytics Sink - Merged parser + ClickHouse sink
+#  # Consumes from raw-youtube-channels, raw-youtube-videos,
+#  # raw-youtube-activity-insights, raw-youtube-traffic-insights, raw-youtube-shared-insights
+#  # Inserts directly to ClickHouse (no intermediate parsed-* topics)
+#  youtube_analytics_sink:
+#    build:
+#      context: ../..
+#      dockerfile: Dockerfile
+#      args:
+#        DOPPLER_SECRET: ${DOPPLER_SECRET}
+#    entrypoint: ["/wait-for-services.sh"]
+#    command: ["youtube_analytics_sink"]
+##    depends_on:
+##    - kafka
+##    - clickhouse
+##    - mongodb
+#    networks:
+#      - kafka-net
+#
+#  # TikTok Analytics Sink - Merged parser + ClickHouse sink
+#  # Consumes from raw-tiktok-posts, raw-tiktok-insights,
+#  # Inserts directly to ClickHouse (no intermediate parsed-* topics)
+#  tiktok_analytics_sink:
+#    build:
+#      context: ../..
+#      dockerfile: Dockerfile
+#      args:
+#        DOPPLER_SECRET: ${DOPPLER_SECRET}
+#    entrypoint: ["/wait-for-services.sh"]
+#    command: ["tiktok_analytics_sink"]
+##    depends_on:
+##      - kafka
+##      - clickhouse
+##      - mongodb
+#    networks:
+#      - kafka-net
+##
+##  # Twitter Fetcher - Consumes from work-order-twitter-batch
+##  # Fetches tweets and user info from Twitter API v2
+##  # Produces to raw-twitter-posts, raw-twitter-insights
+#  twitter_fetcher:
+#    build:
+#      context: ../..
+#      dockerfile: Dockerfile
+#      args:
+#        DOPPLER_SECRET: ${DOPPLER_SECRET}
+#    entrypoint: ["/wait-for-services.sh"]
+#    command: ["twitter_fetcher"]
+##    depends_on:
+##      - kafka
+##      - clickhouse
+##      - mongodb
+#    networks:
+#      - kafka-net
+##
+##  # Twitter Analytics Sink - Merged parser + ClickHouse sink
+##  # Consumes from raw-twitter-posts, raw-twitter-insights
+##  # Inserts directly to ClickHouse (no intermediate parsed-* topics)
+#  twitter_analytics_sink:
+#    build:
+#      context: ../..
+#      dockerfile: Dockerfile
+#      args:
+#        DOPPLER_SECRET: ${DOPPLER_SECRET}
+#    entrypoint: ["/wait-for-services.sh"]
+#    command: ["twitter_analytics_sink"]
+##    depends_on:
+##      - kafka
+##      - clickhouse
+##      - mongodb
+#    networks:
+#      - kafka-net
+##
+##  # GMB Fetcher - Gets accounts from mongodb
+##  # Fetches GMB data from Google My Business API
+##  # Produces to raw-gmb-posts, raw-gmb-insights
+#  gmb_fetcher:
+#    build:
+#      context: ../..
+#      dockerfile: Dockerfile
+#      args:
+#        DOPPLER_SECRET: ${DOPPLER_SECRET}
+#    entrypoint: ["/wait-for-services.sh"]
+#    command: ["gmb_fetcher"]
+##    depends_on:
+##      - kafka
+##      - clickhouse
+##      - mongodb
+#    networks:
+#      - kafka-net
+##
+##  # GMB Analytics Sink - Merged parser + ClickHouse sink
+##  # Consumes from raw-gmb-posts, raw-gmb-insights
+##  # Inserts directly to ClickHouse (no intermediate parsed-* topics)
+#  gmb_analytics_sink:
+#    build:
+#      context: ../..
+#      dockerfile: Dockerfile
+#      args:
+#        DOPPLER_SECRET: ${DOPPLER_SECRET}
+#    entrypoint: ["/wait-for-services.sh"]
+#    command: ["gmb_analytics_sink"]
+##    depends_on:
+##      - kafka
+##      - clickhouse
+##      - mongodb
+#    networks:
+#      - kafka-net
+##
+##  # Pinterest Analytics Sink - Merged parser + ClickHouse sink
+##  # Consumes from parsed-pinterest-users, parsed-pinterest-boards, parsed-pinterest-pins,
+##  # parsed-pinterest-pin-insights, parsed-pinterest-user-insights
+##  # Inserts directly to ClickHouse
+#  pinterest_analytics_sink:
+#    build:
+#      context: ../..
+#      dockerfile: Dockerfile
+#      args:
+#        DOPPLER_SECRET: ${DOPPLER_SECRET}
+#    entrypoint: ["/wait-for-services.sh"]
+#    command: ["pinterest_analytics_sink"]
+##    depends_on:
+##      - kafka
+##      - clickhouse
+##      - mongodb
+#    networks:
+#      - kafka-net
+##
+#  # =============================================================================
+#  # END MERGED PARSER+SINK SERVICES
+#  # =============================================================================
+#
+##
+#  facebook_url_refresher:
+#    build:
+#      context: ../..
+#      dockerfile: Dockerfile
+#      args:
+#        DOPPLER_SECRET: ${DOPPLER_SECRET}
+#    command: [ "url_refresher" ]
+##    depends_on:
+##      - kafka
+#
+#    networks:
+#      - kafka-net
+#
+#  competitor_fetcher:
+#    build:
+#      context: ../..
+#      dockerfile: Dockerfile
+#      args:
+#        DOPPLER_SECRET: ${DOPPLER_SECRET}
+#    entrypoint: ["/wait-for-services.sh"]
+#    command: ["competitor_fetcher", "-socialNetwork=instagram", "-syncType=incremental"]
+##    depends_on:
+##      - kafka
+#    networks:
+#      - kafka-net
+#
+#  competitor_insights_filler:
+#    build:
+#      context: ../..
+#      dockerfile: Dockerfile
+#      args:
+#        DOPPLER_SECRET: ${DOPPLER_SECRET}
+#    entrypoint: ["/wait-for-services.sh"]
+#    command: ["competitor_insights_filler", "-platform=instagram", "-workers=8", "-lookbackDays=10"]
+#    depends_on:
+#      - kafka
+#      - clickhouse
+#    networks:
+#      - kafka-net
+#
+#  validate_tokens:
+#    build:
+#      context: ../..
+#      dockerfile: Dockerfile
+#      args:
+#        DOPPLER_SECRET: ${DOPPLER_SECRET}
+#    entrypoint: ["/wait-for-services.sh"]
+#    command: ["validate_tokens", "-channel=facebook"]
+#    depends_on:
+#      - kafka
+#      - clickhouse
+#      - mongodb
+#    networks:
+#      - kafka-net
+#
+#  instagram_competitor_analysis:
+#    build:
+#      context: ../..
+#      dockerfile: Dockerfile
+#    entrypoint: ["/wait-for-services.sh"]
+#    command: ["instagram_competitor_analysis"]
+#    depends_on:
+#      - kafka
+#      - clickhouse
+#      - mongodb
+#    networks:
+#      - kafka-net
+#
+#  facebook_competitor_analysis:
+#    build:
+#      context: ../..
+#      dockerfile: Dockerfile
+#    entrypoint: ["/wait-for-services.sh"]
+#    command: ["facebook_competitor_analysis"]
+#    depends_on:
+#      - kafka
+#      - clickhouse
+#      - mongodb
+#    networks:
+#      - kafka-net
+
+volumes:
+  clickhouse_data:
+  mongo_data:
+  kafka_data:
+
+networks:
+  kafka-net:
+    driver: bridge

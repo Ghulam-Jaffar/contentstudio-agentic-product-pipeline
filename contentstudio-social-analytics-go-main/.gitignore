@@ -1,0 +1,35 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+coverage.out
+src/coverage/
+
+# Dependency directories (remove the comment below if you do not commit vendor)
+# vendor/
+
+# Environment variables
+.env
+.envrc
+*.env
+
+# IDE/Editor specific
+.idea/
+.vscode/
+*.swp
+*~
+
+# MongoDB dumps
+src/deployments/mongodb/dumps/
+
+# Claude Code
+.claude/
+skills-lock.json
+ 

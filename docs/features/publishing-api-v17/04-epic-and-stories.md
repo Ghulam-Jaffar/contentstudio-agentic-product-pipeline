@@ -209,3 +209,159 @@ Add full CRUD for workspaces to the Publishing API so developers, agents, and CL
 > - [ ] UI theming support — N/A, backend-only story
 > - [ ] White-label domains impact review
 > - [ ] Cross-product impact assessed (web, mobile apps, Chrome extension)
+
+---
+
+**Story 1.4: [BE] Update Zapier app to support workspace management**
+
+> **Description:**
+> As a Zapier user, I want to manage ContentStudio workspaces from my Zaps so that I can automate workspace creation when a new client/brand is onboarded in my CRM or project tool, and clean up workspaces when they are off-boarded — all without leaving the Zapier UI.
+>
+> Update the ContentStudio Zapier app to expose the workspace management endpoints added in **[BE] Add workspace management endpoints to Publishing API v1** as Zapier actions and a search step. Field shapes match the API; user-facing labels are written for non-technical Zapier users.
+>
+> ---
+>
+> ### Workflow:
+>
+> 1. User opens a Zap and adds a step that uses the ContentStudio app.
+> 2. User sees the new workspace actions and search in the action/search picker: "Create Workspace", "Update Workspace", "Delete Workspace", "Find Workspace".
+> 3. User picks one, configures its inputs (the same inputs the API accepts), and the Zap calls ContentStudio to perform the action.
+> 4. The existing workspace dropdowns across the rest of the Zapier app (where a user picks which workspace a "Create Post" / "Find Posts" step runs against) continue to work unchanged.
+>
+> ---
+>
+> ### Acceptance criteria:
+>
+> - [ ] "Create Workspace" action is available in the Zapier action picker. Its input fields mirror the API's create payload; required fields are marked required in the Zapier UI.
+> - [ ] "Update Workspace" action is available. The user picks a workspace from a dropdown (populated by the existing list-workspaces call) and edits the updatable fields.
+> - [ ] "Delete Workspace" action is available. The user picks a workspace from a dropdown and confirms the action via the Zap's standard "this is a destructive action" affordance.
+> - [ ] "Find Workspace" search step is available. The user provides a workspace id or name; the step returns the matching workspace record for use in downstream Zap steps.
+> - [ ] All four steps surface validation errors (HTTP 422) verbatim in the Zap run history so a user can fix the input without contacting support.
+> - [ ] Permission errors (HTTP 403) show the same clear "you don't have permission to ..." message the API returns.
+> - [ ] The Zapier app's connection / authentication flow is unchanged.
+>
+> ---
+>
+> ### Mock-ups:
+> N/A — Zapier app UI only.
+>
+> ### Impact on existing data:
+> None.
+>
+> ### Impact on other products:
+> None — Zapier app only.
+>
+> ### Dependencies:
+> Depends on: **[BE] Add workspace management endpoints to Publishing API v1**
+>
+> ### Global quality & compliance (wherever applicable)
+> - [ ] Mobile responsiveness — N/A, Zapier-app integration
+> - [ ] Multilingual support — N/A, Zapier-app strings are English
+> - [ ] UI theming support — N/A, Zapier-app integration
+> - [ ] White-label domains impact review
+> - [ ] Cross-product impact assessed (web, mobile apps, Chrome extension)
+
+---
+
+**Story 1.5: [BE] Update Make.com app to support workspace management**
+
+> **Description:**
+> As a Make.com user, I want to manage ContentStudio workspaces from my scenarios so that I can automate workspace lifecycle (create on new-client onboarding, delete on offboarding, rename on rebranding) without leaving the Make.com UI.
+>
+> Update the ContentStudio Make.com app to expose the workspace management endpoints added in **[BE] Add workspace management endpoints to Publishing API v1** as Make.com modules. Field shapes match the API; module labels and descriptions are written for non-technical Make.com users.
+>
+> ---
+>
+> ### Workflow:
+>
+> 1. User opens a scenario and searches the ContentStudio app for workspace modules.
+> 2. User sees the new modules in the picker: "Create a Workspace", "Update a Workspace", "Delete a Workspace", "Get a Workspace", "List Workspaces".
+> 3. User picks one, maps its inputs from earlier scenario steps, and the module calls ContentStudio.
+> 4. The existing workspace pickers across other ContentStudio modules continue to work unchanged.
+>
+> ---
+>
+> ### Acceptance criteria:
+>
+> - [ ] "Create a Workspace" module is available. Its input fields mirror the API's create payload; required fields are marked required.
+> - [ ] "Update a Workspace" module is available. The user selects a workspace and provides the fields to change.
+> - [ ] "Delete a Workspace" module is available. The user selects a workspace and confirms the action.
+> - [ ] "Get a Workspace" module is available and returns one workspace's full record by id.
+> - [ ] "List Workspaces" module is available and supports the same pagination as the API.
+> - [ ] All modules surface validation errors (HTTP 422) verbatim in the scenario run log so a user can debug without contacting support.
+> - [ ] Permission errors (HTTP 403) show the API's clear permission message.
+> - [ ] The Make.com app's connection / authentication flow is unchanged.
+>
+> ---
+>
+> ### Mock-ups:
+> N/A — Make.com app UI only.
+>
+> ### Impact on existing data:
+> None.
+>
+> ### Impact on other products:
+> None — Make.com app only.
+>
+> ### Dependencies:
+> Depends on: **[BE] Add workspace management endpoints to Publishing API v1**
+>
+> ### Global quality & compliance (wherever applicable)
+> - [ ] Mobile responsiveness — N/A, Make.com integration
+> - [ ] Multilingual support — N/A, Make.com strings are English
+> - [ ] UI theming support — N/A, Make.com integration
+> - [ ] White-label domains impact review
+> - [ ] Cross-product impact assessed (web, mobile apps, Chrome extension)
+
+---
+
+**Story 1.6: [BE] Update n8n node to support workspace management**
+
+> **Description:**
+> As an n8n user, I want to manage ContentStudio workspaces from my workflows so that I can automate workspace lifecycle (create, rename, delete, list) without leaving the n8n editor.
+>
+> Update the ContentStudio n8n node to expose the workspace management endpoints added in **[BE] Add workspace management endpoints to Publishing API v1** as operations on a new "Workspace" resource. Field shapes match the API; operation labels are written for non-technical n8n users.
+>
+> ---
+>
+> ### Workflow:
+>
+> 1. User adds a ContentStudio node to a workflow and selects the new "Workspace" resource.
+> 2. User picks an operation from the dropdown: "Create", "Update", "Delete", "Get", "List".
+> 3. User fills the operation's parameters (mapped from earlier workflow steps where useful) and the node calls ContentStudio.
+> 4. The existing resources/operations on the ContentStudio n8n node (posts, accounts, comments, etc.) continue to work unchanged.
+>
+> ---
+>
+> ### Acceptance criteria:
+>
+> - [ ] A new "Workspace" resource is available on the ContentStudio n8n node.
+> - [ ] The "Create" operation accepts the API's create payload shape; required fields are marked required in the node UI.
+> - [ ] The "Update" operation accepts a workspace id and the updatable fields.
+> - [ ] The "Delete" operation accepts a workspace id and removes the workspace.
+> - [ ] The "Get" operation accepts a workspace id and returns the full record.
+> - [ ] The "List" operation returns all accessible workspaces and supports the same pagination as the API.
+> - [ ] Validation errors (HTTP 422) are surfaced in the n8n execution log verbatim.
+> - [ ] Permission errors (HTTP 403) show the API's clear permission message.
+> - [ ] The n8n node's credential / authentication flow is unchanged.
+>
+> ---
+>
+> ### Mock-ups:
+> N/A — n8n node UI only.
+>
+> ### Impact on existing data:
+> None.
+>
+> ### Impact on other products:
+> None — n8n node only.
+>
+> ### Dependencies:
+> Depends on: **[BE] Add workspace management endpoints to Publishing API v1**
+>
+> ### Global quality & compliance (wherever applicable)
+> - [ ] Mobile responsiveness — N/A, n8n integration
+> - [ ] Multilingual support — N/A, n8n strings are English
+> - [ ] UI theming support — N/A, n8n integration
+> - [ ] White-label domains impact review
+> - [ ] Cross-product impact assessed (web, mobile apps, Chrome extension)

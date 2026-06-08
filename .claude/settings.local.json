@@ -189,7 +189,15 @@
       "Bash(keyctl list *)",
       "Bash(secret-tool search *)",
       "Bash(ls /usr/lib/git-core/git-credential-libsecret 2>/dev/null || ls /usr/share/doc/git/contrib/credential/libsecret 2>/dev/null || echo \"libsecret helper not found\"; git config --system credential.helper 2>/dev/null || echo \"no system helper\")",
-      "Read(//usr/share/doc/git/contrib/credential/libsecret/**)"
+      "Read(//usr/share/doc/git/contrib/credential/libsecret/**)",
+      "Bash(sqlite3 /home/tehreem/.config/Code/User/globalStorage/state.vscdb \"SELECT key, value FROM ItemTable WHERE key LIKE '%github%' OR key LIKE '%token%' OR key LIKE '%auth%';\")",
+      "Bash(sqlite3 /home/tehreem/.config/Code/User/globalStorage/state.vscdb \"SELECT key FROM ItemTable;\")",
+      "Bash(sqlite3 /home/tehreem/.config/Code/User/globalStorage/state.vscdb \".tables\")",
+      "Bash(sqlite3 /home/tehreem/.config/Code/User/globalStorage/state.vscdb \"SELECT * FROM ItemTable LIMIT 5;\")",
+      "Bash(file ~/.local/share/keyrings/*.keyring)",
+      "Bash(code --list-extensions)",
+      "Bash(/snap/bin/code --help)",
+      "Bash(mkdir -p /home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories/social-listening-module-launch-ui)"
     ],
     "additionalDirectories": [
       "/home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories",

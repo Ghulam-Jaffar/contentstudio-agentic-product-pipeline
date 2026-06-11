@@ -197,7 +197,9 @@
       "Bash(file ~/.local/share/keyrings/*.keyring)",
       "Bash(code --list-extensions)",
       "Bash(/snap/bin/code --help)",
-      "Bash(mkdir -p /home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories/social-listening-module-launch-ui)"
+      "Bash(mkdir -p /home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories/social-listening-module-launch-ui)",
+      "Bash(mkdir -p /home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories/content-category-dropdown-ux)",
+      "Bash(mkdir -p /home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories/planner-card-pill-and-accent-border-fixes)"
     ],
     "additionalDirectories": [
       "/home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories",

@@ -56,7 +56,7 @@ The full rules are in `docs/story-guidelines.md`. Key points:
 - **Always assign a Shortcut project** (Web App, Mobile, Chrome App, etc.)
 - **Always assign custom fields:** `priority`, `product_area`, and `skill_set` — IDs in `.claude/shortcut-config.json`
 - **No dark mode, no RTL** — ContentStudio doesn't support either
-- **AI features are web-only** — no mobile AI stories
+- **AI generation features are web-only** — no mobile stories for AI image/video/caption generation. **Exception:** AI chat/assistant exists on mobile (iOS today, Flutter going forward) and is in scope for mobile.
 - **UI components:** FE stories must reference components from `docs/ui-components.md` by name. Prefer `@contentstudio/ui` components over legacy `Cst*`. Flag any component gaps explicitly.
 - **Color theming:** Use `text-primary-cs-500`, `bg-primary-cs-50`, etc. (CSS variable-backed) — never hardcode colors like `text-blue-600`
 - **Reference stories by full title**, never by number

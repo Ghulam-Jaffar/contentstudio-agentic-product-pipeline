@@ -23,7 +23,7 @@ See `.claude/shortcut-config.json` → `story_templates.new_feature` for the tem
 
 - **No dark mode.** ContentStudio does not have dark mode. Never mention dark mode support, theming toggles, or light/dark variants in stories or acceptance criteria.
 - **No RTL language support.** Do not mention RTL layouts, bidirectional text, or RTL-specific styling.
-- **Mobile apps have no AI features.** If the feature involves AI, scope it to web only. Do not create mobile AI stories. If a non-AI part of the feature applies to mobile, note explicitly: _"AI functionality is web-only; mobile app gets [specific non-AI scope]."_
+- **Most AI features are web-only — with one exception: AI chat/assistant exists on mobile.** AI *generation* features (e.g., AI image/video/caption generation, AI Content Library) are web-only — scope those to web and don't create mobile AI stories for them. **AI chat / AI assistant is available on mobile** (native iOS today, Flutter going forward) and IS in scope for mobile. For a web-only AI generation feature with a non-AI mobile part, note explicitly: _"AI generation is web-only; mobile app gets [specific non-AI scope]."_
 
 ---
 
@@ -264,7 +264,7 @@ ContentStudio has separate iOS and Android development teams. When a feature or 
 - **Group:** Use the appropriate mobile team group (if available) or the general team
 - **Project:** Assign to "Mobile" project
 - **Scope appropriately:** Mobile stories should describe what changes in the mobile app specifically, not repeat the full backend/frontend spec
-- **AI features are web-only:** Do not create mobile stories for AI features. Mobile apps do not have AI features yet.
+- **AI generation features are web-only; AI chat/assistant is on mobile:** Don't create mobile stories for AI *generation* features (image/video/caption generation, AI Content Library). **AI chat / AI assistant is available on mobile** (native iOS today, Flutter going forward) — create mobile stories for it when in scope.
 
 Example: If a backend story adds `last_login_method` to the API response, and users log in via mobile apps too, create:
 - `[iOS] Display last used login method on iOS sign-in screen`

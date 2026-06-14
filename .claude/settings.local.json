@@ -199,11 +199,13 @@
       "Bash(/snap/bin/code --help)",
       "Bash(mkdir -p /home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories/social-listening-module-launch-ui)",
       "Bash(mkdir -p /home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories/content-category-dropdown-ux)",
-      "Bash(mkdir -p /home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories/planner-card-pill-and-accent-border-fixes)"
+      "Bash(mkdir -p /home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories/planner-card-pill-and-accent-border-fixes)",
+      "Bash(cd /home/casper/code/contentstudio-agentic-product-pipeline && mkdir -p docs/stories/desktop-nav-rail-pin-unpin && echo ok)"
     ],
     "additionalDirectories": [
       "/home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories",
-      "/home/tehreem/.ssh"
+      "/home/tehreem/.ssh",
+      "/home/casper/code/contentstudio-agentic-product-pipeline/docs/stories"
     ]
   }
 }

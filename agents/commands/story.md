@@ -1,8 +1,10 @@
-# Quick Story Pipeline: Research → Story → Shortcut → [Implement FE]
+# Quick Story Pipeline: Research → Story → [Implement FE]
 
 You are a story creation pipeline for **ContentStudio** (https://contentstudio.io). This is the **lightweight** pipeline for small features, improvements, and enhancements that don't need a full PRD or epic.
 
 Use this when the change is small enough to be a single story (or a small handful of BE/FE/mobile stories for the same change).
+
+> **This pipeline does NOT push to Shortcut.** It produces a local markdown story deliverable that the Product Owner reviews and then creates in Shortcut manually. It never creates stories, tasks, or iterations via the Shortcut API. Each story's markdown includes a **Shortcut fields** block so the Product Owner has everything ready to copy when creating the story by hand.
 
 ## Input
 
@@ -12,7 +14,7 @@ This contains a description of the change/improvement. It may include context ab
 
 ## Configuration
 
-- **Shortcut config:** Read `.claude/shortcut-config.json` for all Shortcut API IDs (workflows, states, groups, custom fields, projects, miscellaneous epic)
+- **Shortcut field reference:** Read `.claude/shortcut-config.json` for the canonical Shortcut field names and options (workflow states, groups, custom fields — `priority`, `product_area`, `skill_set` — projects, miscellaneous epic). Use it to fill each story's **Shortcut fields** block so a PO can create the story manually. The pipeline does **not** call the Shortcut API.
 - **Story template:** Read `docs/Shortcut story template.md`
 - **Story guidelines:** Read `docs/story-guidelines.md` — **MANDATORY.** Read this before writing any story.
 - **UI components catalog:** Read `docs/ui-components.md` — **MANDATORY before writing FE stories.** Only reference components that exist in this catalog. Flag any gaps.
@@ -52,14 +54,14 @@ Present a short summary to the user.
 
 ### STEP 2: Story Creation
 
-Based on approved research, create the stories.
+Based on approved research, author the stories as the pipeline's final deliverable. This is documentation for the Product Owner to create in Shortcut manually — **nothing is pushed to Shortcut.**
 
 **Read `docs/story-guidelines.md` now** and follow every rule. Key reminders:
-- **Always use the "New Feature Template"** — pass `story_template_id` from config (guidelines section 1)
-- **No estimates** — leave the estimate field empty (guidelines section 11)
-- **No labels** — don't add labels to stories (guidelines section 12)
+- **Structure each story body using the New Feature Template sections** (Description, Workflow, AC, Mock-ups, Impact, Dependencies, Global quality checklist) — the PO selects this template when creating the story in Shortcut (guidelines section 1)
+- **No estimates** — note the estimate field as empty (guidelines section 11)
+- **No labels** — don't add labels (guidelines section 12)
 - **Assign a project** — Web App, Mobile, Chrome App, etc. (guidelines section 13)
-- **Use miscellaneous epic** — if no dedicated epic, use the current Miscellaneous epic from config (guidelines section 14)
+- **Use the miscellaneous epic** — if no dedicated epic, note the current Miscellaneous epic from config (guidelines section 14)
 - **Create mobile stories if impacted** — separate `[iOS]` and `[Android]` stories when mobile apps are affected (guidelines section 15)
 
 **Determine the story split:**
@@ -95,82 +97,38 @@ If the story introduces a **new trackable user action** — addon purchase/unloc
 - Before naming a new event, search `contentstudio-frontend/src/` for `userMaven.track(` to check if the action already has an event — reuse it.
 - Skip for pure refactors, copy-only changes, UI gating changes, or stories that fully reuse existing tracked actions.
 
+**Shortcut fields block (per story):**
+End each story with a **Shortcut fields** block listing the values a PO needs when creating it in Shortcut manually. Map names/options from `.claude/shortcut-config.json` (guidelines sections 1, 11-15):
+- **Template:** New Feature Template (the PO selects this when creating the story so the standard sections + quality checklist tasks are pre-populated)
+- **Story type:** "feature" for new functionality, "chore" for technical work
+- **Project:** Web App for BE/FE, Mobile for iOS/Android, Chrome App, etc.
+- **Group:** Backend, Frontend, Full Stack, Design, etc.
+- **Epic:** the current Miscellaneous epic from config, unless the user specifies a different epic
+- **Priority / Product Area / Skill Set:** map to the appropriate options from config
+- **Estimate:** leave empty — devs estimate during sprint planning
+- **Labels:** none — the team manages labels manually
+- **Iteration:** the PO assigns the current/target sprint at creation time
+
 **Save to:** `docs/stories/<slug>/02-stories.md`
 
 Present the stories to the user.
 
 **🔒 REVIEW GATE:** Ask the user:
-- "Here are the stories. Any changes needed? Reply 'approved' to push to Shortcut."
+- "Here are the stories. Any changes needed? Reply 'approved' to finalize."
+
+Once approved, the markdown deliverable is complete — the Product Owner creates the stories in Shortcut manually from `02-stories.md`.
+
+After approval, ask: **"Would you like me to implement the [FE] stories now? Reply 'implement' to start, or 'done' to finish the pipeline here."**
+
+If the user replies 'done' or skips, the pipeline ends here. If they reply 'implement', proceed to Step 3.
 
 ---
 
-### STEP 3: Push to Shortcut
-
-Read the Shortcut config from `.claude/shortcut-config.json`.
-
-Before pushing:
-- Fetch current iterations to find the next upcoming one (status: "unstarted" with nearest start_date)
-- Confirm iteration with the user
-
-**Create each Story:**
-```bash
-curl -s -X POST -H "Content-Type: application/json" -H "Shortcut-Token: [token]" \
-  "https://api.app.shortcut.com/api/v3/stories" \
-  -d '{
-    "name": "[story title]",
-    "story_template_id": "[New Feature Template id from config]",
-    "description": "[full story body in markdown — include all template sections]",
-    "story_type": "feature",
-    "workflow_state_id": [ready_for_dev state id],
-    "epic_id": [miscellaneous epic id from config, or user-specified epic],
-    "project_id": [project id from config — Web App, Mobile, etc.],
-    "iteration_id": [iteration id],
-    "group_id": "[group id]",
-    "custom_fields": [
-      {"field_id": "[priority field id]", "value_id": "[priority value id]"},
-      {"field_id": "[product area field id]", "value_id": "[product area value id]"},
-      {"field_id": "[skill set field id]", "value_id": "[skill set value id]"}
-    ]
-  }'
-```
-
-**After creating each story, add the template checklist tasks.** The `story_template_id` field does NOT auto-create tasks via API — you must create them manually:
-```bash
-curl -s -X POST -H "Content-Type: application/json" -H "Shortcut-Token: [token]" \
-  "https://api.app.shortcut.com/api/v3/stories/[story_id]/tasks" \
-  -d '{"description": "[task description]", "complete": false}'
-```
-
-The "New Feature Template" includes these 5 checklist tasks (create all 5 for every story):
-1. `Mobile responsiveness tested (frontend only, N/A for backend-only stories)`
-2. `Multilingual support verified (frontend + backend, translations available or fallback handled)`
-3. `UI theming supported (default + white-label, design library components are being used)`
-4. `White-label domains impact reviewed`
-5. `Cross-product impact assessed (web, mobile apps, Chrome extension)`
-
-**Key rules for the Shortcut payload:**
-- **No `estimate`** — leave it out entirely
-- **No `labels`** — leave it out entirely
-- **Always include `project_id`** — map from config: BE/FE stories → `web_app`, mobile stories → `mobile`, etc.
-- **Always include `epic_id`** — use the miscellaneous epic from config unless the user specifies a different epic
-
-**IMPORTANT:** On Windows, write JSON payloads to a temp file first, then use `curl --data @file`. Save responses to files, read with node.
-
-**Save links to:** `docs/stories/<slug>/03-shortcut-links.md`
-
-Present all Shortcut links to the user.
-
-After presenting links, ask: **"Would you like me to implement the [FE] stories now? Reply 'implement' to start, or 'done' to finish the pipeline here."**
-
-If the user replies 'done' or skips, the pipeline ends here. If they reply 'implement', proceed to Step 4.
-
----
-
-### STEP 4: Implement FE Stories (Optional)
+### STEP 3: Implement FE Stories (Optional)
 
 **This step only runs if the user explicitly opts in.** It implements **only `[FE]` stories** — all other story types (`[BE]`, `[Design]`, `[iOS]`, `[Android]`) are skipped.
 
-#### 4a. Setup
+#### 3a. Setup
 
 **Read the frontend coding standards:** Read `contentstudio-frontend/CLAUDE.md` — **MANDATORY.** Follow every rule: `<script setup lang="ts">`, Composition API, `@contentstudio/ui` component props (no Tailwind overrides), CSS variable theming, i18n for all user-facing strings, API URLs in `api-utils.js`, `proxy` for HTTP, etc.
 
@@ -181,10 +139,12 @@ If the user replies 'done' or skips, the pipeline ends here. If they reply 'impl
 cd contentstudio-frontend
 git checkout develop
 git pull origin develop
-git checkout -b feature/sc-{first-fe-story-id}/<story-slug>
+git checkout -b feature/<story-slug>
 ```
 
-Branch naming for `/story` pipeline: `feature/sc-{story-id}/<story-title-slug>` — use the primary FE story's sc-ID. If there are multiple FE stories, use the first one's ID. Individual story IDs go in commit messages for Shortcut auto-linking.
+Branch naming for `/story` pipeline: `feature/<story-title-slug>` (e.g., `feature/last-used-login-indicator`). If there are multiple FE stories, use a slug that covers the change.
+
+> Stories are not in Shortcut at this point, so there are no `sc-{id}` references to use. Use descriptive branch names and commit messages. If the PO has already created the stories in Shortcut and wants commits auto-linked, they can supply the `sc-{id}`s and you can include them in commit messages — otherwise omit them.
 
 Ask the user: **"Which branch should I create the PR against? (default: `develop`)"**
 
@@ -195,7 +155,7 @@ Ask the user: **"Which branch should I create the PR against? (default: `develop
 
 Wait for user approval before writing any code.
 
-#### 4b. Implement Each FE Story
+#### 3b. Implement Each FE Story
 
 For each `[FE]` story (in dependency order):
 
@@ -209,17 +169,17 @@ For each `[FE]` story (in dependency order):
    - API URLs in `src/config/api-utils.js`, HTTP via `proxy`
    - Composables in `src/composables/` for reusable logic
    - Place components in the appropriate module directory (`src/modules/<feature>/components/`)
-3. **Commit per story** with the Shortcut story ID:
+3. **Commit per story** with a descriptive message:
    ```bash
    git add <specific files>
-   git commit -m "[sc-{story-id}] {story title — brief description of changes}"
+   git commit -m "{story title — brief description of changes}"
    ```
-   This links the commit to the Shortcut story automatically.
+   (If the PO supplied a `sc-{id}` for this story, prefix the message with `[sc-{id}] ` so Shortcut auto-links it.)
 
-**After implementing all FE stories**, if any `[BE]` stories exist for this task, update their descriptions by adding a note at the top:
+**After implementing all FE stories**, if any `[BE]` stories exist for this task, add a note at the top of their entries in `02-stories.md` so the PO carries it into Shortcut:
 > **Note:** Frontend implementation is complete (see PR: [link]). This story covers backend integration and testing with the implemented frontend.
 
-#### 4c. Create PR
+#### 3c. Create PR
 
 **🔒 REVIEW GATE:** Before creating the PR, present a summary:
 - Branch name and target branch
@@ -232,7 +192,7 @@ Wait for user approval.
 Then:
 ```bash
 cd contentstudio-frontend
-git push origin feature/sc-{id}/<slug>
+git push origin feature/<slug>
 ```
 
 Create a PR using `gh pr create`:
@@ -245,8 +205,8 @@ gh pr create --repo d4interactive/contentstudio-frontend \
   --title "<story title or combined title>" \
   --base <target-branch> \
   --body "$(cat <<'EOF'
-## Shortcut Stories
-- [<Story Title>](https://app.shortcut.com/contentstudio-team/story/<id>) — <brief summary>
+## Stories
+- <Story Title> — <brief summary>
 ...
 
 ## Changes
@@ -260,7 +220,7 @@ EOF
 )"
 ```
 
-Save the PR URL to `docs/stories/<slug>/04-implementation.md` along with the branch name, commits, and files changed.
+Save the PR URL to `docs/stories/<slug>/03-implementation.md` along with the branch name, commits, and files changed.
 
 Present the PR link to the user.
 
@@ -268,18 +228,18 @@ Present the PR link to the user.
 
 ## Important Rules
 
-1. **Never skip a review gate.** Wait for explicit approval.
-2. **Read `docs/story-guidelines.md` before writing stories.** Every rule applies.
-3. **Keep research lean.** Use Grep/Read directly, not Explore agents. Read only the lines you need, not whole files. Aim for the minimum research needed to write accurate stories.
-4. **Keep it small.** If creating 5+ stories, tell the user to use `/feature` instead.
-5. **Be specific.** Reference actual file paths, component names, API routes.
-6. **No boilerplate.** Every line of the story should be specific to this change.
-7. **UI copy is mandatory** for FE stories — tooltips, labels, error messages. Written for layman users.
-8. **No estimates, no labels** on Shortcut stories.
-9. **Always assign a project** (Web App, Mobile, etc.) and **always link to an epic** (miscellaneous if none specified).
-10. **Create mobile stories** when the change impacts iOS/Android apps.
-11. **For Shortcut API on Windows:** Write JSON to file, use `--data @file`, save responses to file, read with node.
-12. **Implementation is optional and FE-only.** Step 4 only runs if the user explicitly opts in. Only `[FE]` stories are implemented — `[BE]`, `[Design]`, `[iOS]`, `[Android]` are left for their respective teams.
+1. **This pipeline never pushes to Shortcut.** No stories, tasks, or iterations are created via the Shortcut API. The deliverable is the local markdown in `docs/stories/<slug>/`, which the PO uses to create the work in Shortcut manually.
+2. **Never skip a review gate.** Wait for explicit approval.
+3. **Read `docs/story-guidelines.md` before writing stories.** Every rule applies.
+4. **Keep research lean.** Use Grep/Read directly, not Explore agents. Read only the lines you need, not whole files. Aim for the minimum research needed to write accurate stories.
+5. **Keep it small.** If creating 5+ stories, tell the user to use `/feature` instead.
+6. **Be specific.** Reference actual file paths, component names, API routes.
+7. **No boilerplate.** Every line of the story should be specific to this change.
+8. **UI copy is mandatory** for FE stories — tooltips, labels, error messages. Written for layman users.
+9. **No estimates, no labels** in the story's Shortcut fields block.
+10. **Each story carries its Shortcut fields block** — project, group, epic (miscellaneous if none specified), priority, product area, skill set, story type, template — so the PO can create it in Shortcut by hand.
+11. **Create mobile stories** when the change impacts iOS/Android apps.
+12. **Implementation is optional and FE-only.** Step 3 only runs if the user explicitly opts in. Only `[FE]` stories are implemented — `[BE]`, `[Design]`, `[iOS]`, `[Android]` are left for their respective teams.
 13. **Follow `contentstudio-frontend/CLAUDE.md` during implementation.** All coding standards (TypeScript, Composition API, i18n, theming, `@contentstudio/ui` usage) must be followed exactly.
-14. **One branch, one commit per story.** All FE stories share a single branch. Each story gets its own commit with `[sc-{id}]` in the message for Shortcut auto-linking.
+14. **One branch, one commit per story.** All FE stories share a single branch. Each story gets its own descriptive commit (prefix `[sc-{id}] ` only if the PO supplied a Shortcut story ID).
 15. **Always ask PR target branch.** Don't assume `develop` — confirm with the user.

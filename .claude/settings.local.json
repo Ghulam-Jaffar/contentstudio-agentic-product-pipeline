@@ -202,7 +202,9 @@
       "Bash(mkdir -p /home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories/planner-card-pill-and-accent-border-fixes)",
       "Bash(cd /home/tehreem/code/contentstudio-agentic-product-pipeline)",
       "Bash(ls -la docs/stories/planner-card-pill-and-accent-fixes/)",
-      "Bash(ls -d docs/stories/*pill* docs/stories/*content-category*)"
+      "Bash(ls -d docs/stories/*pill* docs/stories/*content-category*)",
+      "Bash(sed -n '1,60p' contentstudio-frontend/src/components/dashboard/ToDoCard.vue)",
+      "Bash(sed -n '1,50p' contentstudio-frontend/src/components/dashboard/ContentPublishingCard.vue)"
     ],
     "additionalDirectories": [
       "/home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories",

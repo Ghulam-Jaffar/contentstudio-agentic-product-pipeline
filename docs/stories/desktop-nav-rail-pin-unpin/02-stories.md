@@ -1,72 +1,112 @@
-# Desktop Navigation Rail — Pin / Unpin · Stories
+# Desktop Sidebar — Customize (Show/Hide + Reorder) · Stories
 
 **Platform:** Web only (desktop left rail). **Scope:** Frontend + Design. No backend (reuses the existing user-preferences endpoint), no mobile.
 
+**Background:** Originally scoped as per-item hover pin/unpin. CEO feedback: the rail is too narrow for hover affordances. Instead, follow the customer.io pattern — a **"Customize sidebar"** entry in the **More** menu opens a panel where users **Show/Hide** items and **drag to reorder**. We improve on customer.io (which is show/hide only) with toggles + reordering + responsive overflow.
+
 | # | Story | Priority |
 |---|---|---|
-| S-1 | [FE] Let users pin/unpin modules in the desktop navigation rail | Medium |
-| S-2 | [Design] Design the rail pin/unpin affordances and More-menu footer | Medium |
+| S-1 | [FE] Add a "Customize sidebar" panel to show/hide and reorder rail items | Medium |
+| S-2 | [Design] Design the "Customize sidebar" panel and More-menu entry | Medium |
 
 ---
 
-## S-1 · [FE] Let users pin/unpin modules in the desktop navigation rail
+## Mockups
+
+### More menu — Customize entry (below a divider)
+```
+┌─ More ────────────────────┐
+│  📊  Analytics             │   ← currently-overflowed items
+│  🧭  Discover              │
+│  🖼   Library               │
+│  ───────────────────────   │   ← divider
+│  ⚙   Customize sidebar     │
+└────────────────────────────┘
+```
+
+### Customize sidebar panel
+```
+┌─ Customize sidebar ──────────────────────────────────── ✕ ┐
+│  Items you show appear in the sidebar in this order. If    │
+│  there's not enough room, the lower ones move into More.   │
+│                                                            │
+│  ⠿   🏠  Home  (default)ⓘ   ●——  on (disabled)             │
+│  ⠿   🗓   Publisher          ●——  Shown                      │
+│  ⠿   📊  Analytics          ●——  Shown                      │
+│  ⠿   📥  Inbox              ●——  Shown                      │
+│  ⠿   🧭  Discover           ●——  Shown · in More on this screen│
+│  ⠿   🖼   Library            ●——  Shown · in More on this screen│
+│  ⠿   🔗  Social Accounts    ——○  Hidden                     │
+│                                                            │
+│                    [ Reset to default ]        [ Done ]    │
+└──────────────────────────────────────────────────────────────┘
+```
+`⠿` = drag handle · toggle = `Switch` (Shown/Hidden). The row carrying a **(default)** label is the user's **default landing page** (here, Home, but not hardcoded — if their default is Analytics, that row gets it). Its toggle is **on but disabled** (it can't be hidden). Hovering the **(default)** label shows a tooltip. The row is **still draggable** — the user can reposition it anywhere in the order like the others.
+
+### Responsive overflow — same settings, two screens
+```
+ SHORT SCREEN                          TALL SCREEN
+ ┌────────┐   ┌─ More ───────────┐     ┌────────┐   ┌─ More ───────────┐
+ │ Home   │   │ 🧭 Discover       │     │ Home   │   │ ⚙ Customize      │
+ │ Publ.  │   │ 🖼  Library        │     │ Publ.  │   └──────────────────┘
+ │ Anly.  │   │ ────────────────  │     │ Anly.  │
+ │ Inbox  │   │ ⚙ Customize       │     │ Discvr │
+ │  •••   │   └──────────────────┘     │ Library│
+ │  More  │                            │  •••   │
+ └────────┘                            │  More  │
+ Discover + Library overflow to More    Everything fits; More holds only Customize
+```
+The rail fills top-down by the user's order until it runs out of height (reserving the More slot); whatever doesn't fit spills into More along with hidden items. No hard cap — adapts per screen size.
+
+---
+
+## S-1 · [FE] Add a "Customize sidebar" panel to show/hide and reorder rail items
 **Project:** Web App · **Group:** Frontend · **Skill:** Frontend · **Product area:** Throughout product · **Priority:** Medium · **Type:** Feature
 
 ### Description
-As a user, I want to choose which product sections sit directly in my left navigation rail versus tucked inside the "More" menu, so that the sections I use most are always one click away and the rail isn't cluttered with ones I don't.
-
-Today the rail decides what overflows into "More" automatically based on screen height — the user has no say. This adds explicit pin/unpin control, remembered per user.
+As a user, I want to choose which sections appear in my desktop left sidebar and in what order — without per-item hover controls that don't fit the narrow rail — so that the sections I use most are always one click away and the rest are tucked into More.
 
 ### Workflow
-```mermaid
-flowchart TD
-    Hover([User hovers a rail module]) --> ShowUnpin[Show 'Unpin' icon on the item]
-    ShowUnpin --> ClickUnpin[User clicks Unpin]
-    ClickUnpin --> MoveToMore[Module moves into the More menu]
-    OpenMore([User opens More menu]) --> HoverMore[User hovers a module in More]
-    HoverMore --> ShowPin[Show 'Pin' icon on the item]
-    ShowPin --> ClickPin[User clicks Pin]
-    ClickPin --> MoveToRail[Module moves up into the rail]
-    MoveToMore --> Persist[Choice saved to the user's account]
-    MoveToRail --> Persist
-```
-
-1. The user hovers a module in the rail (e.g., Analytics). A small **Unpin** icon appears on that item.
-2. The user clicks Unpin. The module disappears from the rail and now lives inside the **More** menu.
-3. The user opens the **More** menu and hovers a module inside it. A small **Pin** icon appears on that row.
-4. The user clicks Pin. The module moves out of More and back into the rail.
-5. The user's pinned/unpinned choices are remembered and restored the next time they log in, on any device.
-6. A **Reset** action in the More menu restores the default rail layout.
+1. The user opens the **More** menu in the left sidebar.
+2. Below the overflow items, separated by a divider, they see **⚙ Customize sidebar**.
+3. Clicking it opens the **Customize sidebar** panel listing all sidebar sections.
+4. Each section has a **Show/Hide** toggle and a **drag handle** to reorder. The user's **default landing page** carries a small **(default)** label, its toggle is **on but disabled** (can't be hidden), and it can still be dragged/repositioned like any other.
+5. As they toggle and reorder, the sidebar reflects the changes; lower-priority shown items that don't fit the current screen move into More automatically.
+6. They click **Done**; their layout is remembered next time, on any device. A **Reset to default** option restores the standard layout.
 
 ### Acceptance criteria
-- [ ] Hovering a pinnable rail module reveals an **Unpin** affordance (icon button) on that item; clicking it moves the module into the More menu.
-- [ ] Hovering a module row inside the More menu reveals a **Pin** affordance; clicking it moves the module into the rail.
-- [ ] The Unpin icon tooltip reads: **"Unpin from sidebar"**, with hover detail: **"Remove this from the sidebar. You'll still find it under More."**
-- [ ] The Pin icon tooltip reads: **"Pin to sidebar"**, with hover detail: **"Add this to the sidebar for one-click access."**
-- [ ] **The top/Home item cannot be unpinned** (no Unpin icon); it stays anchored at the top regardless of plan (including when it shows as "API" on API-centric plans).
-- [ ] The **More** button is a separate, fixed control — never pinnable or unpinnable. Secondary/utility items (Social Accounts, Brand Knowledge, notifications, profile) are out of scope — no pin/unpin on those.
-- [ ] The More menu shows a footer with helper text: **"Pin or unpin to customize your sidebar"** and a **Reset** action.
-- [ ] The Reset action restores the default set of pinned modules; tooltip: **"Restore the default sidebar layout."**
-- [ ] Pinned/unpinned choices persist per user across sessions and devices (saved to the user's preferences), and are applied on next load.
-- [ ] If the user's pinned modules don't all fit on a short screen, the lowest-priority pinned modules still overflow into More automatically (existing height behavior preserved) — pinning never breaks the layout or hides the More button when overflow exists.
-- [ ] Unpinning the currently-active module still keeps it reachable from More and does not navigate the user away.
-- [ ] When a user unpins a module, a `nav_rail_item_unpinned` Usermaven event fires with `{ item: '<module_id>' }`.
-- [ ] When a user pins a module, a `nav_rail_item_pinned` Usermaven event fires with `{ item: '<module_id>' }`.
-- [ ] When a user resets the layout, a `nav_rail_layout_reset` Usermaven event fires.
-- [ ] All new copy (tooltips, footer, reset) is added to the `header` namespace across every locale directory under `src/locales/`, English first.
+- [ ] The **More** menu shows a **⚙ Customize sidebar** entry at the bottom, below a divider.
+- [ ] Clicking it opens a **Customize sidebar** panel listing the sidebar's navigation sections, each with a **Show/Hide `Switch`** and a **drag handle**.
+- [ ] Panel title: **"Customize sidebar"**; subtext: **"Items you show appear in the sidebar in this order. If there's not enough room, the lower ones move into More automatically."**
+- [ ] The user's **default landing page** (from Account Settings → Default Landing Page) **cannot be hidden** — its row shows a **(default)** label and its Show/Hide toggle is **on but disabled**.
+- [ ] Hovering the **(default)** label shows a tooltip: **"This is your default landing page. You can change it in settings."**
+- [ ] The default-landing-page row is **still draggable** — the user can reposition it in the order like any other section (it is not anchored to the top).
+- [ ] If the user changes their default landing page in Account Settings, the locked **(default)** row follows the new choice (no hardcoded Home).
+- [ ] The **More** control and system utilities (notifications, profile) are not listed in the panel — only navigable sections are customizable.
+- [ ] Toggling a section **Hidden** keeps it available under **More**; toggling it **Shown** makes it eligible for the rail.
+- [ ] Dragging a section reorders it; the order sets the rail priority (top of the list wins the visible slots).
+- [ ] **Show-all is allowed:** the rail renders shown sections top-down by order until it runs out of vertical space (reserving the More slot); sections that don't fit spill into **More** automatically — there is no hard cap and the result adapts to screen size/resize.
+- [ ] A shown section that is currently overflowing into More is indicated in the panel (e.g. **"Shown · in More on this screen"**).
+- [ ] The sidebar reflects changes made in the panel (live, or on Done — see Design).
+- [ ] **Discover** defaults to **Hidden** (in More), preserving today's default, but can now be shown via the panel.
+- [ ] A **Reset to default** action restores the default shown/hidden set and order; tooltip/label: **"Restore the default sidebar layout."**
+- [ ] Choices persist **per user across sessions and devices** and apply on next load.
+- [ ] The existing height-based auto-overflow continues to work and never hides the More button when overflow exists.
+- [ ] When the user **shows** a section, a `nav_rail_item_shown` Usermaven event fires with `{ item: '<id>' }`; **hiding** fires `nav_rail_item_hidden` with `{ item: '<id>' }`.
+- [ ] When the user **reorders**, a `nav_rail_reordered` event fires; **reset** fires `nav_rail_layout_reset`.
+- [ ] All new copy (panel title/subtext, Customize entry, overflow hint, Reset) is added across every locale directory under `src/locales/`, English first.
 
 ### Mock-ups
-See **[Design] Design the rail pin/unpin affordances and More-menu footer**. Reference image provided by the PO (More menu with a "Pin or remove from toolbar" footer + Reset).
+See the **Mockups** section above and the **[Design]** story.
 
 ### Impact on existing data
-Adds one new key to the user's stored preferences (the pinned-modules layout). No schema migration — uses the existing generic preferences store.
+Adds one new key to the user's stored preferences (the sidebar layout: shown/hidden + order). No schema migration — uses the existing generic preferences store.
 
 ### Impact on other products
-- Desktop web rail only. No change to the mobile apps, the Chrome extension, or white-label behavior (icons/labels already theme-aware).
-- The automatic height-based overflow continues to work; this layers user intent on top of it.
+Desktop web rail only. No mobile or Chrome extension change. Theme/white-label safe (icons/labels already theme-aware).
 
 ### Dependencies
-- **[Design] Design the rail pin/unpin affordances and More-menu footer** (final placement and visuals for the pin/unpin icons, hover states, and More-menu footer).
+- **[Design] Design the "Customize sidebar" panel and More-menu entry**.
 
 ### Global quality & compliance (wherever applicable)
 - [ ] Mobile responsiveness (frontend only, N/A for backend-only stories)
@@ -77,50 +117,38 @@ Adds one new key to the user's stored preferences (the pinned-modules layout). N
 
 ### Implementation references
 *Pointers from research — not a contract. Engineering may choose a different approach.*
-
-**Primary entry points:**
-- `contentstudio-frontend/src/components/layout/DesktopNavigationRail.vue` — owns the rail render and the current auto-overflow logic (`OVERFLOW_PRIORITY`, `overflowIds`, `visibleItems`, `overflowItems`, the More `Dropdown`). The pin/unpin affordances and the user-pinned set layer in here.
-- `contentstudio-frontend/src/components/layout/useHeaderNavigation.ts` — builds `primaryNavItems` (ids: `home`, `publisher`, `analytics`, `inbox`, `discover`, `media-library`, `social-accounts`, `brand-knowledge`, `more`). Good home for the pinned-set state + pin/unpin/reset actions so the rail stays a thin renderer.
-- `contentstudio-frontend/src/components/layout/TopHeaderBar.vue` — wires `useHeaderNavigation` into `DesktopNavigationRail`.
-
-**Persistence:**
-- Reuse `setPreferenceStatus(key, value)` from `contentstudio-frontend/src/modules/common/composables/useHelper.js` → `setUserPreferencesApi` → `preferences/setPreferences`. Suggested key e.g. `nav_rail_pinned_modules` holding the ordered list of pinned module ids (or the unpinned set). The generic endpoint already accepts arbitrary key/value, so **no backend change is expected** — confirm it round-trips an array/object value; if the store only persists scalars, a tiny BE follow-up to allow the value type would be the only addition.
-
-**Components / patterns:**
-- Use `@contentstudio/ui` `Icon` for the pin/unpin glyphs (e.g., `Pin` / `PinOff`) and `ActionIcon` for the clickable affordance; tooltips via the existing `v-tooltip` directive already used throughout this file.
-- More menu rows are `ListItem`s in the existing `Dropdown` (`overflowItems` loop) — add the hover Pin affordance there; add the footer below the list.
-
-**Usermaven:**
-- `const { trackUserMaven } = useUserMaven()` from `contentstudio-frontend/src/composables/useUserMaven.ts`. No existing nav-rail events — these are new.
-
-**Gotchas:**
-- Home/`more` and the secondary group are excluded from `moduleItems`/pinning logic today — keep them excluded.
-- The auto-overflow reserves one slot for the More button; the user-pinned set must compose with that height math, not replace it, so short screens still degrade gracefully.
+- `contentstudio-frontend/src/components/layout/DesktopNavigationRail.vue` — owns the rail render + the current height-based auto-overflow (`OVERFLOW_PRIORITY`, `overflowIds`, `visibleItems`, `overflowItems`, the More `Dropdown`). Reframe overflow to honor the user's saved order/shown-set first, then spill by height. Add the **Customize sidebar** entry in the More dropdown (divider + gear) and the Customize panel/modal.
+- `contentstudio-frontend/src/components/layout/useHeaderNavigation.ts` — builds `primaryNavItems` (ids: `home`, `publisher`, `analytics`, `inbox`, `discover`, `media-library`, `social-accounts`, `brand-knowledge`, `more`). Good home for the saved layout state + show/hide/reorder/reset actions.
+- Persistence: reuse `setPreferenceStatus(key, value)` from `contentstudio-frontend/src/modules/common/composables/useHelper.js` → `setUserPreferencesApi` → `preferences/setPreferences`. Suggested key e.g. `nav_sidebar_layout` holding `{ order: [...ids], hidden: [...ids] }`. Confirm the endpoint round-trips an object value; if it only persists scalars, a tiny BE follow-up to allow the value type is the only addition.
+- Components: `@contentstudio/ui` `Modal` for the panel, `Switch` for Show/Hide, `Icon` (gear) for the entry; a drag-reorder approach consistent with existing drag usage in the app (e.g. the content-category slots/list reordering). Theme tokens only.
+- `const { trackUserMaven } = useUserMaven()` for the new events.
+- Default landing page: `contentstudio-frontend/src/modules/setting/composables/useProfilePage.ts` (`landingPage` / `selectedLandingPage` / `resolveLandingValue`) and `useProfileStore` hold the user's default landing page; the `landing_options` map (settings.json: `home`, `dashboard`, `publisher`, `analytics_overview_v3`, `inbox`, `discovery`, `media-library`, `listening`, `api`) maps to rail section ids — note the aliases (`analytics_overview_v3`→`analytics`, `discovery`→`discover`). Lock whichever rail section matches the user's default landing value; keep it always-shown but reorderable. The tooltip's "settings" link points to the Profile / Default Landing Page setting.
+- Keep only **More** (and notifications/profile utilities) out of the reorderable/hideable set; every navigable section — including the default landing page — is draggable.
 
 ---
 
-## S-2 · [Design] Design the rail pin/unpin affordances and More-menu footer
+## S-2 · [Design] Design the "Customize sidebar" panel and More-menu entry
 **Project:** Web App · **Group:** Design · **Skill:** Design · **Product area:** Throughout product · **Priority:** Medium · **Type:** Feature
 
 ### Description
-As the team building rail customization, we need clear visual designs for the pin/unpin interactions so that the affordances are discoverable on hover, unobtrusive at rest, and consistent with the existing rail styling.
+As the team building sidebar customization, we need a clear design for the Customize entry and panel so that show/hide + reorder is obvious, the locked Home state is understandable, and the "this is shown but currently in More" nuance reads clearly.
 
 ### Workflow
-1. Designer reviews the current desktop rail and the PO's reference image (More menu with a "Pin or remove from toolbar" footer + Reset).
-2. Designer delivers Figma designs covering the rail item hover state, the More-menu row hover state, and the footer.
-3. Designer hands off specs (icon, placement, hover/active states, spacing) to frontend.
+1. Designer reviews the customer.io reference and the mockups above.
+2. Designer delivers Figma for the More-menu Customize entry and the Customize panel (rows, toggle, drag handle, locked Home, overflow hint, Reset/Done).
+3. Designer specs whether the sidebar updates live as the user edits, or on Done, and the panel type (modal vs right-side drawer).
 
 ### Acceptance criteria
-- [ ] Design for the **rail item hover → Unpin** affordance (icon placement on the compact rail item without crowding the label/icon).
-- [ ] Design for the **More-menu row hover → Pin** affordance.
-- [ ] Design for the **More-menu footer**: helper text ("Pin or unpin to customize your sidebar") + a **Reset** action.
-- [ ] Design the **resting vs hover** states so the affordances are hidden until hover and don't shift layout when they appear.
-- [ ] Show the **Home (anchored, non-unpinnable)** treatment so it's visually clear it can't be removed.
-- [ ] All designs use existing rail tokens / `@contentstudio/ui` components and are white-label safe (no hardcoded brand colors).
-- [ ] No dark mode and no RTL variants (not supported).
+- [ ] Design for the **⚙ Customize sidebar** entry in the More menu (divider + gear + label).
+- [ ] Design for the **Customize sidebar** panel: row layout with section icon + name, a **Show/Hide `Switch`**, and a **drag handle**; plus title, subtext, **Reset to default**, and **Done**.
+- [ ] Design the **default-landing-page** row: a **(default)** label with an info affordance, a **disabled "on" toggle**, and the hover tooltip ("This is your default landing page. You can change it in settings.") — while keeping the row **draggable**.
+- [ ] Design the **"Shown · in More on this screen"** indicator for shown rows that are currently overflowing.
+- [ ] Design the **drag state** (handle, drop indicator) for reordering.
+- [ ] Recommend **panel type** — centered `Modal` vs right-side drawer — and whether the sidebar **updates live** while editing or applies on **Done**.
+- [ ] All designs use existing `@contentstudio/ui` components and theme tokens (white-label safe); no dark mode, no RTL.
 
 ### Mock-ups
-This story produces the mock-ups; link the Figma file here on completion.
+This story produces the final mock-ups; the ASCII mockups above are the starting point. Link the Figma file here on completion.
 
 ### Impact on existing data
 N/A — design only.

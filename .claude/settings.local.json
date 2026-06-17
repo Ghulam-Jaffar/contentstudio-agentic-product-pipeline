@@ -205,7 +205,12 @@
       "Bash(ls -d docs/stories/*pill* docs/stories/*content-category*)",
       "Bash(sed -n '1,60p' contentstudio-frontend/src/components/dashboard/ToDoCard.vue)",
       "Bash(sed -n '1,50p' contentstudio-frontend/src/components/dashboard/ContentPublishingCard.vue)",
-      "Bash(cd /home/casper/code/contentstudio-agentic-product-pipeline && mkdir -p docs/stories/desktop-nav-rail-pin-unpin && echo ok)"
+      "Bash(cd /home/casper/code/contentstudio-agentic-product-pipeline && mkdir -p docs/stories/desktop-nav-rail-pin-unpin && echo ok)",
+      "Bash(exit 0)",
+      "Bash(mkdir -p /home/casper/code/contentstudio-agentic-product-pipeline/docs/stories/content-category-new-slot-fill && echo ok)",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('.claude/settings.local.json','utf8'\\)\\); console.log\\('JSON valid ✓'\\)\")",
+      "Bash(git add *)",
+      "Bash(GIT_EDITOR=true git rebase --continue)"
     ],
     "additionalDirectories": [
       "/home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories",

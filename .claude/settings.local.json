@@ -210,7 +210,8 @@
       "Bash(mkdir -p /home/casper/code/contentstudio-agentic-product-pipeline/docs/stories/content-category-new-slot-fill && echo ok)",
       "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('.claude/settings.local.json','utf8'\\)\\); console.log\\('JSON valid ✓'\\)\")",
       "Bash(git add *)",
-      "Bash(GIT_EDITOR=true git rebase --continue)"
+      "Bash(GIT_EDITOR=true git rebase --continue)",
+      "Bash(mkdir -p /home/casper/code/contentstudio-agentic-product-pipeline/docs/stories/start-trial-route-guard && echo ok)"
     ],
     "additionalDirectories": [
       "/home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories",

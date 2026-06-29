@@ -6,14 +6,12 @@
 
 ## 1. Feature Placement
 
-Webhooks live inside the existing **API** module (reached from the **desktop rail → API**, which is also the landing page for API-centric plans; `ApiModule.vue` at `/:workspace/api`). The API page already has a tab bar — **API Key** and **Request Logs**. We add a **third tab: "Webhooks"**.
+Webhooks live inside the existing **API** module (desktop rail → API; `ApiModule.vue` at `/:workspace/api`, the landing page for API-centric plans). The module is **restructured into two top-level tabs — `API` and `Webhooks`** — with a **unified usage meter** above them.
 
-- **Webhooks tab** has a **sub-toggle with two views — Endpoints and Deliveries** (so we keep 3 top-level tabs, not 4):
-  - **Endpoints** — the webhook list (with empty state) + the **Add Webhook** create/edit panel. Opening a webhook shows its detail (events, edit/pause/delete/test) with that webhook's own deliveries.
-  - **Deliveries** — a global feed of recent deliveries across all webhooks, filterable by webhook, event, and status (the per-webhook view is just this feed pre-filtered).
-  - Webhook deliveries are **outbound** and distinct from the inbound API **Request Logs** tab. Request Logs is a flat top-level tab because there's a single inbound API stream with no parent; webhook deliveries belong to a specific webhook, so they live inside the Webhooks tab.
-- The tab and webhook creation are gated by the same plan entitlement that grants API access (`features.api_access`). Workspaces without API access don't see the API module at all.
-- Cap: **5 webhook endpoints per workspace.**
+- **Unified usage meter** (always on top): total requests used / limit for the cycle, an **API-calls vs webhook-deliveries breakdown**, the reset date, an "Increase limit" action, and a **limit-reached** state. Both API calls and webhook deliveries draw from this one allowance — each successful delivery = 1 API request.
+- **API tab:** today's API key + auth/CLI/tools content, with the **API request logs** below — consolidating the old "API Key" + "Request Logs" tabs into one.
+- **Webhooks tab:** the webhook list + create/manage on top, and the **delivery log** below. Each tab follows the same "resource on top, its logs below" shape — no sub-toggle. Opening a webhook filters the delivery log to it.
+- Gated by `features.api_access` (workspaces without API access don't see the API module). Cap: **5 webhook endpoints per workspace** (also a cost lever, since deliveries are metered).
 
 ---
 
@@ -31,9 +29,11 @@ flowchart TD
         E([Post lifecycle event: created / scheduled / published / failed / partial]) --> F{Any active webhook in this workspace subscribed to this event?}
         F -->|No| G[Do nothing]
         F -->|Yes| H[Build signed payload + queue a delivery per matching webhook]
-        H --> I[POST to the customer URL]
+        H --> CC{Workspace has credits?}
+        CC -->|No| SK[Skip and log as out of credits, no charge]
+        CC -->|Yes| I[POST to the customer URL]
         I --> J{2xx within 5s?}
-        J -->|Yes| K[Mark delivered → log]
+        J -->|Yes| K[Mark delivered, charge 1 credit, log]
         J -->|No| L[Retry with exponential backoff]
         L --> M{Attempts exhausted?}
         M -->|No| I
@@ -65,7 +65,7 @@ sequenceDiagram
     CS->>EP: POST event (X-ContentStudio-Signature, X-ContentStudio-Event-Id)
     alt 2xx within 5s
         EP-->>CS: 200 OK
-        Note over CS: Mark delivered, log
+        Note over CS: Mark delivered, charge 1 credit, log
     else non-2xx / timeout / connection error
         EP-->>CS: error or timeout
         Note over CS: Retry on exponential backoff (up to 7 attempts, cap 24h)
@@ -82,7 +82,8 @@ sequenceDiagram
 - **Cap reached:** trying to add a 6th webhook is blocked with a message to delete one or contact about higher limits.
 - **No subscribers:** an event with no matching active webhook is simply not delivered (no work queued).
 - **Large post content:** content is included in full; for pathologically large posts (>~256KB payload) `content` is truncated and `content_truncated: true` is set — full content remains available via `GET /posts/{id}`.
-- **Test event:** "Send test event" delivers a sample payload for the chosen event type so the developer can validate their endpoint before going live; it's flagged as a test and appears in the delivery logs.
+- **Test event:** "Send test event" delivers a sample payload for the chosen event type so the developer can validate their endpoint before going live; it's flagged as a test, appears in the delivery logs, and is **free** (no credit).
+- **Out of credits:** if the workspace has used all its API requests, deliveries are not sent — each is logged as `skipped — out of credits` (no charge) and resumes after a top-up or the cycle reset. The delivery log surfaces this with an "increase limit to resume" hint.
 
 ---
 
@@ -90,12 +91,13 @@ sequenceDiagram
 
 | Decision | Choice | Rationale |
 |---|---|---|
-| Billing | **Free, no API-credit deduction** | Webhooks are push, not pull; can't be controlled by the customer; reduce polling load. Universal industry norm (Stripe/GitHub/Shopify/Zernio). Protected by plan-gating + endpoint cap instead. |
+| Billing | **Metered — 1 API request per successful (2xx) delivery**, charged per receiving endpoint; retries/failures/tests free; out-of-credits pauses delivery | Pay-per-use direction (mirrors X). Shares the existing API-request credit pool; transparency via the unified usage meter + a per-delivery cost note in the UI. |
+| Page structure | **Two top-level tabs — API and Webhooks — plus a unified usage meter** above them (with an API-vs-webhook breakdown) | Groups by domain; one shared credit pool means one shared meter; avoids deep tab nesting. |
 | v1 event scope | **Publishing lifecycle only:** `post.created`, `post.scheduled`, `post.published`, `post.failed`, `post.partial` | Maps directly to existing hooks (`PlanFinalizerJob`, `PlanObserver`). Inbox/comments/reviews/account events are a clean future phase. |
 | Payload shape | **Zernio-style envelope, incl. post content** | `{ id, event, timestamp, workspace_id, post: { id, status, scheduledFor, publishedAt, content, platforms[] } }`. The plan's multi-account fan-out maps to `platforms[]`. |
 | Signing | **Optional per-endpoint secret; HMAC-SHA256 over raw body** in `X-ContentStudio-Signature` | Matches Zernio + dev-platform norm; lets customers verify authenticity without calling back. |
 | Retries | **Up to 7 attempts, exponential backoff capped at 24h → dead-letter; no auto-disable** | Adopts Zernio's schedule exactly; predictable, well-documented, forgiving of transient outages. |
-| Endpoint cap | **5 per workspace** | Bounds delivery fan-out; abuse guard that replaces per-delivery metering. |
+| Endpoint cap | **5 per workspace** | Bounds delivery fan-out and credit cost (each endpoint's delivery is charged). |
 | Management surface | **In-app UI only (the Webhooks tab) for v1** | Public `/api/v1` webhook CRUD can follow later; the UI covers the common case first. |
 | Delivery infra | **Horizon queued delivery job** (`$tries`/`$backoff`/`failed()`), optional Kafka buffer | Reuses the proven outbound-HTTP-with-retry pattern. |
 
@@ -106,7 +108,7 @@ sequenceDiagram
 ## 6. Integration with existing features
 
 - **Publisher / Planner (post lifecycle):** the event source. `PlanFinalizerJob` (published/failed/partial) and `PlanObserver` (created) / the scheduled transition feed the dispatcher. Webhook dispatch must be **fault-isolated** — a webhook failure must never affect publishing.
-- **API module:** the Webhooks tab sits beside API Key + Request Logs; reuses the page shell, the `features.api_access` gate, and the delivery-logs view modeled on `ApiRequestLogs.vue`.
+- **API module:** restructured into `API` and `Webhooks` tabs with a shared usage meter on top; reuses the page shell, the `features.api_access` gate, and the delivery-log view modeled on `ApiRequestLogs.vue`. The meter extends the existing `ApiOverviewHeader.vue` usage display to include webhook deliveries + a breakdown.
 - **Public API:** webhooks reference the same `post.id` used by `GET /posts/{id}` so customers can fetch full detail; docs join the existing `docs/api/` set.
 - **Subscriptions/plans:** availability keys off `features.api_access`; the endpoint cap can live alongside other `SubscriptionLimits`.
 
@@ -130,7 +132,7 @@ Payloads stay PII-free (e.g. `{ event_count, events: ['post.published', ...] }`)
 - Webhooks tab in the API module: list, empty state, create/edit (Name, URL, optional Secret + Generate, optional Custom Headers, Posts-group events), pause/resume, delete, one-time secret reveal.
 - Delivery engine: dispatcher hooked to the 5 publishing-lifecycle events, signed payloads, queued delivery with Zernio-style retries → dead-letter.
 - Delivery logs + Resend + Send test event.
-- Endpoint cap (5), `features.api_access` gating.
+- Endpoint cap (5), `features.api_access` gating, **metering** (1 API request per successful delivery; retries/tests free; out-of-credits pause + log), and the **2-tab restructure + unified usage meter** (with API-vs-webhook breakdown).
 - Public API docs page for webhooks (cite Zernio reference).
 
 **Later (not v1):**

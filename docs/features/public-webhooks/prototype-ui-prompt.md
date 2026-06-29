@@ -1,78 +1,41 @@
-# Prototype UI prompt — Webhooks (paste into Lovable / v0 / similar)
+# Prototype UI prompt — API page + Webhooks (v4, final) — paste into Lovable / v0 / Claude
 
-> Tool-agnostic prompt to generate a high-fidelity clickable prototype of the Webhooks UI. It's scoped to v1 (publishing-lifecycle events) and matches the current ContentStudio API page. The real build will be re-skinned with `@contentstudio/ui`; this is for visual/UX validation only.
+> Final IA: **2 top-level tabs (API | Webhooks)** under a **thin island-style header** with a **compact usage readout** (no fat card / no big progress bar). The **API tab** = API-key card + a **`API | Request logs` sub-segment**. The **Webhooks tab** = list → click → **detail with its delivery logs below** (no global logs). **User-level** (like the API key), **metered** (1 API request per successful delivery). v1 events = `post.scheduled`, `post.published`. The real build is later re-skinned with `@contentstudio/ui`; this is for UX validation.
 
 ---
 
-Design a high-fidelity, clickable web UI prototype for a new **Webhooks** section inside ContentStudio's existing **API** page. ContentStudio is a social media management SaaS; this is a developer-facing settings area.
+Build a high-fidelity, clickable web UI prototype of ContentStudio's API page (a developer-facing area). Deliver it as a single self-contained React/JSX component, icons inline as SVG, no external deps, seeded mock data, working interactions.
 
-**Visual style (match the existing API page):** Light theme only — no dark mode, no RTL. Clean and minimal: light-gray page background, white cards with subtle gray borders and ~12px rounded corners, a blue primary action color (#157FFF), gray-900 headings, gray-500/600 secondary text, small UPPERCASE section labels. Inter / system sans-serif for UI text; a monospace font for URLs, secrets, headers, event names, and JSON. Desktop-first but responsive.
+VISUAL STYLE (match the existing ContentStudio app): Light theme only, no dark mode, no RTL. Light-gray page background, white cards with subtle gray borders and ~12px rounded corners, blue primary #157FFF, gray-900 headings, gray-500/600 secondary text, small UPPERCASE labels. Inter/system font; monospace for URLs, secrets, headers, event names, JSON. Desktop-first, responsive.
 
-**Page context:** The API page has a header card ("API — Manage your API key, monitor usage, and connect integrations" with a "View API Docs" link), an "API Requests" usage meter, and a tab bar with **"API Key"** and **"Request Logs"** tabs. **Add a third tab: "Webhooks".** Everything below lives under this tab. Inside the Webhooks tab, add a **sub-toggle with two views — `Endpoints` and `Deliveries`** (a smaller segmented control, not new top-level tabs): **Endpoints** = the webhook list + create/edit (screens 1–4); **Deliveries** = a global feed of recent deliveries across all webhooks, filterable by webhook, event, and status (screen 5). Opening a specific webhook from Endpoints shows its detail with that webhook's own deliveries (the Deliveries feed pre-filtered to it).
+1) HEADER — a SLIM "island" header strip (like the Planner/Analytics/Listening page headers), NOT a tall card and NO big progress bar. Left: a small </> icon + "API" title + subtitle "Manage your API key, monitor usage, and connect integrations." Right: a compact usage readout "1,240 / 7,500 requests used" with a small subtext "API calls 1,000 · Webhook deliveries 240 · Resets Jul 1, 2026" and an "Increase limit" button. Add a "Simulate limit reached" checkbox (prototype control); when checked, show a slim amber inline notice under the header: "You've used all 7,500 API requests for this cycle. API calls and webhook deliveries are paused until July 1, 2026. Increase your limit to continue."
 
-Design these screens:
+2) TWO TOP-LEVEL TABS (segmented control): "API" and "Webhooks". Exactly two.
 
-**1. Empty state (no webhooks yet)** — a rich, centered setup card (like a "getting started" screen, NOT a bare empty state):
-- Centered icon (webhook/plug) in a soft circle.
-- Title: "Set up your first webhook"
-- Body: "Get notified the moment things happen in your workspace. Register a URL, choose the post events you care about, and we'll send a signed request to your endpoint in real time — no polling required."
-- A "How it works" row of **three step cards** (Step 1 / Step 2 / Step 3), each with a small icon, a title, and a one-line body:
-  - **Step 1 — Create a webhook:** "Add your endpoint URL, an optional signing secret, and pick the events you want."
-  - **Step 2 — We send events to your URL:** "When a post is created, scheduled, published, or fails, we POST a signed payload to your endpoint."
-  - **Step 3 — Verify and handle deliveries:** "Check the signature, return a 2xx, and track every delivery in the log — failed ones retry automatically."
-- A centered primary button **"Create your first webhook"** and a **"View Webhook Docs"** link directly below it.
-- (This mirrors ContentStudio's existing "Set up your first approval workflow" screen — same three-step centered layout.)
+3) API TAB:
+   - "YOUR API KEY" card on top: masked key cs••••••••04c, Copy + Regenerate, "Created: Sep 12, 2025", a ⋮ with Revoke.
+   - Below it, a SUB-SEGMENT (segmented control): "API" | "Request logs".
+     • "API" segment: (a) About API key — "What is an API key?" blurb + "How to authenticate?" with mono blocks `X-API-Key: <YOUR_API_KEY>` and `curl -X GET -H "X-API-Key: YOUR_API_KEY" https://api.contentstudio.io/api/v1/me`, plus an "Explore API Docs" link; (b) ContentStudio CLI & Agent Access — CLI quickstart (npm install -g contentstudio-cli → contentstudio auth:login --api-key cs_xxx → contentstudio workspaces:list) + AI Agent Setup (npx skills add contentstudioio/contentstudio-agent); (c) Content Creation & Automation Tools — a carousel of tool cards: CLI & Skills (new), API, Zapier, Make.com, Pabbly, n8n, Claude MCP, ChatGPT (Coming soon).
+     • "Request logs" segment: the inbound API request-log table — columns Method (GET/POST pills), Endpoint (mono, e.g. /api/v1/workspaces, /api/v1/me, /api/v1/workspaces/601b.../posts), Status (200 green; 4xx/5xx red), Duration, Timestamp; filters (method, status) + Export CSV.
 
-**2. Webhooks list (when one or more exist)**
-- A list of rows/cards. Each shows: the **Name**, the destination **URL** (monospace, truncated), a few small **event tags** (e.g. `post.published`, `post.failed`, `+1`), a **status pill** (Active = green, Paused = gray), a **last-delivery** indicator (green check or red dot + relative time like "2m ago"), and a **"⋮" menu** (Edit, Send test event, View deliveries, Pause/Resume, Delete).
-- "Add Webhook" button top-right. Show a small counter like "3 of 5 webhooks used".
+4) WEBHOOKS TAB (webhooks are USER-level, like the API key — no "workspace" wording):
+   - List view: header "Webhooks" + "View Webhook Docs" link + "+ Add webhook" button; subline "3 of 5 webhooks used" + helper "Each successful delivery uses 1 API request from your plan." Rows: Name (bold) + status pill (Active green / Paused gray); URL (mono, truncated); event tags (post.published, post.scheduled); right: last-delivery dot (green/red) + relative time; a ⋮ menu (Edit, Send test event, Pause/Resume, Delete). Clicking a row opens its detail. "+ Add webhook" disables at 5 with tooltip "You've reached the limit of 5 webhooks. Delete one to add another."
+   - EMPTY STATE (when no webhooks): a centered setup card (like a getting-started screen): plug icon, title "Set up your first webhook", body "Get notified the moment things happen in your account. Register a URL, choose the post events you care about, and we'll send a signed request to your endpoint in real time — no polling required.", a "How it works" row of three step cards (Step 1 Create a webhook "Add your endpoint URL, an optional signing secret, and pick the events you want.", Step 2 We send events to your URL "When a post is scheduled or finishes publishing, we POST a signed payload to your endpoint.", Step 3 Verify and handle deliveries "Check the signature, return a 2xx, and track every delivery in the log — failed ones retry automatically."), a centered "Create your first webhook" button + "View Webhook Docs" link.
+   - DETAIL view (click a webhook): a "← Webhooks" back link; header with Name + status pill + a ⋮ menu (Edit, Send test event, Pause/Resume, Delete); "Endpoint URL" with a copy button; "Subscribed Events" tags; then a "Delivery Logs" section ("Recent webhook deliveries") with a filter [All | Successful | Failed] + a Refresh button. Table columns: Event, Time, Status, Response. (NO Attempts column, NO Resend button.) Status pills: Successful (green), Failed (red), Pending (gray), "Skipped — out of credits" (amber). Each row expands (chevron) to show Payload sent (JSON) + Response received. A "Skipped — out of credits" row, expanded, shows "Not sent — you'd run out of API requests. Increase your limit to resume deliveries." Empty: "No deliveries yet" / "Events will appear here as soon as they're sent to this webhook."
 
-**3. Create / Edit webhook (slide-over panel or modal)** — title "New Webhook", subtitle "Configure a new webhook endpoint":
-- **Name** — placeholder "My Webhook"; helper "A label to recognize this webhook."
-- **Payload URL** — placeholder "https://myapp.com/webhooks/contentstudio"; helper "We'll send a POST request here." (required; must be https)
-- **Secret (optional)** — placeholder "your-secret-key"; helper "Used to sign each delivery with an HMAC-SHA256 signature in the X-ContentStudio-Signature header, so you can verify the request came from ContentStudio." Include a small **"Generate"** button that fills a random secret.
-- **Custom Headers (optional)** — an **"Add Header"** button that appends key/value input rows (e.g. `Authorization` / `Bearer …`); helper "Sent with every delivery — useful if your endpoint needs its own authentication."
-- **Events** — a grouped checklist. Group header **"Posts"** with a "Select all" toggle. Five checkboxes, each with a one-line description in muted text:
-  - `post.created` — "A post is created (draft or scheduled)."
-  - `post.scheduled` — "A post is scheduled for a future time."
-  - `post.published` — "A post is successfully published."
-  - `post.failed` — "A post fails to publish on all platforms."
-  - `post.partial` — "A post publishes on some platforms but fails on others."
-  - Below the active group, show a **grayed-out, disabled** group labeled "Accounts · Inbox · Comments · Reviews" with a "Coming soon" badge (roadmap hint; not selectable).
-- Footer: primary **"Create Webhook"**, secondary **"Cancel"**. Validation: URL required + https; at least one event required (disable Create until both are satisfied).
+5) CREATE/EDIT WEBHOOK (slide-over from the right): title "New Webhook"/"Edit Webhook", subtitle "Configure a webhook endpoint to receive events."
+   - Name (optional) — placeholder "My Webhook"; helper "A label to recognize this webhook. If left blank, we'll name it from the URL."
+   - Payload URL (required, https) — placeholder "https://myapp.com/webhooks/contentstudio"; helper "We'll send a POST request here."; errors "Please enter a URL." / "The URL must start with https://".
+   - Secret (optional) — placeholder "your-secret-key"; helper "Used to sign each delivery with an HMAC-SHA256 signature in the X-ContentStudio-Signature header, so you can verify the request came from ContentStudio."; a "Generate" button.
+   - Custom Headers (optional) — "Add header" → key/value rows ("Header name (e.g. Authorization)" / "Header value"); helper "Sent with every delivery — useful if your endpoint needs its own authentication."
+   - Events — a "Posts" group with "Select all" and two checkboxes: post.scheduled "A post is scheduled for a future time.", post.published "A post finishes publishing (the payload's status shows published, failed, or partially failed)." Below it, a grayed-out, disabled group "Accounts · Inbox · Comments · Reviews" with a "Coming soon" badge.
+   - Footer: "Create Webhook" (disabled until valid https URL + at least one event) / "Cancel".
 
-**4. Secret reveal (one-time, right after creating)**
-- A confirmation card showing the signing secret (monospace) with a **Copy** button and a warning: "Copy your secret now — for security you won't be able to see it again."
+6) SECRET REVEAL (one-time, after creating with a secret): a modal showing the signing secret (mono) + Copy + "Copy your secret now — for security you won't be able to see it again."
 
-**5. Deliveries view (the "Deliveries" sub-toggle) + per-webhook detail**
-- This is the same **deliveries table** in two contexts: globally under the **Deliveries** sub-toggle (all webhooks), and inside a single webhook's detail (pre-filtered to that webhook).
-- **Per-webhook detail header** (when opened from Endpoints): the webhook Name + URL, an Active/Paused toggle, a **"Send test event"** button, Edit/Delete, and the subscribed events as tags.
-- A **deliveries table**: columns **Event**, **Status** (2xx = green "Success", else red "Failed"), **Attempt** (e.g. "1 of 7"), **Response code**, **Duration**, **Timestamp**. Each row expands to show the JSON **payload sent** and the **response received**. A **"Resend"** action per row.
-- Filters: by **webhook** (only in the global Deliveries view), **event type**, and **status**; an "Export CSV" button (mirror the Request Logs tab).
-- Empty state: "No deliveries yet. Events will appear here once they're sent."
+7) SEND TEST EVENT (from the detail ⋮): a modal "Send a test event" / "Pick an event type and we'll send a sample payload to your webhook so you can check your setup." / event-type dropdown (default post.published) / "Send test" / "Cancel". Injects a delivery at the top of that webhook's logs, flagged as a test (test events are free).
 
-**6. Send test event (small modal)**
-- Pick an event type (default `post.published`) → **"Send test"** → a sample delivery appears at the top of the deliveries table.
+Sample payload to render in the inspector:
+{ "id": "evt_9f8c2a1b4d", "event": "post.published", "timestamp": "2026-06-27T12:00:03Z", "workspace_id": "601b773d2149273f48039ec2", "post": { "id": "p_88231", "status": "published", "scheduledFor": "2026-06-27T12:00:00Z", "publishedAt": "2026-06-27T12:00:03Z", "content": "Big news! Our summer sale starts today 🎉", "platforms": [ { "platform": "facebook", "status": "published", "platformPostId": "123_456", "publishedUrl": "https://facebook.com/123/posts/456", "error": null }, { "platform": "instagram", "status": "published", "platformPostId": "178900", "publishedUrl": "https://instagram.com/p/abc123/", "error": null } ] } }
 
-**Sample payload to render inside the payload preview (so it looks real):**
-```json
-{
-  "id": "evt_9f8c2a1b4d",
-  "event": "post.published",
-  "timestamp": "2026-06-27T12:00:03Z",
-  "workspace_id": "601b773d2149273f48039ec2",
-  "post": {
-    "id": "p_88231",
-    "status": "published",
-    "scheduledFor": "2026-06-27T12:00:00Z",
-    "publishedAt": "2026-06-27T12:00:03Z",
-    "content": "Big news! Our summer sale starts today 🎉",
-    "platforms": [
-      { "platform": "facebook",  "status": "published", "platformPostId": "123_456", "publishedUrl": "https://facebook.com/123/posts/456", "error": null },
-      { "platform": "instagram", "status": "published", "platformPostId": "178900", "publishedUrl": "https://instagram.com/p/abc123/",   "error": null }
-    ]
-  }
-}
-```
-
-**Do not** include: dark-mode toggle, RTL, per-delivery pricing/credits (webhooks are free), or events outside the Posts group (those are "coming soon").
+DO NOT include: a "View API Docs" link in the header (it lives in the API tab and Webhooks tab); a third top tab; a global "all deliveries" page (deliveries live only inside each webhook); the API request log as a drawer (it's the "Request logs" sub-segment on the API tab); an Attempts column or Resend button; a post.created event; dark mode; RTL; or events outside the Posts group. Keep the "1 API request per delivery" cost visible (the list helper, the header usage breakdown, the out-of-credits "Skipped" status).

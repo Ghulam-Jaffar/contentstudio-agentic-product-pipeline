@@ -215,7 +215,19 @@
       "Bash(find /home/casper/code -maxdepth 3 -type d \\\\\\( -name \"*analytics*\" -o -name \"*inbox*\" -o -name \"*backend*\" \\\\\\) | head -20)",
       "Read(//home/casper/code/**)",
       "WebFetch(domain:docs.zernio.com)",
-      "WebFetch(domain:developer.hootsuite.com)"
+      "WebFetch(domain:developer.hootsuite.com)",
+      "WebFetch(domain:www.twilio.com)",
+      "WebFetch(domain:shopify.dev)",
+      "WebFetch(domain:docs.svix.com)",
+      "WebFetch(domain:www.svix.com)",
+      "WebFetch(domain:vercel.com)",
+      "WebFetch(domain:resend.com)",
+      "WebFetch(domain:www.nngroup.com)",
+      "WebFetch(domain:helios.hashicorp.design)",
+      "WebFetch(domain:www.kinde.com)",
+      "WebFetch(domain:www.shopify.com)",
+      "WebFetch(domain:www.smashingmagazine.com)",
+      "WebFetch(domain:help.mailgun.com)"
     ],
     "additionalDirectories": [
       "/home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories",

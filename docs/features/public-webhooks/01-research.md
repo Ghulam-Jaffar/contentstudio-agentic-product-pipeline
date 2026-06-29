@@ -5,6 +5,8 @@
 **Primary reference (cite for devs):** Zernio webhooks — https://docs.zernio.com/webhooks
 
 > Note: the broad competitor web-sweep was interrupted; Part A is grounded on the Zernio reference the PO supplied + well-established developer-platform webhook standards + general product knowledge. Competitor specifics are best-effort and can be deep-dived on request. The codebase analysis (Part B) is fully verified against the repo.
+>
+> **Update (post-research decisions):** Two PO/team-lead decisions superseded parts of this doc — (1) **billing flipped from free to metered** (1 API request per successful delivery; see PRD §8 BR-1), and (2) the **API page is restructured into two tabs (API and Webhooks) with a unified usage meter** instead of a 3rd tab + sub-toggle. The Locked-decisions block below reflects the current state. The "free is the norm" finding in Part A's *Billing norm* section was the industry recommendation; the team chose to meter anyway (aligning webhooks with the API the customer already pays for, à la X's pay-per-use).
 
 ---
 
@@ -82,14 +84,15 @@ Mirror Zernio, scoped to **publishing-lifecycle events only**: `post.published`,
 ---
 
 ## Locked decisions (carried from PO)
-1. **Free** — no API-credit deduction. Protect via `features.api_access` gating + a per-workspace endpoint cap.
+1. **Metered** — a **successful (2xx) delivery costs 1 API request** from the shared API-credit pool, charged per receiving endpoint; retries, failed/dead-lettered deliveries, and test events are free; resends charged on success. When out of credits, deliveries are paused + logged as `skipped — out of credits`. Gated via `features.api_access` + a per-workspace endpoint cap (5).
 2. **v1 = publishing-lifecycle events only:** `post.published`, `post.failed`, `post.partial`, `post.scheduled`, `post.created`. Inbox/comments/reviews/account = future phase.
 3. **Zernio-style payload, including post content.** Envelope: `{ id, event, timestamp, workspace_id, post: { id, status, scheduledFor, publishedAt, content, platforms[]: { platform, status, platformPostId, publishedUrl, error } } }`. Headers: `X-ContentStudio-Signature` (HMAC-SHA256, raw body, per-endpoint secret) + `X-ContentStudio-Event-Id`.
-4. **Available to anyone with API access** (`features.api_access`). No per-delivery credit.
+4. **Available to anyone with API access** (`features.api_access`). **Page IA:** the API module is restructured into two top-level tabs — `API` and `Webhooks` — with a **unified usage meter** (API-calls vs webhook-deliveries breakdown) above them.
 
-## Open questions (resolve during PRD/workflow)
-- Exact retry schedule + max attempts + dead-letter behavior (Zernio: 7 attempts, exp backoff capped at 24h — adopt as default?).
-- Per-workspace endpoint cap value (e.g. 5–10).
-- Expose webhook management via the public `/api/v1` too (Zernio does), or in-app management only for v1?
-- Payload `content` for very large posts — truncate/omit, or always full?
-- Adopt Zernio's **custom headers per endpoint** and a **Name** field in v1? (Both are in Zernio's create form and cheap to include.)
+## Open questions — all resolved during PRD/workflow
+- Retry schedule = Zernio's (7 attempts, exp backoff capped 24h, dead-letter, no auto-disable).
+- Endpoint cap = **5** per workspace.
+- Public `/api/v1` webhook management = **deferred**; in-app management only for v1.
+- Large `content` = truncated above ~256KB with `content_truncated: true`; full content via `GET /posts/{id}`.
+- Custom headers + a **Name** field = **included** in v1.
+- **Billing = metered** (1 API request per successful delivery, per endpoint; retries/failures/tests free; out-of-credits pauses delivery).

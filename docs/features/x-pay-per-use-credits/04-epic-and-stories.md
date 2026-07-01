@@ -10,7 +10,7 @@
 
 ## Epic: X (Twitter) Pay-Per-Use Credit Wallet
 
-X (Twitter) moved its publishing API to pay-per-use pricing, charging ContentStudio per post ($0.015 plain, $0.20 with a link) against a prepaid balance. ContentStudio's old fixed daily-limit + recurring add-on model no longer fits. This epic replaces it with a **prepaid dollar wallet for X**: a non-expiring balance that deducts on each successful publish at X's cost + a 20% service fee, with transparent cost previews in the composer, a dedicated X Wallet card + modal in billing (top-up calculator, auto-recharge, spending limit, usage log), and a fair one-time migration for existing users.
+X (Twitter) moved its publishing API to pay-per-use pricing, charging ContentStudio per post ($0.015 plain, $0.20 with a link) against a prepaid balance. ContentStudio's old fixed daily-limit + recurring add-on model no longer fits. This epic replaces it with a **prepaid dollar wallet for X**: a non-expiring balance that deducts $0.018 (plain) or $0.24 (link) on each successful publish, with clear cost previews in the composer, a dedicated X Wallet card + modal in billing (top-up calculator, auto-recharge, spending limit, usage log), and a fair one-time migration for existing users.
 
 The model is built generic so the same wallet later powers X inbox, analytics, and listening. Billing-capable users (super admins) manage and top up the wallet; other members see clear "ask your super admin" guidance. All X posting is metered (custom developer apps are no longer supported).
 
@@ -31,16 +31,19 @@ As a user composing an X post, I want to see what this post will cost and what m
 
 ### Acceptance criteria
 - [ ] The widget renders only when an X account is selected; it shows no monthly framing and **no progress bar**.
+- [ ] **Collapsed by default** to avoid overwhelming the user: it shows only the essentials, led by the **X (Twitter) icon** and the **X-specific** cost + balance, e.g. **"𝕏  This X post will cost: $0.018  ·  Remaining X Wallet balance: $<balance>"**, plus a **"Show cost details"** toggle. The wording must make clear this is the **X post cost only** (the composer may have other platforms selected), not the whole post.
+- [ ] **Expanded** (via the toggle, which then reads **"Hide cost details"**), it additionally shows the queued-posts line, the projected-balance-after line, and the transparency note (below).
+- [ ] Any over-balance or insufficient-balance warning is shown **even when collapsed** (it is never hidden behind the toggle).
 - [ ] Header shows "X (Twitter) Wallet" and, right-aligned, "Balance: $<balance>" with an info icon whose tooltip reads: **"Your prepaid X balance. Shared across all X posting, and only charged when a post actually publishes."**
 - [ ] Row "This post will use:" shows **"$0.018 (plain post)"** or **"$0.24 (with a link)"**, switching live as a link is added/removed.
-- [ ] When the user has queued X posts, a line shows **"You also have <N> scheduled X posts that will use ~$<amount> when they publish."** (hidden when N = 0).
-- [ ] Row "Projected balance after all of these:" shows the balance minus (queued + this post); it's shown in red when it would go negative.
-- [ ] A transparency footnote reads: **"This is an estimate — your balance is charged when each post actually publishes, not now."**
+- [ ] When the user has queued X posts, the expanded view shows **"You also have <N> scheduled X posts that will use about $<amount> when they publish."** (hidden when N = 0).
+- [ ] Row "Projected balance after all of these:" (expanded view) shows the balance minus (queued + this post); it's shown in red when it would go negative.
+- [ ] A transparency footnote (expanded view) reads: **"This is an estimate. Your balance is charged when each post actually publishes, not now."**
 - [ ] For threads, "this post will use" reflects the per-delivered-tweet total.
 - [ ] **Over-balance warning** appears when (queued + this) cost exceeds the balance, with copy by case:
   - Auto-recharge **OFF** (billing-capable user): **"Your $<balance> balance won't cover everything you've queued. Posts publish in order until it runs out (about <N> of <M>), and the rest will fail unless you top up."** + a **Manage X Wallet** link that opens the X Wallet modal on the Top-up tab.
-  - Auto-recharge **ON, within spending limit:** **"Your balance is low, but auto-recharge is on — it'll top up automatically (up to your $<limit> spending limit) so your posts should keep publishing. They'd only pause if the spending limit is reached."**
-  - Auto-recharge **ON, unlimited:** **"Your balance is low, but auto-recharge is on with no limit — all your posts will publish."**
+  - Auto-recharge **ON, within monthly spending limit:** **"Your balance is low, but auto-recharge is on. It will top up automatically (up to your $<limit> monthly spending limit) so your posts should keep publishing. They would only pause if the limit is reached."**
+  - Auto-recharge **ON, unlimited:** **"Your balance is low, but auto-recharge is on with no limit, so all your posts will publish."**
 - [ ] **No billing access** (member who can't manage billing): every "Manage X Wallet"/top-up CTA in the widget is replaced with the non-actionable message **"Ask your workspace's super admin to add X wallet credits."**
 - [ ] "Post Now" is disabled only when this post's cost alone exceeds the balance and auto-recharge can't cover it; otherwise enabled.
 - [ ] When a post is blocked at the composer for an empty/insufficient wallet, a `x_post_blocked_insufficient_balance` Usermaven event fires with `{}`.
@@ -86,13 +89,13 @@ As a user adding a link to an X post, I want a one-time heads-up that links cost
 
 ### Acceptance criteria
 - [ ] The popup appears when **(a)** an X account is selected, **(b)** the post contains a URL, and **(c)** focus leaves the text editor — at most once per distinct URL, and never if "Don't show again" was chosen.
-- [ ] Title: **"Heads up — your link makes this post cost more"**.
-- [ ] Body: **"Posts with a link use X's higher API rate. This post will cost $0.24, vs $0.018 for a plain-text post."**
-- [ ] A balance line: **"Your balance: $<balance> → after this post: $<balance − 0.24>"**.
+- [ ] Title: **"Adding a link costs more on X"**.
+- [ ] Body: **"X charges more for posts that include a link. This post will use $0.24 from your X wallet, compared to $0.018 for a post without a link."**
+- [ ] A balance line: **"Your balance is $<balance>. After this post it will be $<balance − 0.24>."**
 - [ ] A **"Don't show this again"** checkbox that, when checked, prevents the popup from showing again (persisted per user).
 - [ ] Buttons: secondary **"Remove link"** (strips the URL from the post) and primary **"Got it"** (dismiss).
 - [ ] The popup is **non-blocking** — the user can still publish either way.
-- [ ] An amber banner above the wallet widget reads, only while the post contains a URL: **"This post contains a URL and therefore costs $0.24 to align with X's latest API pricing, compared to $0.018 for a plain-text post."**
+- [ ] An amber banner above the wallet widget reads, only while the post contains a URL: **"This post includes a link, so it will use $0.24 instead of $0.018. Links cost more to post on X."**
 - [ ] All copy is added to every locale directory under `src/locales/`, English first.
 
 ### Mock-ups
@@ -136,7 +139,7 @@ As a super admin, I want a dedicated X Wallet card on the billing page that open
 - [ ] A new **X (Twitter) Wallet** card appears on the billing page (under/near Usage Limits) showing: current balance (prominent), an **auto-recharge ON/OFF** status, and a **low-balance** indicator when under the threshold.
 - [ ] The card has two CTAs: **"Manage X Wallet"** (opens the modal on **Tab A — Top up & auto-recharge**) and **"View usage"** (opens the modal on **Tab B — Usage**), via an explicit initial-tab parameter.
 - [ ] The card and its CTAs are shown only to **billing-capable users** (super admin / `can_see_subscription`); other members do not see the card (or see a read-only balance with "Ask your workspace's super admin to add X wallet credits.").
-- [ ] The modal header shows the title **"Manage X (Twitter) Wallet"** with muted subtext: **"A prepaid balance — not a monthly or annual plan. It never expires and only drops as you post."** (No standalone balance line in the header.)
+- [ ] The modal header shows the title **"Manage X (Twitter) Wallet"** with muted subtext: **"A prepaid balance, not a monthly or annual plan. It never expires and only drops as you post."** (No standalone balance line in the header.)
 - [ ] The modal has two tabs: **"Top up & auto-recharge"** and **"Usage"**, defaulting to the tab requested by the entry point.
 - [ ] The modal is capped at max-height 85vh.
 
@@ -184,14 +187,14 @@ As a super admin, I want to top up my X wallet with a clear calculator and confi
 - [ ] A "Current balance" block shows the label, the amount, and an auto-recharge ON/OFF pill (green when on).
 - [ ] A top-up control in **$5 increments** (default **$10**) with − / + and a typeable amount, labeled "Top up your wallet".
 - [ ] A **"WHAT YOUR $<resulting balance> GETS YOU"** card (resulting balance = current + top-up, updating live; never says "each month") with a responsive tile grid: **plain posts** = floor(balance / 0.018), "$0.018 each"; **posts with a link** = floor(balance / 0.24), "$0.24 each". With exactly 2 tiles show an **"OR"** divider; with 3+, drop it.
-- [ ] Card footnote: **"It's one wallet — spend it on either type, in any mix. The numbers above are the max of each on its own. Rates include X's cost + a 20% service fee."**
+- [ ] Card footnote: **"It's one wallet. Spend it on either type, in any mix. The numbers above are the max of each on its own."** (Do not mention X's cost or the service fee.)
 - [ ] A single **"Buy / Top up $<amount>"** button (rendered once) that completes the top-up and raises the balance everywhere.
 - [ ] When the user completes a top-up, a `x_credits_purchased` Usermaven event fires with `{ amount_usd, source: 'manual' }`.
 
 **Auto-recharge (progressive disclosure)**
 - [ ] When auto-recharge is **OFF**, only a toggle + one-line hint show: **"Automatically top up when your balance runs low."**
-- [ ] When **ON**, three fields + helper appear: "Recharge when balance falls below $" (default **$1**), "Top-up amount $" (default **$10**), and **"Spending limit $"** (default **$30**) with helper: **"Set the most you want us to auto-spend on X. When it's reached, auto-recharge stops and posting pauses until you top up or raise the limit."** — a fixed total with **no monthly/cycle reset**.
-- [ ] An **"Allow unlimited spending"** checkbox with copy: **"Turn off the spending limit. Auto-recharge keeps your wallet topped up so posting never pauses — your saved card is charged each time it recharges."** When checked, the Spending limit field is hidden/disabled.
+- [ ] When **ON**, three fields + helper appear: "Recharge when balance falls below $", "Top-up amount $", and **"Monthly spending limit $"** — each **pre-filled with the user's plan default** (see the per-plan defaults table in the [BE] story). Monthly spending limit helper: **"Set the most you want us to auto-spend on X each month. When you reach it, auto-recharge pauses until next month, or until you raise the limit."** This limit **resets at the start of each month**. All three fields are editable.
+- [ ] An **"Allow unlimited spending"** checkbox with copy: **"Turn off the monthly spending limit. Auto-recharge keeps your wallet topped up so posting never pauses, and your saved card is charged as needed."** When checked, the Monthly spending limit field is hidden/disabled.
 - [ ] When the user saves auto-recharge settings, a `x_auto_recharge_configured` Usermaven event fires with `{ enabled, threshold_usd, topup_usd, spending_limit_usd, unlimited }`.
 - [ ] The tab fits **without scrolling** in its default state (auto-recharge OFF).
 
@@ -228,16 +231,16 @@ Billing (web). The top-up purchase uses the new one-off top-up flow (BE).
 **Shortcut fields:** Template: New Feature Template · Type: feature · Project: Web App · Group: Frontend · Epic: X (Twitter) Pay-Per-Use Credit Wallet · Priority: Medium · Product area: Billing · Skill set: Frontend · Estimate: — · Labels: none
 
 ### Description
-As a super admin, I want a transparent per-post usage log with a cost breakdown, so I can see exactly where my X wallet money goes and trust the pricing.
+As a super admin, I want a per-post usage log showing what each post cost and my running balance, so I can see exactly where my X wallet money goes.
 
 ### Workflow
 1. The super admin opens the Usage tab (directly via "View usage", or by switching tabs).
-2. They see every X post's cost and the running balance, plus a summary splitting X's cost from ContentStudio's fee, and can export the log.
+2. They see every X post's cost and the running balance, plus a total-spent summary, and can export the log.
 
 ### Acceptance criteria
 - [ ] The Usage tab shows a per-post log table with columns: **Date · Account · Type (Plain / With link) · Cost · Balance after**.
 - [ ] Post type is visually distinguished (e.g., a Plain vs With-link tag).
-- [ ] A summary shows **total spent**, split into **"X's cost"** and **"your 20% service fee"**.
+- [ ] A summary shows **total spent** (what the user paid). Do **not** break out X's raw cost or ContentStudio's fee/margin.
 - [ ] An **"Export CSV"** action downloads the log.
 - [ ] Empty state (no usage yet): a headline + subtext (e.g., **"No X posts yet"** / **"Once you publish to X, every post and its cost will show here."**).
 - [ ] Loading and error states are handled (skeleton while loading; a clear retry message on failure).
@@ -290,7 +293,17 @@ Build the backend for the X prepaid dollar wallet: the balance + usage ledger, p
 
 **Top-up, auto-recharge & spending limit (billing)**
 - [ ] Users can **top up** the wallet as a one-off purchase of any supported dollar amount; on success the balance increases.
-- [ ] **Auto-recharge:** when balance falls below the threshold, automatically top up by the configured amount — only while total auto-spend is under the **spending limit** (a fixed total, no cycle reset) or when **unlimited** is set. When the spending limit is reached, auto-recharge stops.
+- [ ] **Auto-recharge:** when balance falls below the threshold, automatically top up by the configured amount, only while that month's auto-spend is under the **monthly spending limit** or when **unlimited** is set. The monthly spending limit **resets at the start of each month**; when it is reached, auto-recharge pauses until the next month or until the user raises it.
+- [ ] **Per-plan auto-recharge defaults** are stored as editable config and pre-filled when a super admin enables auto-recharge (auto-recharge itself is **OFF by default**; all values user-editable):
+
+  | Plan | Monthly spending limit | Top-up amount | Recharge when below |
+  |---|---|---|---|
+  | API | $10 | $5 | $1 |
+  | Standard | $10 | $5 | $1 |
+  | Advanced | $20 | $10 | $2 |
+  | Agency | $50 | $10 | $3 |
+
+  Larger Agency-tier plan variants start at the Agency defaults and can raise them. (Rationale: limit ≈ $2/account with API matched to Standard; ~30–36% of plan price.)
 - [ ] Trial users cannot purchase top-ups (must upgrade first).
 
 **Initial allocation & migration (at rollout)**
@@ -299,6 +312,7 @@ Build the backend for the X prepaid dollar wallet: the balance + usage ledger, p
 - [ ] **Existing without the X add-on:** grant **$0.30 × number of connected X accounts** (super-admin level, across all workspaces); **0 accounts → no grant**.
 - [ ] **Existing with the X add-on:** convert remaining value = **amount paid × fraction of the billing cycle still unused** into wallet balance; retire the recurring add-on.
 - [ ] Migration is idempotent and safe to run against existing accounts (no double-grant, no double-charge).
+- [ ] These allocation rules and per-plan defaults apply to **all plans, including the API plan** ($19, 10 socials): API accounts get the same $0.50 trial grant and existing-user rules. API-plan posts publish via the **public API** and still deduct from the wallet server-side (the composer FE surfaces don't apply to them, but the wallet, deduction, and billing card do).
 
 **Transition emails (existing users with an X account only — not trials/new)**
 - [ ] A **pre-rollout announcement** email: explains the move to pay-per-use, the per-post pricing, and the rollout date.

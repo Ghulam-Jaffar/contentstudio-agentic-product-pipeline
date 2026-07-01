@@ -9,7 +9,7 @@
 
 ## 1. Overview
 
-X (Twitter) moved its publishing API to **pay-per-use pricing** — ContentStudio is now charged per post ($0.015 plain, $0.20 for a post containing a link) against a prepaid balance it holds with X. ContentStudio's old X model (a fixed daily post limit + a $5-for-5-posts/day recurring add-on) no longer fits. This feature replaces it with a **prepaid dollar-credit wallet for X**: users hold a non-expiring dollar balance, each published post deducts at X's cost + a 20% service fee ($0.018 plain / $0.24 link), and they top up when low — with optional auto-recharge and a spending limit. It's fully transparent in the composer and billing, and is architected so the same wallet later covers X inbox, analytics, and listening.
+X (Twitter) moved its publishing API to **pay-per-use pricing** — ContentStudio is now charged per post ($0.015 plain, $0.20 for a post containing a link) against a prepaid balance it holds with X. ContentStudio's old X model (a fixed daily post limit + a $5-for-5-posts/day recurring add-on) no longer fits. This feature replaces it with a **prepaid dollar-credit wallet for X**: users hold a non-expiring dollar balance, each published post deducts $0.018 (plain) or $0.24 (link), which is X's per-post cost plus ContentStudio's markup, and they top up when low, with optional auto-recharge and a monthly spending limit. Prices are shown clearly in the composer and billing, without breaking out the underlying X cost or ContentStudio's margin to users, and it is architected so the same wallet later covers X inbox, analytics, and listening.
 
 ---
 
@@ -66,8 +66,8 @@ Naming follows guidelines §19 (snake_case, past tense, no PII). These map 1:1 t
 | US-1 | Super admin | top up a prepaid X balance in dollars | I only pay for the X posting we actually do | Must |
 | US-2 | Team member | see what a post will cost and my balance before publishing | I'm not surprised and I know if it'll go out | Must |
 | US-3 | Team member | be warned when a link makes a post much pricier | I can decide whether to keep the link | Must |
-| US-4 | Super admin | turn on auto-recharge with a spending limit (or unlimited) | posting never silently stops, but I stay in control of spend | Must |
-| US-5 | Super admin | see a per-post usage log and an honest cost breakdown | I can audit where the money goes | Must |
+| US-4 | Super admin | turn on auto-recharge with a monthly spending limit (or unlimited) | posting never silently stops, but I stay in control of monthly spend | Must |
+| US-5 | Super admin | see a per-post usage log with what I paid per post | I can audit where the money goes | Must |
 | US-6 | Existing customer | keep posting after the switch without losing what I paid for | the transition feels fair | Must |
 | US-7 | Team member without billing access | know who to ask when the wallet is low | I'm not stuck | Must |
 | US-8 | Super admin | estimate how many posts a top-up buys | I can choose the right amount | Should |
@@ -80,12 +80,12 @@ Naming follows guidelines §19 (snake_case, past tense, no PII). These map 1:1 t
 - Prepaid **dollar wallet** at the account/super-admin level (shared across the account's workspaces); **non-expiring**.
 - **Deduct on publish** at X cost + 20% ($0.018 plain / $0.24 link); per **delivered** tweet for threads; **no deduction on failure**.
 - Replace the daily-limit gate: a post **fails with a clear "insufficient X balance" reason** when the wallet can't cover it (and auto-recharge can't).
-- **Composer wallet widget** — projection (no month, no bar): balance, this-post cost, queued-posts cost, projected balance after, transparency note, and over-balance warning states (incl. the no-billing-access "ask your super admin" variant).
+- **Composer wallet widget** — projection (no month, no bar), **collapsed by default** with a "Show cost details" expand: balance, this-post cost, queued-posts cost, projected balance after, transparency note, and over-balance warning states (incl. the no-billing-access "ask your super admin" variant; warnings show even when collapsed).
 - **URL heads-up popup** (X selected + URL present + editor blur), one-time, with "Don't show again."
 - **X Wallet card** on the billing page (X removed from Manage Add-ons) → **Manage X Wallet modal** (Tab A Top up & auto-recharge, Tab B Usage), with **Manage** → Tab A and **View usage** → Tab B.
 - Top-up calculator + **"what your balance gets you"** card (resulting balance), **Buy / Top up**.
-- **Auto-recharge** (threshold, top-up amount default $10) + **Spending limit** (fixed, no reset, X-style copy) + **Allow unlimited spending**.
-- **Usage log** (date, account, type, cost, balance after) + cost breakdown (X's cost vs 20% fee) + CSV export.
+- **Auto-recharge** (per-plan default threshold + top-up) + **Monthly spending limit** (resets each month; **per-plan defaults**, off by default) + **Allow unlimited spending**.
+- **Usage log** (date, account, type, cost, balance after) + total spent + CSV export. Do **not** expose X's raw cost or ContentStudio's fee/margin to users.
 - **Pricing stored as editable config** (upstream cost + markup), not hardcoded.
 - **Initial allocation & migration** (per §8) + the two **transition emails** (existing X users only).
 - **Usermaven events** per §3.1.
@@ -140,11 +140,13 @@ flowchart TD
 | BR-3 | Wallet is **account/super-admin level**, shared across workspaces, **non-expiring** | Matches today's X-limit scope; prepaid simplicity |
 | BR-4 | Balance deduction is **atomic** (no read-modify-write race) | Concurrent scheduled posts mustn't lose/double-charge |
 | BR-5 | Insufficient balance → post **fails** with a clear reason (not held) | Avoid stale content + complex hold state |
-| BR-6 | Spending limit is a **fixed total, no cycle reset**; raised manually; or **unlimited** | Our wallet is prepaid, not metered-per-cycle like X |
+| BR-6 | **Monthly** spending limit on auto-recharge (resets at the start of each month); raised manually; or **unlimited** | Cap monthly auto-spend while keeping posting flowing |
 | BR-7 | Only **billing-capable users** (super admin / `can_see_subscription`) see top-up/manage CTAs + the wallet card; others see "ask your super admin" | Mirrors white-label / listening permission pattern |
 | BR-8 | **No exemptions** — all X posting goes through the ContentStudio app and is metered | Custom dev apps no longer supported |
 | BR-9 | Initial allocation: trial **$0.50**; new subscribers keep leftover; existing-without-add-on **$0.30 × connected X accounts** (0 if none); existing-with-add-on **amount paid × unused-cycle fraction** | Fair, no-loss transition (decided) |
 | BR-10 | Trial users must **upgrade before** buying a top-up (add-ons not purchasable on trial) | Existing trial billing constraint |
+| BR-11 | The **API plan** ($19, 10 socials) is fully included: same wallet, $0.50 trial, allocation, and per-plan defaults (matched to Standard: limit $10, top-up $5, threshold $1). API posts publish via the public API and still deduct. | API users post to X too and must be metered; composer FE surfaces don't apply to them |
+| BR-12 | **Never expose X's raw cost or ContentStudio's markup/fee to users.** Show only the price the user pays (per-post cost, balance, total spent). | Protects margin; avoids "why the fee?" friction |
 
 ---
 
@@ -156,6 +158,7 @@ flowchart TD
 | Starter-wallet & per-account amounts | $0.50 trial / $0.30 per X account | PM | Set, tunable pre-launch |
 | Cleanest Paddle mechanism for a non-subscription one-off top-up + auto-recharge re-trigger | One-off product / charge | Billing eng | **Blocking spike** |
 | CSV export of usage log in v1 | v1 / v2 | PM | Leaning v1 |
+| Default monthly spending limit per plan | per-plan | PM | **Decided**: API $10 · Standard $10 · Advanced $20 · Agency $50; top-ups $5/$5/$10/$10; thresholds $1/$1/$2/$3; auto-recharge off by default (see BE-1 table) |
 
 ---
 

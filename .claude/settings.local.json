@@ -227,7 +227,8 @@
       "WebFetch(domain:www.kinde.com)",
       "WebFetch(domain:www.shopify.com)",
       "WebFetch(domain:www.smashingmagazine.com)",
-      "WebFetch(domain:help.mailgun.com)"
+      "WebFetch(domain:help.mailgun.com)",
+      "WebFetch(domain:postfa.st)"
     ],
     "additionalDirectories": [
       "/home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories",

@@ -7,9 +7,9 @@
 - **X is REMOVED from the Manage Add-ons / Increase Limits modal.** The wallet is prepaid, not a monthly/annual recurring add-on, so it no longer belongs among the cycle-based add-ons.
 - **New "X Wallet" card on the Billing page** (placed under/near the Usage Limits card). Shows the **current balance** at a glance (+ a low-balance / auto-recharge-on indicator) with a primary **Manage X Wallet** CTA and an optional **View usage** shortcut.
 - **"Manage X Wallet" modal — one modal, two tabs:**
-  - **Tab A — Top up & auto-recharge:** balance header · calculator (slider: plain/URL posts → estimated cost → suggested top-up) · **Buy / Top up** CTA · auto-recharge settings (enable, recharge-when-below threshold, top-up amount, **Spending limit** — or **Allow unlimited spending**) · transparency line (X's cost vs our fee). *Buy + configure in one go.*
+  - **Tab A — Top up & auto-recharge:** balance header · calculator (slider: plain/URL posts → estimated cost → suggested top-up) · **Buy / Top up** CTA · auto-recharge settings (enable, recharge-when-below threshold, top-up amount, **Monthly spending limit**, or **Allow unlimited spending**). *Buy + configure in one go.*
   - **Tab B — Usage:** full per-post log (date, account, had URL, cost, balance after) + breakdown + CSV export. The card's **View usage** shortcut deep-links here.
-- **Composer (PostingSchedule).** The existing Twitter usage widget changes from "posts used / daily limit" to a **projection** of cost vs balance (no monthly framing). Because the wallet is only charged when a post **actually publishes**, the widget is an estimate, not a live meter — **drop the "— [Month Year]" label and the monthly progress bar**. It shows: current **Balance** (+ ⓘ), **"This post will use"** ($0.018 plain / $0.24 link), **already-queued X posts** and their projected cost, the **projected balance after all of them**, and a transparency note ("charged when each post publishes, not now"). See §4 for the over-balance warning states. (+ the URL heads-up popup, §4.)
+- **Composer (PostingSchedule).** The existing Twitter usage widget changes from "posts used / daily limit" to a **projection** of cost vs balance (no monthly framing, no progress bar), since the wallet is only charged when a post **actually publishes**. It is **collapsed by default** (to avoid info overload), showing just the **X-specific** post cost and balance, led by the X icon and worded "This X post will cost: $… · Remaining X Wallet balance: $…" so it's clearly the X cost only (not the whole multi-platform post), with a "Show cost details" toggle. **Expanded**, it adds the already-queued X posts and their projected cost, the projected balance after all of them, and a transparency note ("charged when each post publishes, not now"). Any over-balance warning shows even when collapsed. See §4 for the warning states and the URL heads-up popup.
 
 No new top-level navigation; everything lives in the existing Composer + Billing surfaces.
 
@@ -26,7 +26,7 @@ flowchart TD
     Enough -->|No| Block[Post fails → 'Top up your X wallet' prompt]
     Deduct --> Low{Balance below user threshold?}
     Low -->|Auto-recharge on & under spending limit| Recharge[Auto top-up → balance funded]
-    Low -->|Off, or spending limit reached| Notify[Notify: top up manually / raise limit]
+    Low -->|Off, or monthly limit reached| Notify[Notify: top up manually / raise limit]
     Block --> Buy
     Notify --> Buy
 ```
@@ -38,7 +38,7 @@ flowchart TD
 3. They click **Buy / Top up**; the wallet balance increases.
 4. They compose an X post. The composer widget shows **"This post will cost ~$0.018 (≈ $0.24 if it has a link) · Balance: $X left."**
 5. They publish. On success, the cost is **deducted** from the balance (per delivered tweet for threads). The widget/balance updates.
-6. Over time the balance drops. If **auto-recharge** is on and they're under their **spending limit** (or unlimited), the wallet tops up automatically and posting continues uninterrupted.
+6. Over time the balance drops. If **auto-recharge** is on and they're under their **monthly spending limit** (or unlimited), the wallet tops up automatically and posting continues uninterrupted.
 
 ## 4. Alternative / edge flows
 
@@ -46,12 +46,12 @@ flowchart TD
 - **Insufficient balance (at publish):** when a post actually publishes without enough balance, it **fails** with a clear "insufficient X balance" reason (auto-recharge, if on and under the spending limit, tops up first and avoids this).
 - **Projected over-balance warning (in the composer widget):** because deduction happens at publish time, the widget projects the **whole queue** (already-scheduled X posts + this one) against the balance and warns when the projected spend exceeds it. Copy branches on auto-recharge:
   - **Auto-recharge OFF:** "Your $X balance won't cover everything you've queued. Posts publish in order until it runs out (about **N of M**), and the rest will fail unless you top up." + Manage X Wallet.
-  - **Auto-recharge ON, within spending limit:** "Your balance is low, but auto-recharge is on — it'll top up automatically (up to your spending limit) so your posts should keep publishing. They'd only pause if the spending limit is reached."
-  - **Auto-recharge ON, unlimited:** "Your balance is low, but auto-recharge is on with no limit — all your posts will publish."
+  - **Auto-recharge ON, within monthly spending limit:** "Your balance is low, but auto-recharge is on. It will top up automatically (up to your monthly spending limit) so your posts should keep publishing. They would only pause if the limit is reached."
+  - **Auto-recharge ON, unlimited:** "Your balance is low, but auto-recharge is on with no limit, so all your posts will publish."
   - The widget is always framed as an **estimate** ("charged when each post publishes, not now") since we can't guarantee the outcome.
   - **No billing access (collaborator / not the super admin, can't manage billing):** every "Manage X Wallet" / "Top up" CTA — here and anywhere else in the composer/widget — is replaced with a non-actionable message: *"Ask your workspace's super admin to add X wallet credits."* Mirrors the existing white-label / Social-Listening "contact your super admin" pattern (`hasPermission('can_see_subscription')`). Only super-admins / billing-capable users see top-up/manage CTAs and the X Wallet card.
 - **Failed publish:** if X's API call fails, **nothing is deducted**. Partial thread → only delivered tweets are deducted.
-- **Spending limit reached:** auto top-ups stop; the user is notified ("You've reached your X spending limit — top up manually or raise the limit to continue"). The spending limit is a **fixed total with no monthly/cycle reset** (deliberately unlike X's own per-cycle spending limit — our wallet is prepaid, not metered per cycle); resuming auto-recharge requires the user to raise it. Users who never want posting to pause can choose **Allow unlimited spending** (no limit — auto-recharge keeps the wallet topped up; the saved card is charged each time).
+- **Monthly spending limit reached:** auto top-ups pause; the user is notified ("You've reached your monthly X spending limit. Top up manually or raise the limit to continue."). The **Monthly spending limit resets at the start of each month**, so auto-recharge resumes next month, or immediately if the user raises the limit. Users who never want posting to pause can choose **Allow unlimited spending** (no limit; auto-recharge keeps the wallet topped up and the saved card is charged as needed).
 - **Scheduled/queued post at publish time with too-low balance:** the post **fails** with a clear "insufficient X balance" reason (handled like other publish failures), and the user is notified to top up — posts are **not** held indefinitely. Auto-recharge (if on and under the spending limit, or unlimited) tops up first and avoids this.
 - **Migration / first wallet:** on rollout, accounts receive an initial wallet per the allocation rules in **§9** (trial $0.50; existing-with-add-on = prorated remaining add-on value; existing-without-add-on = $0.30 × connected X accounts; new subscribers keep their trial balance), with a one-time explainer.
 - **No exemptions:** custom developer apps are no longer supported, so **all** X posting goes through the ContentStudio app and is metered — there are no exempt accounts.
@@ -101,7 +101,7 @@ Reuse the existing `addon_purchased` event family where it already fits the purc
 **v1 (this epic):**
 - Prepaid X credit wallet (account-level balance) + atomic deduction on publish (per delivered tweet, no charge on failure).
 - Composer widget redesign (per-post cost + balance + URL jump + top-up prompt).
-- Manage Add-ons: balance + **Manage** modal = calculator (posts → est. cost → credits) + auto-recharge (threshold, top-up amount) + spending limit (or unlimited) + transparency copy; selection auto-fills purchase.
+- Manage Add-ons: balance + **Manage** modal = calculator (posts → est. cost → credits) + auto-recharge (threshold, top-up amount) + monthly spending limit (or unlimited); selection auto-fills purchase.
 - **View usage** modal: per-action unit cost + usage + full per-post log (date, account, had URL, cost, balance after); CSV export.
 - Migration: free starter credits + one-time explainer + convert existing add-on value to credits.
 - Usage Limits card X row → balance + Manage.
@@ -123,6 +123,17 @@ The wallet lives at the **super-admin / account level** (shared across that acco
   - **0 X accounts → no allotment.**
   - **≥1 X account → grant `$0.30 × (number of connected X accounts)`**, one-time. Per-account, **regardless of plan** (context: Standard allows up to 5 X accounts, Advanced up to 10, Agency 25+).
 - **Amounts are tunable** ($0.50 trial grant, $0.30 per X account) but the **format is fixed**: trials get a flat grant; existing-without-add-on is per-connected-X-account.
+- **The API plan** ($19, 10 socials) is included in all wallet rules: same $0.50 trial grant, same allocation, same per-plan defaults. API-plan posts publish via the public API and still deduct from the wallet (the composer FE surfaces don't apply to API-only posting).
+
+### Per-plan auto-recharge defaults (pre-filled when auto-recharge is enabled; off by default; all editable)
+| Plan | Monthly spending limit | Top-up amount | Recharge when below |
+|---|---|---|---|
+| API | $10 | $5 | $1 |
+| Standard | $10 | $5 | $1 |
+| Advanced | $20 | $10 | $2 |
+| Agency | $50 | $10 | $3 |
+
+Limit ≈ $2 per account (API matched to Standard); ~30–36% of plan price. Larger Agency-tier variants start at the Agency defaults and can raise them.
 
 ### Transition emails (existing users with an X account — NOT trials / new users)
 Two one-off emails accompany the rollout, sent **only to existing users who have at least one connected X account** (trial and new/upcoming users are excluded):
@@ -132,4 +143,4 @@ Two one-off emails accompany the rollout, sent **only to existing users who have
 ## 10. Open questions (carry into PRD)
 - CSV export of usage log — v1 or v2? (Minor; everything else is decided.)
 
-_(Resolved: markup 20% → $0.018 / $0.24 · auto-recharge default $10 (editable) · auto-recharge cap is a **Spending limit** — fixed, no monthly/cycle reset, X-style copy — with an **Allow unlimited spending** option · add-on conversion = amount paid × unused-cycle fraction · wallet scope = account/super-admin level · allocation amounts per §9 · insufficient balance → post **fails** (not held) · **no exemptions** (custom developer apps no longer supported — all X posting is metered).)_
+_(Resolved: markup 20% → $0.018 / $0.24 · **per-plan auto-recharge defaults** (see §9; auto-recharge off by default) · auto-recharge cap is a **Monthly spending limit** (resets each month) with an **Allow unlimited spending** option · add-on conversion = amount paid × unused-cycle fraction · wallet scope = account/super-admin level · allocation amounts per §9 · **API plan included** · insufficient balance → post **fails** (not held) · **no exemptions** (custom developer apps no longer supported, all X posting is metered).)_

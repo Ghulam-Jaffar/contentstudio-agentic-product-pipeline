@@ -228,12 +228,19 @@
       "WebFetch(domain:www.shopify.com)",
       "WebFetch(domain:www.smashingmagazine.com)",
       "WebFetch(domain:help.mailgun.com)",
-      "WebFetch(domain:postfa.st)"
+      "WebFetch(domain:postfa.st)",
+      "Bash(ssh -o StrictHostKeyChecking=accept-new -T git@github.com)",
+      "Bash(cd /home/tehreem/code/contentstudio-agentic-product-pipeline *)",
+      "Bash(ssh-keygen -t ed25519 -C \"tehreem.shehzadi@d4interactive.io\" -f ~/.ssh/id_ed25519 -N \"\" -q)",
+      "Bash(chmod 600 ~/.ssh/id_ed25519)",
+      "Bash(chmod 644 ~/.ssh/id_ed25519.pub)",
+      "Bash(ssh-keygen -l -f ~/.ssh/id_ed25519.pub)"
     ],
     "additionalDirectories": [
       "/home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories",
       "/home/tehreem/.ssh",
-      "/home/casper/code/contentstudio-agentic-product-pipeline/docs/stories"
+      "/home/casper/code/contentstudio-agentic-product-pipeline/docs/stories",
+      "/home/tehreem"
     ]
   }
 }

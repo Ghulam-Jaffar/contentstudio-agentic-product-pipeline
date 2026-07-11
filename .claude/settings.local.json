@@ -228,7 +228,10 @@
       "WebFetch(domain:www.shopify.com)",
       "WebFetch(domain:www.smashingmagazine.com)",
       "WebFetch(domain:help.mailgun.com)",
-      "WebFetch(domain:postfa.st)"
+      "WebFetch(domain:postfa.st)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:www.npmjs.com)",
+      "Bash(mkdir -p /home/casper/code/contentstudio-agentic-product-pipeline/docs/stories/multi-workspace-analytics-report)"
     ],
     "additionalDirectories": [
       "/home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories",

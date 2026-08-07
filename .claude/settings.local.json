@@ -257,7 +257,10 @@
       "Bash(rg -ril \"customize with ai|customizeWithAi|customize_with_ai\" src/)",
       "Bash(rg -ril \"customiz\" src/modules/composer* src/modules/publish*)",
       "Bash(rg -rn \"handleCustomBoxToggle|onCustomizeToggle|customBoxToggle\" src/modules/composer/)",
-      "Bash(rg -rn \"singleBox\" src/modules/composer --include=\"*.ts\" -l)"
+      "Bash(rg -rn \"singleBox\" src/modules/composer --include=\"*.ts\" -l)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:www.npmjs.com)",
+      "Bash(mkdir -p /home/casper/code/contentstudio-agentic-product-pipeline/docs/stories/multi-workspace-analytics-report)"
     ],
     "additionalDirectories": [
       "/home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories",

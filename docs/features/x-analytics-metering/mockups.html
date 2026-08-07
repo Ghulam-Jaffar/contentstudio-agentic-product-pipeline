@@ -1,0 +1,679 @@
+<title>X Analytics Metering — UI Mockups</title>
+<style>
+  /* ---------- Shell tokens ----------
+     Deliberately pinned light and NOT theme-aware. This page documents a
+     product with no dark mode, so a dark shell would contradict the mockups
+     it frames and skew how reviewers read their contrast and colour.
+     The viewer's theme toggle is intentionally a no-op here. */
+  :root{
+    /* !important beats the inline color-scheme the host sets on a dark viewer,
+       which would otherwise tint the native select controls in the mockups. */
+    color-scheme:light !important;
+    --bg:#e9edf3; --panel:#ffffff; --ink:#18212e; --muted:#5a6575;
+    --border:#d7dee8; --eyebrow:#157fff; --shadow:0 1px 2px rgba(20,35,60,.06),0 8px 24px rgba(20,35,60,.08);
+    --shadow-screen:0 1px 3px rgba(16,30,54,.10),0 22px 48px -20px rgba(16,30,54,.28);
+  }
+
+  /* ---------- Product tokens (fixed light — ContentStudio has no dark mode) ---------- */
+  .screen, .chrome{
+    --p-bg:#f4f6fa; --p-surface:#ffffff; --p-ink:#17202e; --p-ink2:#3c4658; --p-muted:#6b7688;
+    --p-border:#e7ebf2; --p-border2:#eef1f6; --p-accent:#157fff; --p-accent-600:#0e63cc; --p-accent-50:#eaf3ff;
+    --p-good:#15934f; --p-good-bg:#e8f6ed; --p-warn:#b56a09; --p-warn-bg:#fdf2e1;
+    --p-bad:#d24343; --p-bad-bg:#fdecec; --x:#0f1419;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ -webkit-text-size-adjust:100%; }
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  }
+  .wrap{ max-width:1080px; margin:0 auto; padding:40px 24px 80px; }
+  .num{ font-variant-numeric:tabular-nums; }
+
+  /* ---------- Review header ---------- */
+  .eyebrow{ font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:700; color:var(--eyebrow); margin:0 0 10px; }
+  h1{ font-size:clamp(26px,4vw,38px); line-height:1.08; letter-spacing:-.02em; margin:0 0 12px; text-wrap:balance; font-weight:800; }
+  .lede{ max-width:64ch; color:var(--muted); font-size:16px; margin:0 0 20px; }
+  .meta{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px; }
+  .tag{ font-size:12px; font-weight:600; padding:5px 11px; border-radius:999px; background:var(--panel); border:1px solid var(--border); color:var(--ink); box-shadow:var(--shadow); }
+  .tag b{ color:var(--eyebrow); }
+  .note{ font-size:13px; color:var(--muted); margin-top:14px; max-width:70ch; }
+
+  /* ---------- Legend ---------- */
+  .legend{ display:flex; flex-wrap:wrap; gap:16px 22px; margin-top:22px; padding:14px 18px; background:var(--panel); border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); }
+  .legend .li{ display:flex; align-items:center; gap:8px; font-size:13px; color:var(--ink); }
+  .dot{ width:10px; height:10px; border-radius:3px; }
+
+  /* ---------- Section ---------- */
+  section{ margin-top:56px; }
+  .sec-head{ display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:6px; }
+  .sec-kicker{ font-size:12px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+  .sec-head h2{ font-size:22px; letter-spacing:-.015em; margin:0; font-weight:750; }
+  .sec-sub{ color:var(--muted); font-size:14.5px; max-width:74ch; margin:6px 0 20px; }
+  .story-ref{ font-size:12px; font-weight:600; color:var(--eyebrow); background:color-mix(in srgb,var(--eyebrow) 12%,transparent); padding:3px 9px; border-radius:7px; }
+
+  /* ---------- Segmented control (review chrome) ---------- */
+  .seg{ display:inline-flex; flex-wrap:wrap; gap:4px; padding:4px; background:var(--panel); border:1px solid var(--border); border-radius:11px; margin-bottom:18px; box-shadow:var(--shadow); }
+  .seg button{ font:inherit; font-size:13px; font-weight:600; color:var(--muted); background:transparent; border:0; padding:7px 13px; border-radius:8px; cursor:pointer; transition:background .15s,color .15s; }
+  .seg button:hover{ color:var(--ink); }
+  .seg button[aria-pressed="true"]{ background:var(--eyebrow); color:#fff; }
+  .seg button:focus-visible{ outline:2px solid var(--eyebrow); outline-offset:2px; }
+
+  /* ---------- App canvas + screens (fixed light) ---------- */
+  .screen{ background:var(--p-bg); border:1px solid var(--p-border); border-radius:18px; box-shadow:var(--shadow-screen); overflow:hidden; color:var(--p-ink); }
+  .browserbar{ display:flex; align-items:center; gap:7px; padding:11px 14px; background:#fff; border-bottom:1px solid var(--p-border); }
+  .browserbar i{ width:11px; height:11px; border-radius:50%; background:#e2e6ee; display:block; }
+  .browserbar .url{ margin-left:10px; font-size:12px; color:var(--p-muted); background:var(--p-bg); border:1px solid var(--p-border); border-radius:7px; padding:4px 12px; }
+
+  /* fake analytics dashboard (behind lock card) */
+  .canvas{ position:relative; min-height:420px; padding:22px; }
+  .demo{ transition:filter .2s; }
+  .demo.blurred{ filter:blur(4px) saturate(.9); opacity:.6; pointer-events:none; user-select:none; }
+  .demo-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
+  .demo-title{ display:flex; align-items:center; gap:10px; font-weight:700; font-size:15px; }
+  .xchip{ width:26px; height:26px; border-radius:7px; background:var(--x); color:#fff; display:grid; place-items:center; font-weight:800; font-size:14px; }
+  .stat-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:14px; }
+  .stat{ background:#fff; border:1px solid var(--p-border); border-radius:12px; padding:12px 14px; }
+  .stat .k{ font-size:11px; color:var(--p-muted); font-weight:600; text-transform:uppercase; letter-spacing:.05em; }
+  .stat .v{ font-size:20px; font-weight:750; margin-top:4px; }
+  .stat .d{ font-size:11px; font-weight:600; margin-top:2px; }
+  .up{ color:var(--p-good); } .down{ color:var(--p-bad); }
+  .chartcard{ background:#fff; border:1px solid var(--p-border); border-radius:12px; padding:14px 16px; }
+  .chartcard .k{ font-size:12px; color:var(--p-muted); font-weight:600; margin-bottom:8px; }
+
+  /* lock / unlock card overlay */
+  .overlay{ position:absolute; inset:0; display:grid; place-items:center; padding:24px; }
+  .lockcard{ width:min(440px,100%); background:#fff; border:1px solid var(--p-border); border-radius:16px; box-shadow:0 10px 40px -8px rgba(16,30,54,.35); padding:28px; text-align:center; }
+  .lockcard .ic{ width:52px; height:52px; border-radius:14px; margin:0 auto 16px; display:grid; place-items:center; background:var(--p-accent-50); color:var(--p-accent); }
+  .lockcard.warn .ic{ background:var(--p-warn-bg); color:var(--p-warn); }
+  .lockcard h3{ font-size:19px; letter-spacing:-.01em; margin:0 0 9px; font-weight:750; color:var(--p-ink); text-wrap:balance; }
+  .lockcard p{ font-size:14px; color:var(--p-ink2); margin:0 auto 18px; max-width:44ch; }
+  .learn{ display:inline-flex; align-items:center; gap:5px; font-size:13px; font-weight:600; color:var(--p-accent); text-decoration:none; margin-top:14px; }
+  .learn:hover{ text-decoration:underline; }
+  .lockcard .asknote{ font-size:13px; color:var(--p-muted); display:flex; align-items:center; justify-content:center; gap:7px; }
+
+  /* ---------- Buttons (product) ---------- */
+  .btn{ font:inherit; font-weight:650; font-size:14px; border-radius:10px; padding:11px 18px; cursor:pointer; border:1px solid transparent; transition:background .15s,border-color .15s,transform .05s; display:inline-flex; align-items:center; justify-content:center; gap:8px; }
+  .btn:active{ transform:translateY(1px); }
+  .btn:focus-visible{ outline:2px solid var(--p-accent); outline-offset:2px; }
+  .btn-primary{ background:var(--p-accent); color:#fff; width:100%; }
+  .btn-primary:hover{ background:var(--p-accent-600); }
+  .btn-warn{ background:var(--p-warn); color:#fff; width:100%; }
+  .btn-warn:hover{ filter:brightness(.95); }
+  .btn-ghost{ background:#fff; color:var(--p-ink2); border-color:var(--p-border); }
+  .btn-ghost:hover{ background:var(--p-bg); }
+  .btn-sm{ padding:8px 14px; font-size:13px; width:auto; }
+  .btn[disabled]{ opacity:.5; cursor:not-allowed; }
+
+  /* ---------- Modal presentation ---------- */
+  .modal-stage{ background:linear-gradient(0deg,rgba(15,25,45,.55),rgba(15,25,45,.55)),var(--p-bg); border-radius:18px; padding:40px 24px; display:grid; place-items:center; box-shadow:var(--shadow-screen); }
+  .modal{ width:min(460px,100%); background:#fff; border-radius:16px; box-shadow:0 24px 60px -12px rgba(6,14,30,.5); overflow:hidden; color:var(--p-ink); }
+  .modal-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; padding:20px 22px 0; }
+  .modal-head h3{ font-size:17px; margin:0; font-weight:750; display:flex; align-items:center; gap:9px; }
+  .modal-head .x{ border:0; background:transparent; color:var(--p-muted); font-size:20px; cursor:pointer; line-height:1; padding:2px 4px; border-radius:6px; }
+  .modal-head .x:hover{ background:var(--p-bg); color:var(--p-ink); }
+  .modal-body{ padding:16px 22px 8px; }
+  .modal-foot{ padding:14px 22px 20px; }
+  .balance-strip{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 14px; background:var(--p-bg); border:1px solid var(--p-border); border-radius:10px; font-size:13px; margin:0 22px; }
+  .balance-strip .bal{ font-weight:750; }
+  .balance-strip .bal.low{ color:var(--p-bad); }
+  .field{ margin:14px 0 6px; }
+  .field label{ display:block; font-size:13px; font-weight:650; color:var(--p-ink2); margin-bottom:7px; }
+  .help{ display:inline-grid; place-items:center; width:15px; height:15px; border-radius:50%; border:1.4px solid var(--p-accent);
+    color:var(--p-accent); font-size:10px; font-weight:800; cursor:help; vertical-align:1px; margin-left:3px; }
+  /* Custom dropdown matching the product's AnalyticsDropdown / CstDropdown.
+     Native <select> is avoided because its open menu is OS-rendered and
+     cannot be styled to match the design system. */
+  .cs-select{ position:relative; }
+  .cs-select .trigger{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px;
+    font:inherit; font-size:14px; color:var(--p-ink); background:#fff; border:1px solid var(--p-border);
+    border-radius:12px; padding:11px 14px; cursor:pointer; text-align:left; transition:border-color .15s,box-shadow .15s; }
+  .cs-select .trigger:hover{ border-color:#c9d3e2; }
+  .cs-select .trigger[aria-expanded="true"]{ border-color:var(--p-accent); box-shadow:0 0 0 3px var(--p-accent-50); }
+  .cs-select .trigger:focus-visible{ outline:2px solid var(--p-accent); outline-offset:2px; }
+  .cs-select .trigger .chev{ flex:none; color:var(--p-muted); transition:transform .15s; }
+  .cs-select .trigger[aria-expanded="true"] .chev{ transform:rotate(180deg); }
+  .cs-menu{ position:absolute; z-index:30; top:calc(100% + 6px); left:0; right:0; background:#fff;
+    border:1px solid var(--p-border); border-radius:12px; box-shadow:0 14px 36px -10px rgba(16,30,54,.30);
+    padding:6px; max-height:224px; overflow:auto; }
+  .cs-menu[hidden]{ display:none; }
+  .cs-opt{ display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%;
+    font:inherit; font-size:14px; color:var(--p-ink2); background:transparent; border:0; border-radius:9px;
+    padding:9px 11px; cursor:pointer; text-align:left; }
+  .cs-opt:hover{ background:var(--p-bg); color:var(--p-ink); }
+  .cs-opt[aria-selected="true"]{ background:var(--p-accent-50); color:var(--p-accent); font-weight:650; }
+  .cs-opt .tick{ flex:none; opacity:0; }
+  .cs-opt[aria-selected="true"] .tick{ opacity:1; }
+
+  /* Cost strip shown on the unlock card and above stale data */
+  .cost-strip{ display:flex; align-items:center; justify-content:space-between; gap:12px; text-align:left;
+    background:var(--p-bg); border:1px solid var(--p-border); border-radius:11px; padding:11px 14px; margin:2px 0 16px; }
+  .cost-strip .lbl{ font-size:12.5px; color:var(--p-muted); font-weight:600; }
+  .cost-strip .val{ font-size:15px; font-weight:750; color:var(--p-ink); }
+  .cost-strip .val.low{ color:var(--p-bad); }
+  .stale-banner{ display:flex; gap:11px; align-items:flex-start; background:var(--p-warn-bg);
+    border:1px solid color-mix(in srgb,var(--p-warn) 30%,#fff); border-radius:11px; padding:12px 14px;
+    font-size:13.5px; color:#7a4a06; margin-bottom:16px; }
+  .stale-banner b{ color:#5f3a05; }
+  .stale-banner .acts{ margin-left:auto; display:flex; gap:8px; flex:none; }
+  .estimate{ display:flex; align-items:center; gap:9px; font-size:14px; color:var(--p-ink2); background:var(--p-accent-50); border:1px solid color-mix(in srgb,var(--p-accent) 20%,#fff); border-radius:10px; padding:11px 13px; margin-top:6px; }
+  .estimate .amt{ font-weight:750; color:var(--p-ink); }
+  .charged{ display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:650; color:var(--p-good); background:var(--p-good-bg); border-radius:7px; padding:4px 9px; margin-top:10px; }
+  .inline-alert{ display:flex; gap:10px; align-items:flex-start; font-size:13px; border-radius:10px; padding:11px 13px; margin-top:4px; }
+  .inline-alert.bad{ background:var(--p-bad-bg); color:#8f2a2a; }
+  .inline-alert svg{ flex:none; margin-top:1px; }
+
+  /* ---------- Billing card ---------- */
+  .billcard{ width:min(520px,100%); background:#fff; border:1px solid var(--p-border); border-radius:16px; box-shadow:var(--shadow-screen); overflow:hidden; color:var(--p-ink); }
+  .billcard-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:18px 20px; border-bottom:1px solid var(--p-border2); }
+  .billcard-head .t{ display:flex; align-items:center; gap:11px; font-weight:750; font-size:16px; }
+  .wallet-bal{ text-align:right; }
+  .wallet-bal .k{ font-size:11px; color:var(--p-muted); text-transform:uppercase; letter-spacing:.05em; font-weight:650; }
+  .wallet-bal .v{ font-size:20px; font-weight:800; }
+  .toggle-row{ display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 20px; }
+  .toggle-row + .toggle-row{ border-top:1px solid var(--p-border2); }
+  .toggle-row .txt{ max-width:60ch; }
+  .toggle-row .lab{ font-weight:650; font-size:14.5px; display:flex; align-items:center; gap:8px; }
+  .toggle-row .sub{ font-size:13px; color:var(--p-muted); margin-top:3px; }
+  .readonly-hint{ font-size:12px; color:var(--p-muted); font-style:italic; margin-top:5px; }
+  /* switch */
+  .switch{ position:relative; flex:none; width:44px; height:26px; }
+  .switch input{ position:absolute; opacity:0; width:100%; height:100%; margin:0; cursor:pointer; }
+  .track{ position:absolute; inset:0; background:#cfd6e2; border-radius:999px; transition:background .18s; }
+  .knob{ position:absolute; top:3px; left:3px; width:20px; height:20px; background:#fff; border-radius:50%; box-shadow:0 1px 2px rgba(0,0,0,.25); transition:left .18s; }
+  .switch input:checked + .track{ background:var(--p-accent); }
+  .switch input:checked + .track + .knob{ left:21px; }
+  .switch input:focus-visible + .track{ outline:2px solid var(--p-accent); outline-offset:2px; }
+  .switch.disabled .track{ background:#e2e6ee; } .switch.disabled .knob{ background:#f4f6fa; }
+  .switch.disabled input{ cursor:not-allowed; }
+
+  /* ---------- Snippet grid (inline surfaces) ---------- */
+  .snip-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; }
+  .snip{ background:#fff; border:1px solid var(--p-border); border-radius:14px; padding:16px; box-shadow:var(--shadow-screen); color:var(--p-ink); }
+  .snip .cap{ font-size:12px; color:var(--muted); margin-top:10px; }
+  .balance-pill{ display:inline-flex; align-items:center; gap:9px; padding:8px 13px; border:1px solid var(--p-border); border-radius:999px; font-size:13.5px; background:#fff; }
+  .balance-pill .bal{ font-weight:750; }
+  .balance-pill .low{ color:var(--p-bad); }
+  .paused-banner{ display:flex; gap:11px; align-items:flex-start; background:var(--p-warn-bg); border:1px solid color-mix(in srgb,var(--p-warn) 30%,#fff); border-radius:11px; padding:12px 14px; font-size:13.5px; color:#7a4a06; }
+  .paused-banner b{ color:#5f3a05; }
+
+  /* caption under each screen */
+  .cap{ font-size:13px; color:var(--muted); margin-top:12px; max-width:78ch; }
+  .cap b{ color:var(--ink); font-weight:650; }
+
+  .screen-pad{ padding:0; }
+  footer{ margin-top:64px; padding-top:22px; border-top:1px solid var(--border); font-size:13px; color:var(--muted); display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+
+  @media (max-width:640px){
+    .stat-row{ grid-template-columns:repeat(2,1fr); }
+    .wrap{ padding:28px 16px 60px; }
+  }
+  @media (prefers-reduced-motion:reduce){ *{ transition:none !important; } }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">ContentStudio · Design review</p>
+    <h1>X (Twitter) Analytics Pay-Per-Use Metering</h1>
+    <p class="lede">Every new UI surface for gating X analytics behind the shared X wallet, with the cost of each sync shown before you spend. Interact with the tweet-count selector and the balance scenarios to see the live cost behavior these screens are built around.</p>
+    <div class="meta">
+      <span class="tag">Web only</span>
+      <span class="tag">Light theme <b>(no dark mode)</b></span>
+      <span class="tag">Depends on <b>X Wallet</b></span>
+      <span class="tag">Cost unit <b>dollars</b></span>
+    </div>
+    <div class="legend" aria-label="State colors">
+      <span class="li"><span class="dot" style="background:#157fff"></span> Primary action</span>
+      <span class="li"><span class="dot" style="background:#15934f"></span> Funded / charged</span>
+      <span class="li"><span class="dot" style="background:#b56a09"></span> Low balance / paused</span>
+      <span class="li"><span class="dot" style="background:#d24343"></span> Blocked</span>
+      <span class="li"><span class="dot" style="background:#0f1419"></span> X account</span>
+    </div>
+    <p class="note">These are static mockups for the [Design] story, rendered as light screens because ContentStudio has no dark mode. Prices shown are the amount the user pays. The raw X cost and ContentStudio markup are never surfaced.</p>
+  </header>
+
+  <!-- ============ 1. LOCK / UNLOCK CARD ============ -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-kicker">Analytics → X</span>
+      <h2>Unlock card</h2>
+      <span class="story-ref">Story 4 · [FE] Per-workspace unlock</span>
+    </div>
+    <p class="sec-sub">What a user sees on the X analytics tab depending on whether the account is enabled, the workspace has unlocked, and the wallet is funded. A card only blocks the view when there is no real data to show yet. Once a workspace has synced at least once, that data stays readable even with an empty wallet.</p>
+
+    <div class="seg" role="tablist" aria-label="Unlock card state">
+      <button data-lock-state="unlock" aria-pressed="true">Enabled, not yet unlocked</button>
+      <button data-lock-state="enable" aria-pressed="false">Off, billing user</button>
+      <button data-lock-state="ask" aria-pressed="false">Off, no billing access</button>
+      <button data-lock-state="empty" aria-pressed="false">Wallet empty, never synced</button>
+      <button data-lock-state="stale" aria-pressed="false">Wallet empty, has past data</button>
+    </div>
+
+    <div class="screen">
+      <div class="browserbar"><i></i><i></i><i></i><span class="url">app.contentstudio.io / analytics / x</span></div>
+      <div class="canvas">
+        <!-- Non-blocking notice, shown only when past data exists -->
+        <div class="stale-banner" id="staleBanner" hidden>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#b56a09" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+          <div><b>Your X wallet is empty, so this data is not refreshing.</b><br>Showing your last sync from 12 Jul 2026, 09:14. Top up to pull fresh data.</div>
+          <div class="acts"><button class="btn btn-warn btn-sm">Top up X wallet</button></div>
+        </div>
+        <!-- demo dashboard: blurred only while a blocking card is up -->
+        <div class="demo blurred" id="demoDash" aria-hidden="true">
+          <div class="demo-head">
+            <div class="demo-title"><span class="xchip">𝕏</span> @contentstudio · X analytics</div>
+            <div class="btn btn-ghost btn-sm">Last 30 tweets</div>
+          </div>
+          <div class="stat-row">
+            <div class="stat"><div class="k">Followers</div><div class="v num">48,210</div><div class="d up">▲ 1.8%</div></div>
+            <div class="stat"><div class="k">Impressions</div><div class="v num">312.4K</div><div class="d up">▲ 6.2%</div></div>
+            <div class="stat"><div class="k">Engagements</div><div class="v num">9,845</div><div class="d up">▲ 3.1%</div></div>
+            <div class="stat"><div class="k">Profile visits</div><div class="v num">2,190</div><div class="d down">▼ 0.7%</div></div>
+          </div>
+          <div class="chartcard">
+            <div class="k">Engagement over time</div>
+            <svg viewBox="0 0 720 150" width="100%" height="150" preserveAspectRatio="none" role="img" aria-label="Demo engagement chart">
+              <defs><linearGradient id="ar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#157fff" stop-opacity=".26"/><stop offset="1" stop-color="#157fff" stop-opacity="0"/></linearGradient></defs>
+              <line x1="0" y1="38" x2="720" y2="38" stroke="#eef1f6"/><line x1="0" y1="76" x2="720" y2="76" stroke="#eef1f6"/><line x1="0" y1="114" x2="720" y2="114" stroke="#eef1f6"/>
+              <path d="M0,120 C90,96 150,60 240,72 C330,84 380,38 480,48 C560,56 630,20 720,30 L720,150 L0,150 Z" fill="url(#ar)"/>
+              <path d="M0,120 C90,96 150,60 240,72 C330,84 380,38 480,48 C560,56 630,20 720,30" fill="none" stroke="#157fff" stroke-width="2.5"/>
+              <circle cx="720" cy="30" r="4" fill="#157fff"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- overlay cards -->
+        <div class="overlay" id="lockOverlay">
+          <!-- A: enabled, not unlocked -->
+          <div class="lockcard" data-lock-card="unlock">
+            <div class="ic" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg></div>
+            <h3>Refreshing X (Twitter) analytics uses your X wallet</h3>
+            <p>X charges per data pull. Each refresh here costs from your shared X wallet, based on how many tweets you pull.</p>
+            <div class="cost-strip">
+              <div><div class="lbl">Your first sync · 30 tweets</div><div class="val">about $0.16</div></div>
+              <div style="text-align:right"><div class="lbl">X wallet balance</div><div class="val">$4.20</div></div>
+            </div>
+            <button class="btn btn-primary">Unlock and sync 30 tweets for about $0.16</button>
+            <div><a class="learn" href="#">Learn how X analytics billing works <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M7 17 17 7M9 7h8v8"/></svg></a></div>
+          </div>
+          <!-- B: off, billing user -->
+          <div class="lockcard" data-lock-card="enable" hidden>
+            <div class="ic" aria-hidden="true"><span class="xchip" style="width:26px;height:26px">𝕏</span></div>
+            <h3>Turn on X (Twitter) analytics</h3>
+            <p>X now charges per data pull, so refreshing X analytics uses your X wallet balance, the same balance you use for X posting.</p>
+            <div class="cost-strip">
+              <div><div class="lbl">Your first sync · 30 tweets</div><div class="val">about $0.16</div></div>
+              <div style="text-align:right"><div class="lbl">X wallet balance</div><div class="val">$4.20</div></div>
+            </div>
+            <button class="btn btn-primary">Enable and sync 30 tweets for about $0.16</button>
+            <div><a class="learn" href="#">Learn how X analytics billing works <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M7 17 17 7M9 7h8v8"/></svg></a></div>
+          </div>
+          <!-- C: off, no billing access -->
+          <div class="lockcard" data-lock-card="ask" hidden>
+            <div class="ic" aria-hidden="true"><span class="xchip" style="width:26px;height:26px">𝕏</span></div>
+            <h3>X (Twitter) analytics is off</h3>
+            <p>X analytics uses your workspace X wallet. Ask your super admin to turn on X analytics and top up the wallet.</p>
+            <div class="asknote"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7688" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg> Only your super admin can turn this on.</div>
+          </div>
+          <!-- D: wallet empty -->
+          <div class="lockcard warn" data-lock-card="empty" hidden>
+            <div class="ic" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></div>
+            <h3>Your X wallet is empty</h3>
+            <p>Add funds to start pulling X analytics. There is no earlier data for this workspace yet, so there is nothing to show until your first sync.</p>
+            <div class="cost-strip">
+              <div><div class="lbl">Your first sync · 30 tweets</div><div class="val">about $0.16</div></div>
+              <div style="text-align:right"><div class="lbl">X wallet balance</div><div class="val low">$0.00</div></div>
+            </div>
+            <button class="btn btn-warn">Top up X wallet</button>
+            <div><a class="learn" href="#">Learn how X analytics billing works <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M7 17 17 7M9 7h8v8"/></svg></a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="cap"><b>What is shown:</b> the account master switch and the per-workspace consent both route through this card. A billing user can enable and unlock in one click. A user with no billing access is told to ask their super admin. Confirming fires <b>x_analytics_unlocked</b>.</p>
+  </section>
+
+  <!-- ============ 2. SYNC COST MODAL ============ -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-kicker">Sync data</span>
+      <h2>Per-sync cost modal</h2>
+      <span class="story-ref">Story 5 · [FE] Live cost + balance gate</span>
+    </div>
+    <p class="sec-sub">The core of the feature. Change the tweet count to watch the price and the button update live. Switch the balance scenario to see the funded, low-balance, and no-billing-access states.</p>
+
+    <div class="seg" aria-label="Balance scenario">
+      <button data-scenario="funded" aria-pressed="true">Wallet funded</button>
+      <button data-scenario="low" aria-pressed="false">Low, billing user</button>
+      <button data-scenario="lowask" aria-pressed="false">Low, no billing access</button>
+    </div>
+
+    <div class="modal-stage">
+      <div class="modal" role="dialog" aria-label="Sync X analytics">
+        <div class="modal-head">
+          <h3><span class="xchip" style="width:24px;height:24px;font-size:13px">𝕏</span> Sync X (Twitter) analytics</h3>
+          <button class="x" aria-label="Close">×</button>
+        </div>
+        <div class="balance-strip">
+          <span>X wallet balance</span>
+          <span class="bal" id="balDisplay">$4.20</span>
+        </div>
+        <div class="modal-body">
+          <div class="field">
+            <label>Tweets to Process <span class="help" title="Select the number of latest tweets to be processed during each sync. Each sync costs from your X wallet, and higher counts cost more.">?</span></label>
+            <div class="cs-select" data-select="tweetCount"></div>
+          </div>
+          <div class="estimate">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#157fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5l3 2"/></svg>
+            <span id="syncEst">This sync will cost about <span class="amt">$0.16</span> for 30 tweets</span>
+          </div>
+          <div id="afterSync"><span class="charged">✓ Last sync charged $0.16</span></div>
+        </div>
+        <div class="modal-foot" id="syncCta">
+          <!-- filled by script -->
+        </div>
+      </div>
+    </div>
+    <p class="cap"><b>What is shown:</b> a live dollar estimate that recalculates as the tweet count changes, the primary button reading the exact cost, an insufficient-balance state that swaps to a top-up CTA for billing users or an ask-admin message for everyone else, and the estimated-vs-actual reconciliation after a sync. Blocking fires <b>x_analytics_sync_blocked_insufficient_balance</b>.</p>
+  </section>
+
+  <!-- ============ 3. SCHEDULED SYNC MODAL ============ -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-kicker">Scheduled refresh</span>
+      <h2>Scheduled sync settings</h2>
+      <span class="story-ref">Story 6 · [FE] Projected cost + auto-pause</span>
+    </div>
+    <p class="sec-sub">This is the existing X (Twitter) Data Sync Schedule modal with the cost projection added. Same fields, same options, same conditional behavior as today. Change the frequency to see the weekday and date-of-month fields appear, and Never to see the cost disappear.</p>
+
+    <div class="modal-stage">
+      <div class="modal" role="dialog" aria-label="X Twitter Data Sync Schedule">
+        <div class="modal-head">
+          <h3>X (Twitter) Data Sync Schedule <span class="help" title="Configure the schedule to automatically fetch the latest X (Twitter) analytics data.">?</span></h3>
+          <button class="x" aria-label="Close">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="field">
+            <label>Sync Frequency</label>
+            <div class="cs-select" data-select="freq"></div>
+          </div>
+          <div class="field" id="weekdayField" hidden>
+            <label>Select Weekday</label>
+            <div class="cs-select" data-select="weekday"></div>
+          </div>
+          <div class="field" id="dateField">
+            <label>Date of month</label>
+            <div class="cs-select" data-select="monthday"></div>
+          </div>
+          <div class="field" id="schedCountField">
+            <label>Tweets to Process <span class="help" title="Select the number of latest tweets to be processed during each sync. Each sync costs from your X wallet, and higher counts cost more.">?</span></label>
+            <div class="cs-select" data-select="schedCount"></div>
+          </div>
+          <div class="estimate" id="schedEstimate" style="display:block">
+            <div style="display:flex;align-items:center;gap:9px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#157fff" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg><span id="perRun">Each run costs about <span class="amt">$0.16</span> for 30 tweets</span></div>
+            <div style="margin-top:8px;padding-left:25px;color:#6b7688;font-size:13.5px" id="perMonth">About <b>$0.16</b> per month at this schedule</div>
+          </div>
+          <div class="paused-banner" id="schedPause" style="margin-top:14px">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#b56a09" stroke-width="2"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>
+            <div>If your X wallet runs low, scheduled runs pause and we will let you know. They start again automatically once you top up. Data you have already synced stays visible.</div>
+          </div>
+        </div>
+        <div class="modal-foot" style="display:flex;justify-content:flex-end;gap:10px">
+          <button class="btn btn-ghost btn-sm" style="padding:11px 20px;font-size:14px">Cancel</button>
+          <button class="btn btn-primary" style="width:auto;padding:11px 24px">Update</button>
+        </div>
+      </div>
+    </div>
+    <p class="cap"><b>What is shown:</b> the live modal's real options, Daily, Weekly, Monthly and Never, with the weekday picker on Weekly and the 1 to 30 date picker on Monthly, plus the eight tweet counts. Added for this feature: the per-run and per-month cost projection and the auto-pause promise. Choosing Never hides the tweet count and the cost, matching today's behavior. The primary button reads Create when no schedule exists yet and Update when one does. Pausing fires <b>x_analytics_schedule_paused_insufficient_balance</b>.</p>
+  </section>
+
+  <!-- ============ 4. BILLING TOGGLE ============ -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-kicker">Billing → X Wallet</span>
+      <h2>Enable X analytics toggle</h2>
+      <span class="story-ref">Story 7 · [FE] Billing card toggle</span>
+    </div>
+    <p class="sec-sub">The account master switch, sitting on the existing X Wallet card. Off by default. Only billing-capable users can change it.</p>
+
+    <div style="display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+      <div>
+        <div class="billcard">
+          <div class="billcard-head">
+            <div class="t"><span class="xchip">𝕏</span> X (Twitter) Wallet</div>
+            <div class="wallet-bal"><div class="k">Balance</div><div class="v num">$4.20</div></div>
+          </div>
+          <div class="toggle-row">
+            <div class="txt">
+              <div class="lab">X (Twitter) analytics</div>
+              <div class="sub">Let this account pull X analytics using the X wallet. X charges per data pull, so each refresh costs from your balance.</div>
+            </div>
+            <label class="switch"><input type="checkbox" checked aria-label="Enable X analytics"><span class="track"></span><span class="knob"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="txt"><div class="lab">X (Twitter) posting</div><div class="sub">Publishing to X draws from the same wallet.</div></div>
+            <label class="switch"><input type="checkbox" checked aria-label="X posting"><span class="track"></span><span class="knob"></span></label>
+          </div>
+        </div>
+        <p class="cap">Billing user, toggle <b>on</b>. Turning it on fires <b>x_analytics_enabled</b>.</p>
+      </div>
+
+      <div>
+        <div class="billcard">
+          <div class="billcard-head">
+            <div class="t"><span class="xchip">𝕏</span> X (Twitter) Wallet</div>
+            <div class="wallet-bal"><div class="k">Balance</div><div class="v num">$4.20</div></div>
+          </div>
+          <div class="toggle-row">
+            <div class="txt">
+              <div class="lab">X (Twitter) analytics</div>
+              <div class="sub">Let this account pull X analytics using the X wallet. X charges per data pull, so each refresh costs from your balance.</div>
+              <div class="readonly-hint">Only your super admin can change this.</div>
+            </div>
+            <label class="switch disabled"><input type="checkbox" disabled aria-label="Enable X analytics (no access)"><span class="track"></span><span class="knob"></span></label>
+          </div>
+        </div>
+        <p class="cap">No billing access, toggle <b>read-only</b> and off.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 5. INLINE SURFACES ============ -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-kicker">Always visible</span>
+      <h2>Balance, reconciliation and paused notice</h2>
+      <span class="story-ref">Stories 5 &amp; 6</span>
+    </div>
+    <p class="sec-sub">The small persistent pieces that keep cost visible outside the modals.</p>
+
+    <div class="snip-grid">
+      <div class="snip">
+        <span class="balance-pill"><span class="xchip" style="width:18px;height:18px;font-size:10px">𝕏</span> X wallet: <span class="bal num">$4.20</span> <button class="btn btn-ghost btn-sm" style="margin-left:auto">Top up</button></span>
+        <p class="cap">Funded balance near the sync controls, with a top-up shortcut for billing users.</p>
+      </div>
+      <div class="snip">
+        <span class="balance-pill"><span class="xchip" style="width:18px;height:18px;font-size:10px">𝕏</span> X wallet: <span class="bal low num">$0.05</span> <button class="btn btn-warn btn-sm" style="margin-left:auto">Top up</button></span>
+        <p class="cap">Low balance, shown in the danger color before a sync is blocked.</p>
+      </div>
+      <div class="snip">
+        <span class="charged">✓ Charged $0.16 · 30 tweets</span>
+        <p class="cap">Estimated-vs-actual reconciliation after a sync completes.</p>
+      </div>
+      <div class="snip">
+        <div class="paused-banner"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#b56a09" stroke-width="2"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg><div><b>Scheduled X analytics refreshes are paused</b> because your X wallet is low. <a class="learn" href="#" style="margin-top:6px">Top up X wallet</a></div></div>
+        <p class="cap">Paused notice on the analytics tab. Non-billing users see an ask-admin message instead.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>ContentStudio · X Analytics Metering · design review mockups</span>
+    <span>7 stories · 1 Design · 2 BE · 4 FE</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var fmt = function(n){ return '$' + n.toFixed(2); };
+  var cost = function(n){ return n*0.005 + 0.01; };
+
+  /* ---- Styled dropdown, replacing native <select> ----
+     Native select menus are OS-rendered and cannot be themed, which is why
+     the product uses its own Dropdown component. This mirrors that. */
+  var COUNTS = [10,20,30,50,80,100,120,150];
+  var CONFIG = {
+    tweetCount: { options: COUNTS, value: 30 },
+    schedCount: { options: COUNTS, value: 30 },
+    freq: { options: ['Daily','Weekly','Monthly','Never'], value: 'Monthly' },
+    weekday: { options: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], value: 'Monday' },
+    monthday: { options: Array.from({length:30},function(_,i){ return i+1; }), value: 1 }
+  };
+  var selects = {};
+
+  function buildSelect(host, name, onChange){
+    var cfg = CONFIG[name];
+    var trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'trigger';
+    trigger.setAttribute('aria-haspopup','listbox');
+    trigger.setAttribute('aria-expanded','false');
+    var label = document.createElement('span');
+    label.textContent = cfg.value;
+    trigger.appendChild(label);
+    trigger.insertAdjacentHTML('beforeend','<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg>');
+
+    var menu = document.createElement('div');
+    menu.className = 'cs-menu';
+    menu.setAttribute('role','listbox');
+    menu.hidden = true;
+
+    cfg.options.forEach(function(opt){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'cs-opt';
+      b.setAttribute('role','option');
+      b.setAttribute('aria-selected', String(opt === cfg.value));
+      b.innerHTML = '<span>' + opt + '</span><svg class="tick" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M20 6 9 17l-5-5"/></svg>';
+      b.addEventListener('click', function(){
+        cfg.value = opt;
+        label.textContent = opt;
+        menu.querySelectorAll('.cs-opt').forEach(function(o){ o.setAttribute('aria-selected','false'); });
+        b.setAttribute('aria-selected','true');
+        close();
+        if(onChange) onChange(opt);
+      });
+      menu.appendChild(b);
+    });
+
+    function open(){ closeAll(); menu.hidden = false; trigger.setAttribute('aria-expanded','true'); }
+    function close(){ menu.hidden = true; trigger.setAttribute('aria-expanded','false'); }
+    trigger.addEventListener('click', function(e){ e.stopPropagation(); menu.hidden ? open() : close(); });
+
+    host.appendChild(trigger); host.appendChild(menu);
+    selects[name] = { close: close, get value(){ return cfg.value; } };
+  }
+  function closeAll(){ Object.keys(selects).forEach(function(k){ selects[k].close(); }); }
+  document.addEventListener('click', closeAll);
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeAll(); });
+
+  /* ---- Lock card state switch ----
+     Only the three no-data states and the never-synced empty wallet block the
+     view. A workspace that has synced before keeps its data readable. */
+  var lockBtns = document.querySelectorAll('[data-lock-state]');
+  var lockCards = document.querySelectorAll('[data-lock-card]');
+  var overlay = document.getElementById('lockOverlay');
+  var demoDash = document.getElementById('demoDash');
+  var staleBanner = document.getElementById('staleBanner');
+  lockBtns.forEach(function(b){
+    b.addEventListener('click', function(){
+      var state = b.getAttribute('data-lock-state');
+      var blocking = state !== 'stale';
+      lockBtns.forEach(function(x){ x.setAttribute('aria-pressed', x===b ? 'true':'false'); });
+      lockCards.forEach(function(c){ c.hidden = !blocking || c.getAttribute('data-lock-card') !== state; });
+      overlay.hidden = !blocking;
+      staleBanner.hidden = blocking;
+      demoDash.classList.toggle('blurred', blocking);
+      demoDash.setAttribute('aria-hidden', String(blocking));
+    });
+  });
+
+  /* ---- Sync modal: live cost + scenarios ---- */
+  var estEl = document.getElementById('syncEst');
+  var ctaEl = document.getElementById('syncCta');
+  var balEl = document.getElementById('balDisplay');
+  var afterEl = document.getElementById('afterSync');
+  var scenario = 'funded';
+
+  function renderSync(){
+    var n = CONFIG.tweetCount.value;
+    var c = cost(n);
+    estEl.innerHTML = 'This sync will cost about <span class="amt">' + fmt(c) + '</span> for ' + n + ' tweets';
+
+    if(scenario === 'funded'){
+      balEl.textContent = '$4.20'; balEl.className = 'bal';
+      afterEl.style.display = '';
+      ctaEl.innerHTML = '<button class="btn btn-primary">Sync ' + n + ' tweets for about ' + fmt(c) + '</button>';
+    } else if(scenario === 'low'){
+      balEl.textContent = '$0.05'; balEl.className = 'bal low';
+      afterEl.style.display = 'none';
+      ctaEl.innerHTML =
+        '<div class="inline-alert bad"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d24343" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg><span>Your X wallet is too low for this sync.</span></div>' +
+        '<button class="btn btn-warn" style="margin-top:12px">Top up X wallet</button>';
+    } else {
+      balEl.textContent = '$0.05'; balEl.className = 'bal low';
+      afterEl.style.display = 'none';
+      ctaEl.innerHTML =
+        '<div class="inline-alert bad"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d24343" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg><span>Your X wallet is too low for this sync. Ask your super admin to top up.</span></div>' +
+        '<button class="btn btn-primary" disabled style="margin-top:12px">Sync ' + n + ' tweets</button>';
+    }
+  }
+  var scBtns = document.querySelectorAll('[data-scenario]');
+  scBtns.forEach(function(b){
+    b.addEventListener('click', function(){
+      scenario = b.getAttribute('data-scenario');
+      scBtns.forEach(function(x){ x.setAttribute('aria-pressed', x===b ? 'true':'false'); });
+      renderSync();
+    });
+  });
+
+  /* ---- Scheduled modal: conditional fields + projections ----
+     Field visibility mirrors TwitterJobSettingsModal exactly: weekday only on
+     Weekly, date-of-month only on Monthly, and Never hides the tweet count. */
+  var perRunEl = document.getElementById('perRun');
+  var perMonthEl = document.getElementById('perMonth');
+  var weekdayField = document.getElementById('weekdayField');
+  var dateField = document.getElementById('dateField');
+  var schedCountField = document.getElementById('schedCountField');
+  var schedEstimate = document.getElementById('schedEstimate');
+  var schedPause = document.getElementById('schedPause');
+  var perMonthMult = { Daily:30, Weekly:4.3, Monthly:1, Never:0 };
+
+  function renderSched(){
+    var f = CONFIG.freq.value;
+    var n = CONFIG.schedCount.value;
+    var c = cost(n);
+
+    weekdayField.hidden = f !== 'Weekly';
+    dateField.hidden = f !== 'Monthly';
+    var off = f === 'Never';
+    schedCountField.hidden = off;
+    schedEstimate.style.display = off ? 'none' : 'block';
+    schedPause.style.display = off ? 'none' : 'flex';
+
+    perRunEl.innerHTML = 'Each run costs about <span class="amt">' + fmt(c) + '</span> for ' + n + ' tweets';
+    perMonthEl.innerHTML = 'About <b>' + fmt(c * perMonthMult[f]) + '</b> per month at this schedule';
+  }
+
+  /* Build every dropdown, then do the first render. */
+  document.querySelectorAll('[data-select]').forEach(function(host){
+    var name = host.getAttribute('data-select');
+    buildSelect(host, name, name === 'tweetCount' ? renderSync : renderSched);
+  });
+  renderSync();
+  renderSched();
+})();
+</script>

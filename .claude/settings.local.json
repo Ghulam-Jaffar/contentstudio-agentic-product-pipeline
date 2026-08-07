@@ -229,6 +229,35 @@
       "WebFetch(domain:www.smashingmagazine.com)",
       "WebFetch(domain:help.mailgun.com)",
       "WebFetch(domain:postfa.st)",
+      "Bash(ssh -o StrictHostKeyChecking=accept-new -T git@github.com)",
+      "Bash(cd /home/tehreem/code/contentstudio-agentic-product-pipeline *)",
+      "Bash(ssh-keygen -t ed25519 -C \"tehreem.shehzadi@d4interactive.io\" -f ~/.ssh/id_ed25519 -N \"\" -q)",
+      "Bash(chmod 600 ~/.ssh/id_ed25519)",
+      "Bash(chmod 644 ~/.ssh/id_ed25519.pub)",
+      "Bash(ssh-keygen -l -f ~/.ssh/id_ed25519.pub)",
+      "Skill(artifact-design)",
+      "Skill(artifact-design:*)",
+      "Bash(pnpm run *)",
+      "Bash(command -v pnpm)",
+      "Bash(pnpm --version)",
+      "Bash(command -v yarn)",
+      "Bash(yarn --version)",
+      "Bash(command -v npm)",
+      "Bash(node_modules/.bin/vite --version)",
+      "Bash(command -v corepack)",
+      "Bash(corepack --version)",
+      "Read(//usr/local/bin/**)",
+      "Bash(corepack enable *)",
+      "Bash(corepack prepare *)",
+      "Bash(corepack yarn *)",
+      "Bash(doppler projects *)",
+      "Bash(doppler whoami *)",
+      "Bash(doppler configure *)",
+      "Bash(COREPACK_ENABLE_STRICT=0 pnpm run *)",
+      "Bash(rg -ril \"customize with ai|customizeWithAi|customize_with_ai\" src/)",
+      "Bash(rg -ril \"customiz\" src/modules/composer* src/modules/publish*)",
+      "Bash(rg -rn \"handleCustomBoxToggle|onCustomizeToggle|customBoxToggle\" src/modules/composer/)",
+      "Bash(rg -rn \"singleBox\" src/modules/composer --include=\"*.ts\" -l)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebFetch(domain:www.npmjs.com)",
       "Bash(mkdir -p /home/casper/code/contentstudio-agentic-product-pipeline/docs/stories/multi-workspace-analytics-report)"
@@ -236,7 +265,8 @@
     "additionalDirectories": [
       "/home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories",
       "/home/tehreem/.ssh",
-      "/home/casper/code/contentstudio-agentic-product-pipeline/docs/stories"
+      "/home/casper/code/contentstudio-agentic-product-pipeline/docs/stories",
+      "/home/tehreem"
     ]
   }
 }

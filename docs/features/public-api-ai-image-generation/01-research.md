@@ -131,6 +131,38 @@ The CLI, MCP, and Claude Desktop paths all consume the REST API, so they are str
 
 ---
 
+---
+
+## Brand knowledge
+
+Every AI generation surface in the web app carries a brand on/off toggle. Generation conditioned on brand knowledge is the default experience, so an API that ignores brand would produce output visibly worse than the UI's.
+
+**The Brand Knowledge Revamp has shipped.** Verified in `contentstudio-frontend/src/modules/publisher/ai-content-library/types/index.ts:133-150`:
+
+```ts
+// v2 on/off flag; backend defaults true and gates brand application in generation/chat.
+brand_enabled?: boolean
+brand_style?: BrandStyle
+brand_profile?: BrandProfileInfo
+brand_voice?: BrandVoiceV2
+brand_topics?: Array<{ name: string; description: string }>
+// Legacy multi-item arrays — removed by brand-knowledge:strip-legacy; optional during transition.
+styles?: StyleOption[]
+brand_voices?: BrandVoiceOption[]
+```
+
+Three consequences for the API:
+
+1. **One brand per workspace.** All the brand fields are singular and the legacy arrays are marked removed. There is no brand for a caller to choose between, so the API needs no brand ID.
+2. **`brand_enabled` defaults to true and already gates brand application in generation and chat.** So the correct API default for an omitted brand parameter is to honour that stored flag, which means a workspace with brand knowledge set up gets on-brand API output with no extra parameter. This is parity, not a new rule.
+3. **The internal contract is already boolean-shaped.** `contentstudio-frontend/src/api/composer.ts:428-429` carries `use_brand_voice?: boolean` next to `brand_voice_id?: string | null` annotated *"unused — backend uses the workspace default"*, and returns `brand_voice_applied: boolean`. The public API mirrors this as `use_brand` and `brand_applied`.
+
+**Existing brand endpoints** (`contentstudio-frontend/src/modules/publisher/config/api-utils.ts`), all internal: `profile/get`, `profile/setBrandEnabled`, `profile/updateBrandSection`, `profile/sources/{add,delete,sync,enrich}`, `profile/delete`, `analyzeBrand`.
+
+**CRUD stays out of the public API by product decision.** Brand knowledge is created and maintained in the web app. The API consumes it. The only public brand surface is a read-only status endpoint so a caller can tell whether brand knowledge exists before relying on it.
+
+`contentstudio-frontend/src/modules/publisher/ai-content-library/composables/useBrandKnowledgePresence.ts` already computes "does this workspace have brand knowledge" and should back that status endpoint rather than a second implementation.
+
 ## 8. Recommended split
 
 Five stories. One deep, four thin, as requested.

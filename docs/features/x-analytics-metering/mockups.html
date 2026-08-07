@@ -223,7 +223,7 @@
       <span class="tag">Web only</span>
       <span class="tag">Light theme <b>(no dark mode)</b></span>
       <span class="tag">Depends on <b>X Wallet</b></span>
-      <span class="tag">Cost unit <b>dollars</b></span>
+      <span class="tag">Dual currency <b>$ or credits</b></span>
     </div>
     <div class="legend" aria-label="State colors">
       <span class="li"><span class="dot" style="background:#157fff"></span> Primary action</span>
@@ -232,7 +232,7 @@
       <span class="li"><span class="dot" style="background:#d24343"></span> Blocked</span>
       <span class="li"><span class="dot" style="background:#0f1419"></span> X account</span>
     </div>
-    <p class="note">These are static mockups for the [Design] story, rendered as light screens because ContentStudio has no dark mode. Prices shown are the amount the user pays. The raw X cost and ContentStudio markup are never surfaced.</p>
+    <p class="note">These are static mockups for the [Design] story, rendered as light screens because ContentStudio has no dark mode. Metering is dual-currency: new users pay dollars from the X wallet, legacy add-on users pay X credits (1 credit = $0.0166). Switch the cohort in the sync section to compare. Prices shown are the amount the user pays. The raw X cost and ContentStudio markup are never surfaced.</p>
   </header>
 
   <!-- ============ 1. LOCK / UNLOCK CARD ============ -->
@@ -343,10 +343,14 @@
       <h2>Per-sync cost modal</h2>
       <span class="story-ref">Story 5 · [FE] Live cost + balance gate</span>
     </div>
-    <p class="sec-sub">The core of the feature. Change the tweet count to watch the price and the button update live. Switch the balance scenario to see the funded, low-balance, and no-billing-access states.</p>
+    <p class="sec-sub">The core of the feature. Switch the cohort to see the same sync priced in dollars (new wallet users) or X credits (legacy add-on users). Change the tweet count to watch the price and button update live. Switch the balance scenario to see the funded, low, and no-billing-access states.</p>
 
+    <div class="seg" aria-label="Currency cohort">
+      <button data-cur="usd" aria-pressed="true">Dollar wallet</button>
+      <button data-cur="credits" aria-pressed="false">Legacy X credits</button>
+    </div>
     <div class="seg" aria-label="Balance scenario">
-      <button data-scenario="funded" aria-pressed="true">Wallet funded</button>
+      <button data-scenario="funded" aria-pressed="true">Funded</button>
       <button data-scenario="low" aria-pressed="false">Low, billing user</button>
       <button data-scenario="lowask" aria-pressed="false">Low, no billing access</button>
     </div>
@@ -358,7 +362,7 @@
           <button class="x" aria-label="Close">×</button>
         </div>
         <div class="balance-strip">
-          <span>X wallet balance</span>
+          <span id="balLabel">X wallet balance</span>
           <span class="bal" id="balDisplay">$4.20</span>
         </div>
         <div class="modal-body">
@@ -377,7 +381,7 @@
         </div>
       </div>
     </div>
-    <p class="cap"><b>What is shown:</b> a live dollar estimate that recalculates as the tweet count changes, the primary button reading the exact cost, an insufficient-balance state that swaps to a top-up CTA for billing users or an ask-admin message for everyone else, and the estimated-vs-actual reconciliation after a sync. Blocking fires <b>x_analytics_sync_blocked_insufficient_balance</b>.</p>
+    <p class="cap"><b>What is shown:</b> a live estimate in the account's own currency that recalculates as the tweet count changes, the primary button reading the exact cost, an insufficient-balance state that swaps to a top-up CTA (Top up X wallet for dollars, Get more X credits for legacy) for billing users or an ask-admin message for everyone else, and the estimated-vs-actual reconciliation after a sync. Cohort is decided by WalletService::isEnabledForUser. Legacy credit cost is the same real cost converted at 1 credit = $0.0166. Blocking fires <b>x_analytics_sync_blocked_insufficient_balance</b>.</p>
   </section>
 
   <!-- ============ 3. SCHEDULED SYNC MODAL ============ -->
@@ -601,33 +605,43 @@
     });
   });
 
-  /* ---- Sync modal: live cost + scenarios ---- */
+  /* ---- Sync modal: live cost + currency cohort + scenarios ----
+     Currency is decided per account by WalletService::isEnabledForUser. Wallet
+     users pay dollars, legacy add-on users pay X credits at 1 credit = $1/60,
+     cost-proportional and rounded up. Both cohorts pay the same real cost. */
   var estEl = document.getElementById('syncEst');
   var ctaEl = document.getElementById('syncCta');
   var balEl = document.getElementById('balDisplay');
+  var balLabelEl = document.getElementById('balLabel');
   var afterEl = document.getElementById('afterSync');
   var scenario = 'funded';
+  var currency = 'usd';                                   // 'usd' | 'credits'
+  var credits = function(n){ return Math.ceil(cost(n) * 60); };
+  var priceOf = function(n){ return currency === 'usd' ? fmt(cost(n)) : credits(n) + ' credits'; };
+  var lowBad = function(msg){ return '<div class="inline-alert bad"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d24343" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg><span>' + msg + '</span></div>'; };
 
   function renderSync(){
     var n = CONFIG.tweetCount.value;
-    var c = cost(n);
-    estEl.innerHTML = 'This sync will cost about <span class="amt">' + fmt(c) + '</span> for ' + n + ' tweets';
+    var usd = currency === 'usd';
+    balLabelEl.textContent = usd ? 'X wallet balance' : 'X credits';
+    estEl.innerHTML = 'This sync will cost about <span class="amt">' + priceOf(n) + '</span> for ' + n + ' tweets';
+    afterEl.innerHTML = '<span class="charged">✓ Last sync charged ' + priceOf(30) + '</span>';
 
     if(scenario === 'funded'){
-      balEl.textContent = '$4.20'; balEl.className = 'bal';
+      balEl.textContent = usd ? '$4.20' : '45 credits'; balEl.className = 'bal';
       afterEl.style.display = '';
-      ctaEl.innerHTML = '<button class="btn btn-primary">Sync ' + n + ' tweets for about ' + fmt(c) + '</button>';
+      ctaEl.innerHTML = '<button class="btn btn-primary">Sync ' + n + ' tweets for about ' + priceOf(n) + '</button>';
     } else if(scenario === 'low'){
-      balEl.textContent = '$0.05'; balEl.className = 'bal low';
+      balEl.textContent = usd ? '$0.05' : '3 credits'; balEl.className = 'bal low';
       afterEl.style.display = 'none';
       ctaEl.innerHTML =
-        '<div class="inline-alert bad"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d24343" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg><span>Your X wallet is too low for this sync.</span></div>' +
-        '<button class="btn btn-warn" style="margin-top:12px">Top up X wallet</button>';
+        lowBad(usd ? 'Your X wallet is too low for this sync.' : 'You are out of X credits for this sync.') +
+        '<button class="btn btn-warn" style="margin-top:12px">' + (usd ? 'Top up X wallet' : 'Get more X credits') + '</button>';
     } else {
-      balEl.textContent = '$0.05'; balEl.className = 'bal low';
+      balEl.textContent = usd ? '$0.05' : '3 credits'; balEl.className = 'bal low';
       afterEl.style.display = 'none';
       ctaEl.innerHTML =
-        '<div class="inline-alert bad"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d24343" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg><span>Your X wallet is too low for this sync. Ask your super admin to top up.</span></div>' +
+        lowBad(usd ? 'Your X wallet is too low for this sync. Ask your super admin to top up.' : 'You are out of X credits for this sync. Ask your super admin to add more.') +
         '<button class="btn btn-primary" disabled style="margin-top:12px">Sync ' + n + ' tweets</button>';
     }
   }
@@ -637,6 +651,15 @@
       scenario = b.getAttribute('data-scenario');
       scBtns.forEach(function(x){ x.setAttribute('aria-pressed', x===b ? 'true':'false'); });
       renderSync();
+    });
+  });
+  var curBtns = document.querySelectorAll('[data-cur]');
+  curBtns.forEach(function(b){
+    b.addEventListener('click', function(){
+      currency = b.getAttribute('data-cur');
+      curBtns.forEach(function(x){ x.setAttribute('aria-pressed', x===b ? 'true':'false'); });
+      renderSync();
+      renderSched();
     });
   });
 
@@ -664,8 +687,9 @@
     schedEstimate.style.display = off ? 'none' : 'block';
     schedPause.style.display = off ? 'none' : 'flex';
 
-    perRunEl.innerHTML = 'Each run costs about <span class="amt">' + fmt(c) + '</span> for ' + n + ' tweets';
-    perMonthEl.innerHTML = 'About <b>' + fmt(c * perMonthMult[f]) + '</b> per month at this schedule';
+    var monthly = currency === 'usd' ? fmt(c * perMonthMult[f]) : Math.round(credits(n) * perMonthMult[f]) + ' credits';
+    perRunEl.innerHTML = 'Each run costs about <span class="amt">' + priceOf(n) + '</span> for ' + n + ' tweets';
+    perMonthEl.innerHTML = 'About <b>' + monthly + '</b> per month at this schedule';
   }
 
   /* Build every dropdown, then do the first render. */

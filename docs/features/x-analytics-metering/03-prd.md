@@ -9,7 +9,11 @@
 
 ## 1. Overview
 
-X (Twitter) moved its API to **pay-per-use pricing**, so every X analytics refresh now costs ContentStudio real money: each sync reads one user profile (~$0.010) plus the tweets the user asked for at **$0.005 per tweet read**. This feature meters X analytics against the **existing prepaid X Credit Wallet** (the same dollar balance used for X publishing): X analytics is gated behind a one-time **per-workspace unlock card**, every sync shows its **dollar cost before it runs** and updates live as the user changes the tweet count, and the **actual cost is deducted from the wallet on a successful fetch** and recorded in the shared usage log. Billing-capable admins turn the capability on with an **Enable X analytics** toggle on the X Wallet card (off by default). The whole feature is built around one principle: **the user always sees what a sync costs before they spend, and can never be surprise-billed.**
+X (Twitter) moved its API to **pay-per-use pricing**, so every X analytics refresh now costs ContentStudio real money: each sync reads one user profile (~$0.010) plus the tweets the user asked for at **$0.005 per tweet read**. This feature meters X analytics: X analytics is gated behind a one-time **per-workspace unlock card**, every sync shows its **cost before it runs** and updates live as the user changes the tweet count, and the **actual cost is deducted on a successful fetch** and recorded.
+
+Metering is **dual-currency**, keyed off the user's cohort (decided by the existing `WalletService::isEnabledForUser` logic). **Wallet users** (new and provisioned accounts) pay in **dollars** from the prepaid X Credit Wallet, the same balance used for X publishing. **Legacy users** who hold the old X posting-credit add-on stay on the **credit** system permanently (flagged `x_wallet_disabled = true`); they pay in **X credits** deducted from their existing posting-credit allowance, converted at the verified rate of **1 credit = $0.0166** (60 credits = $1). Both cohorts pay the same real cost for a sync; only the unit and the top-up path differ. The whole feature is built around one principle: **the user always sees what a sync costs before they spend, and can never be surprise-billed.**
+
+> Note: today an analytics sync charges **nothing** for anyone. The `credits_used` value shown in analytics is purely an informational count of X API reads (`rawTweetsFetched (+1)`), never a deduction. Charging analytics is net-new for **both** currencies.
 
 ---
 
@@ -44,8 +48,8 @@ New events for this feature. Top-up itself already emits `x_credits_purchased` f
 |---|---|---|---|
 | `x_analytics_enabled` | Billing user turns on the Enable X analytics toggle | `{}` | Account-level adoption of the capability |
 | `x_analytics_unlocked` | User confirms the in-page unlock/consent card in a workspace (FE) | `{}` | Per-workspace activation; unlock funnel |
-| `x_analytics_sync_charged` | A successful sync deducts from the wallet (BE, server-side on fetch completion) | `{ amount_usd, tweet_count, source: 'manual' \| 'scheduled' }` | Sync volume, spend, manual vs scheduled split |
-| `x_analytics_sync_blocked_insufficient_balance` | A manual sync is attempted with too-low balance (FE) | `{}` | Friction; top-up conversion trigger |
+| `x_analytics_sync_charged` | A successful sync deducts from the wallet or credit balance (BE, server-side on fetch completion) | `{ amount, unit: 'usd' \| 'credits', tweet_count, source: 'manual' \| 'scheduled' }` | Sync volume, spend, manual vs scheduled split, currency split |
+| `x_analytics_sync_blocked_insufficient_balance` | A manual sync is attempted with too-low balance or too-few credits (FE) | `{ unit: 'usd' \| 'credits' }` | Friction; top-up conversion trigger; cohort split |
 | `x_analytics_schedule_paused_insufficient_balance` | A scheduled run is skipped and its schedule paused (BE) | `{}` | Scheduled-spend friction; resume behavior |
 
 Naming follows guidelines §19 (snake_case, past tense, no PII). These map 1:1 to acceptance criteria in the FE/BE stories.
@@ -84,14 +88,15 @@ Naming follows guidelines §19 (snake_case, past tense, no PII). These map 1:1 t
 
 ### 6.1 Must Have (P0)
 
-- **Per-workspace unlock / consent card** on the X analytics tab, shown over a blurred demo dashboard, explaining that refreshing X analytics draws from the shared X wallet, the per-sync dollar cost, and a learn-more link. Includes the "enable required" and "ask your super admin" states.
-- **Account master enable**: an **Enable X analytics** toggle on the billing X Wallet card, actionable only by billing-capable users (`can_see_subscription` / super admin), **off by default**.
+- **Dual-currency metering keyed off cohort.** The currency for a given account is decided by the existing `WalletService::isEnabledForUser` logic. Wallet users are charged in dollars from the X wallet; legacy add-on users are charged in X credits from their posting-credit allowance. Every cost preview, balance display, gate message, and top-up path renders in the user's own currency. No account is ever shown both.
+- **Per-workspace unlock / consent card** on the X analytics tab, shown over a blurred demo dashboard, explaining that refreshing X analytics draws from the shared X wallet (or X credits for legacy users), the per-sync cost in the user's currency, and a learn-more link. Includes the "enable required" and "ask your super admin" states.
+- **Account master enable** (wallet cohort): an **Enable X analytics** toggle on the billing X Wallet card, actionable only by billing-capable users (`can_see_subscription` / super admin), **off by default**. Legacy users have no X Wallet card, so they have no master toggle; for them the per-workspace unlock card is the only gate (they are already paying customers via the credit add-on).
 - **Live per-sync cost preview in dollars** on the Sync Data button and inside the sync settings modal, **recalculating as the tweet count changes** (`10-150`, default 30).
-- **Balance gate on manual syncs**: when the wallet (and auto-recharge) cannot cover the sync, block it, deduct nothing, and show a top-up CTA (billing users) or an "ask your super admin" message (non-billing users).
-- **Deduct on successful fetch, charged on the actual tweets read** (not the estimate, and nothing on failure or empty result), recorded in the shared X wallet usage ledger as an **analytics-sync** consumption type.
-- **Scheduled sync metering**: show the projected per-run cost in the scheduled sync settings modal; when a scheduled run cannot be funded, **skip it, pause the schedule, and notify** the user; resume on top-up or successful auto-recharge.
-- **Always-visible X wallet balance** in the X analytics surface, with a top-up shortcut for billing users.
-- **Pricing from the wallet's config-driven rate** (upstream cost + markup); **never expose X's raw cost or the markup** (BR-12 from the wallet PRD).
+- **Balance gate on manual syncs**: when the wallet (and auto-recharge) or the credit balance cannot cover the sync, block it, deduct nothing, and show a top-up CTA (billing users) or an "ask your super admin" message (non-billing users). For wallet users the top-up CTA opens the Manage X Wallet modal; for legacy users it opens the existing X posting-credit add-on purchase flow (buy more `$5 / 300` packs).
+- **Deduct on successful fetch, charged on the actual tweets read** (not the estimate, and nothing on failure or empty result). Wallet users: deducted from the X wallet and recorded in the shared usage ledger as an **analytics-sync** type. Legacy users: deducted from the `x_posting_credits` allowance (the same balance posting uses) and reflected in the credit usage view.
+- **Scheduled sync metering**: show the projected per-run cost (in the user's currency) in the scheduled sync settings modal; when a scheduled run cannot be funded, **skip it, pause the schedule, and notify** the user; resume on top-up, a credit pack purchase, a successful auto-recharge, or the monthly credit reset.
+- **Always-visible balance** in the X analytics surface, shown as dollars for wallet users and as X credits for legacy users, with a top-up shortcut for billing users.
+- **Pricing from the wallet's config-driven rate** (upstream cost + markup); for legacy users the same cost is converted to credits at 1 credit = $0.0166 and rounded up. **Never expose X's raw cost or the markup** (BR-12 from the wallet PRD).
 - **Usermaven events** per §3.1.
 
 ### 6.2 Should Have (P1)
@@ -159,6 +164,10 @@ A second diagram covering the scheduled-sync auto-pause behavior is in `02-workf
 | BR-8 | Unlock/consent is recorded **per workspace**; spend always draws from the single account-level wallet | Matches per-workspace analytics navigation with centralized billing |
 | BR-9 | The pre-sync figure is an **estimate**; the charge is the **actual**. X analytics is **count-based** (no date range) | X API takes tweet count, not a time window |
 | BR-10 | **Never** expose X's raw per-read cost or ContentStudio's markup; show only the price the user pays | Protects margin; avoids "why the fee?" friction (wallet BR-12) |
+| BR-11 | Currency is decided per account by `WalletService::isEnabledForUser`. Wallet users pay dollars; legacy add-on users (`x_wallet_disabled = true`) pay X credits. Never mix currencies for one account | Reuse the one implemented cohort gate; do not invent a new flag |
+| BR-12 | Legacy credit cost per sync = the same cost basis as the wallet, converted at **1 credit = $0.0166** (60 credits = $1) and **rounded up** to whole credits | Both cohorts pay the same real cost; whole-credit charges match the existing credit model |
+| BR-13 | Legacy analytics charges decrement the **same `x_posting_credits` allowance** posting uses; insufficient credits route the top-up CTA to the existing add-on purchase flow (`$5 / 300` packs) | One credit balance for the legacy cohort; reuse the add-on purchase path |
+| BR-14 | A single large sync can cost more credits than a plan's whole monthly allowance (for example ~46 credits for 150 tweets vs a Standard plan's 45/month). The gate blocks it and prompts a top-up rather than partial-syncing | Predictable behavior; no surprise partial data |
 
 ---
 
@@ -167,6 +176,8 @@ A second diagram covering the scheduled-sync auto-pause behavior is in `02-workf
 | Question | Options | Owner | Decision |
 |---|---|---|---|
 | Does the same markup % apply to analytics reads as to publishing? | Same flat markup / analytics-specific | PM + Billing | Working: same config-driven markup |
+| How are legacy X-credit users charged for analytics? | Charge credits / keep free / separate meter | PM | **Decided: charge X credits** from the `x_posting_credits` allowance, cost-proportional at 1 credit = $0.0166 |
+| Read-pricing config for analytics | needs `post_read` + `user_read` rates added to `x_pay_per_use.php` | Billing eng | **Open**: the config today only has post-write costs; analytics read rates are net-new and must be added |
 | Estimated-vs-actual: single "about $X" or a range when requested tweets may exceed available? | Single estimate + reconcile / range | PM | Leaning single estimate + reconcile (P1) |
 | Should the existing internal `credits_used` value be shown to users at all, or fully replaced by the dollar cost? | Replace fully / keep as secondary detail | PM | Leaning replace fully with dollars |
 | Does an auto-paused scheduled sync require a manual "resume," or does a successful top-up/auto-recharge resume it automatically? | Manual resume / auto-resume | PM + BE | **Decided: auto-resume** on the next due run once the wallet is funded (top-up or auto-recharge) |
@@ -195,6 +206,7 @@ A second diagram covering the scheduled-sync auto-pause behavior is in `02-workf
   - **Billing UI** (`contentstudio-frontend/src/modules/setting/components/billing/**`) — where the Enable X analytics toggle lives on the X Wallet card.
   - **Analytics data pipeline** (`contentstudio-social-analytics-go`) — the `twitter-fetcher` and manual `triggerJob` paths, which must deduct on a successful fetch and report the actual tweet count read (`src/services/twitter/twitter-fetcher/run.go`, `src/api/immediate_work_apis.go`, `src/cmd/jobs/fetcher/twitter.go`).
   - **Feature-unlock precedent** — `CompetitorAnalyticsLanding.vue`, `CompetitorUpgradeModal.vue`, `CompetitorDummyGraphs.vue` for the in-page gate.
+  - **Legacy credit system** — `WalletService::isEnabledForUser` (cohort gate), the `x_posting_credits` allowance and its decrement path, `IncreaseLimitsAddon` (credit rate), `src/modules/composer/utils/xCredits.ts`, and the existing X posting-credit add-on purchase flow (`TwitterPostingAddon.vue`, the `$5 / 300` pack) reused as the legacy top-up path.
 - **External:** X (Twitter) API pay-per-use pricing ($0.005 per post read, ~$0.010 per user read); Paddle top-up mechanism (via the wallet).
 - **Blockers:** The X wallet's balance getter and deduct/consume endpoint must exist (backend foundation on the unmerged `feature/cont-2623-story-1-credit-consumption-engine-foundation` branch) before this feature can deduct.
 
@@ -205,7 +217,25 @@ A second diagram covering the scheduled-sync auto-pause behavior is in `02-workf
 - **Workflow & full UX detail:** `02-workflow.md` (this feature folder).
 - **Research (competitor + codebase):** `01-research.md` (this feature folder).
 - **Wallet feature it extends:** `docs/features/x-pay-per-use-credits/` (PRD, workflow, epic + stories).
-- **Codebase anchors:** frontend `src/modules/analytics/views/twitter/**`, `src/modules/analytics/components/common/SyncDateRangeModal.vue`, `src/modules/analytics/views/twitter/components/TwitterJobSettingsModal.vue`, `src/modules/setting/components/billing/**`; Go `src/clients/social/twitter.go`, `src/services/twitter/twitter-fetcher/run.go`, `src/cmd/jobs/fetcher/twitter.go`.
+- **Codebase anchors:** frontend `src/modules/analytics/views/twitter/**`, `src/modules/analytics/components/common/SyncDateRangeModal.vue`, `src/modules/analytics/views/twitter/components/TwitterJobSettingsModal.vue`, `src/modules/setting/components/billing/**`, `src/modules/composer/utils/xCredits.ts`, `src/components/common/TwitterPostingAddon.vue`; backend `app/Services/Billing/XWallet/WalletService.php` (cohort gate), `app/Libraries/Account/IncreaseLimitsAddon.php` (credit rate), `config/x_pay_per_use.php` (wallet pricing config); Go `src/clients/social/twitter.go`, `src/services/twitter/twitter-fetcher/run.go` (`credits_used = rawTweetsFetched (+1)`), `src/cmd/jobs/fetcher/twitter.go`.
+
+### 12.1 Verified credit facts (from code, branch `features`)
+
+**Credit rate (universal, all plans):** 1 X posting credit = **$0.0166** · 60 credits = $1 · 300-credit pack = $5. Verified via `IncreaseLimitsAddon::X_POSTING_LIMIT = 60`, the `300 / $5` pack, and billing math `5/300`.
+
+**Per-plan monthly X posting-credit allowance** (after all migrations):
+
+| Plan tier | Monthly X credits | ≈ $ value |
+|---|---|---|
+| Standard / Starter / Empowerers / Growth | 45 | ~$0.75 |
+| Advanced / Pro / Basic | 80 | ~$1.33 |
+| Agency / Professional / Enterprise / Max | 150 | ~$2.50 |
+| Trial | 0 | $0 |
+| Lifetime (LTD) | 0 | $0 |
+
+**Illustrative sync cost in credits** (cost-proportional, rounded up): 30 tweets ≈ 10 credits · 80 tweets ≈ 25 credits · 150 tweets ≈ 46 credits (exceeds a Standard plan's whole monthly allowance, see BR-14).
+
+**Cohort gate:** `WalletService::isEnabledForUser` (kill switch → per-user `x_wallet_disabled` → force-disabled ids → wallet-has-activity → has-active-credit-addon → default wallet). Legacy add-on holders were backfilled to `x_wallet_disabled = true` and stay on credits with no forced dollar conversion. This supersedes the X-wallet PRD's "convert add-on to dollars" migration note, which is not implemented.
 
 ---
 

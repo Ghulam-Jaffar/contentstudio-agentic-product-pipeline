@@ -14,7 +14,7 @@ No existing feature or story covers AI video in the public API.
 | Slug | Relationship |
 |---|---|
 | `public-api-ai-image-generation` | **Sibling epic.** Same surfaces, same proxy architecture. Video diverges only on the async contract and dynamic pricing. |
-| `public-webhooks` | **Hard dependency.** Status *In Review*. Delivers HMAC signing, at-least-once delivery, retries into dead-letter, delivery logs, test events. Its PRD parks non-publishing events as a "future phase" — video events are that phase. |
+| `public-webhooks` | **Shipped.** Verified in code: `WebhookEventType` enum, `WebhookEmitter`, `WebhookSigner`, `WebhookDeliverer`, `WebhookRepo`, Kafka ingress topic. Already carries 7 event types (`post.scheduled`, `post.published`, `post.failed`, `post.inreview`, `post.approved`, `post.rejected`, `post.comment`), not the 2 its PRD described. Video events are an additive extension, not a dependency. |
 | `contentstudio-public-cli-agent-skills` | Structural precedent. Shipped the CLI, skill, and MCP server this epic extends. |
 | `video-clips-drive-dropbox-upload`, `video-clips-respect-duration-and-count`, `runtime-bitrate-check` | Web-app clip work. No API scope. |
 
@@ -139,6 +139,40 @@ The polling layer also reveals that dedicated-tool jobs (`motion-control`, `lip-
 **Cost of failure.** A failed video costs real money upstream. Credit behaviour on failure and cancellation needs an explicit decision, not a default.
 
 ---
+
+---
+
+## Brand knowledge
+
+Every AI generation surface in the web app carries a brand on/off toggle. Generation conditioned on brand knowledge is the default experience, so an API that ignores brand would produce output visibly worse than the UI's.
+
+**The Brand Knowledge Revamp has shipped.** Verified in `contentstudio-frontend/src/modules/publisher/ai-content-library/types/index.ts:133-150`:
+
+```ts
+// v2 on/off flag; backend defaults true and gates brand application in generation/chat.
+brand_enabled?: boolean
+brand_style?: BrandStyle
+brand_profile?: BrandProfileInfo
+brand_voice?: BrandVoiceV2
+brand_topics?: Array<{ name: string; description: string }>
+// Legacy multi-item arrays — removed by brand-knowledge:strip-legacy; optional during transition.
+styles?: StyleOption[]
+brand_voices?: BrandVoiceOption[]
+```
+
+Three consequences for the API:
+
+1. **One brand per workspace.** All the brand fields are singular and the legacy arrays are marked removed. There is no brand for a caller to choose between, so the API needs no brand ID.
+2. **`brand_enabled` defaults to true and already gates brand application in generation and chat.** So the correct API default for an omitted brand parameter is to honour that stored flag, which means a workspace with brand knowledge set up gets on-brand API output with no extra parameter. This is parity, not a new rule.
+3. **The internal contract is already boolean-shaped.** `contentstudio-frontend/src/api/composer.ts:428-429` carries `use_brand_voice?: boolean` next to `brand_voice_id?: string | null` annotated *"unused — backend uses the workspace default"*, and returns `brand_voice_applied: boolean`. The public API mirrors this as `use_brand` and `brand_applied`.
+
+**Existing brand endpoints** (`contentstudio-frontend/src/modules/publisher/config/api-utils.ts`), all internal: `profile/get`, `profile/setBrandEnabled`, `profile/updateBrandSection`, `profile/sources/{add,delete,sync,enrich}`, `profile/delete`, `analyzeBrand`.
+
+**CRUD stays out of the public API by product decision.** Brand knowledge is created and maintained in the web app. The API consumes it. The only public brand surface is a read-only status endpoint so a caller can tell whether brand knowledge exists before relying on it.
+
+`contentstudio-frontend/src/modules/publisher/ai-content-library/composables/useBrandKnowledgePresence.ts` already computes "does this workspace have brand knowledge" and should back that status endpoint rather than a second implementation.
+
+**Video-specific trap:** `VideoJobRequest` accepts a free-form `brand_guidelines: dict[str, Any]`. This must **not** be exposed publicly. Letting callers hand-construct guidelines creates a second source of truth for the brand and produces API output that diverges from the app, which is the opposite of the parity requirement.
 
 ## 10. Recommended split
 

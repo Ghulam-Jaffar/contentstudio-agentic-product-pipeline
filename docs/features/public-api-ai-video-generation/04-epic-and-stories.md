@@ -14,9 +14,13 @@ Video generation takes minutes, so the real deliverable is an **asynchronous job
 
 The epic also unifies two internal async engines behind one public job resource, and adds cost estimation, because video credit cost varies by model, duration, resolution, and audio rather than being a flat rate.
 
+Generation accepts a brand on/off boolean matching the web app's per-prompt brand toggle, plus a read-only brand status endpoint, so API video is not systematically off-brand next to UI video.
+
 **Tools in scope (5):** `text-to-video`, `image-to-video`, `video-clips-highlights`, `motion-control`, `lip-sync`. Plus `reference-to-video` as a third mode on the generate endpoint.
 
 **Out of scope:** image generation, which is the sibling epic and is synchronous. Also out: caption, hashtag, and post generation, bulk schedule, smart scheduling, and public SSE streaming.
+
+**Brand knowledge is set up in the web app, and the API must behave identically.** With brand knowledge configured in the app, an API call using that user's key produces the same on-brand video the app produces. **CRUD is out of scope by product decision** — creating and editing brand voice, style, profile, and source materials stays in the web app. The API consumes the brand, it does not define it.
 
 | # | Story | Priority |
 |---|---|---|
@@ -26,8 +30,9 @@ The epic also unifies two internal async engines behind one public job resource,
 | S-4 | [BE] Expose video generation tools in the MCP server and Claude Desktop bundle | High |
 | S-5 | [BE] Add video generation actions to Zapier, Make, and n8n | Medium |
 | S-6 | [BE] Publish public documentation and quickstarts for video generation | Medium |
+| S-7 | [BE] Give API-centric plans video generation credits and an addon | High |
 
-S-1 gates everything. S-2 additionally depends on the public webhooks epic landing. S-3 through S-6 can run in parallel once S-1 is done.
+S-1 gates everything. S-2 through S-6 can run in parallel once S-1 is done. S-2 is small: the webhooks system is already live with 7 post events, so adding two video events is additive. S-7 is independent of S-1 and should start early, because without it the feature is unreachable for the plan most likely to use it.
 
 ---
 
@@ -54,6 +59,7 @@ The generation already works. This story builds the public contract in front of 
 |---|---|---|
 | `GET` | `/workspaces/{workspace_id}/ai/videos/tools` | Tools, supported modes, input schemas |
 | `GET` | `/workspaces/{workspace_id}/ai/videos/models` | Models with supported modes, resolutions, durations |
+| `GET` | `/workspaces/{workspace_id}/ai/brand` | Read-only: is brand knowledge set up and enabled |
 | `POST` | `/workspaces/{workspace_id}/ai/videos/estimate` | Credit cost and time estimate, without submitting |
 | `POST` | `/workspaces/{workspace_id}/ai/videos/generate` | `text-to-video`, `image-to-video`, `reference-to-video` |
 | `POST` | `/workspaces/{workspace_id}/ai/videos/tools/{tool_key}` | `motion-control`, `lip-sync`, `video-clips-highlights` |
@@ -75,7 +81,7 @@ sequenceDiagram
     Dev->>API: POST /ai/videos/estimate
     API-->>Dev: credit cost and estimated seconds
 
-    Dev->>API: POST /ai/videos/generate with optional wait
+    Dev->>API: POST /ai/videos/generate with use_brand and optional wait
     API->>API: validate key, workspace, credits, storage, rate limit
     API->>AI: enqueue on Dramatiq or Temporal
     AI-->>API: job id and estimated seconds
@@ -105,6 +111,7 @@ sequenceDiagram
 7. If they had asked for a bounded wait and the job finished inside it, they get the finished result on the submit call and never poll at all.
 8. If the job fails, they are charged nothing and the response explains why.
 9. If they cancel a running job, they are charged nothing, including for partial work.
+10. They can ask for generation with their workspace brand applied, so the output matches what the web app produces with its brand toggle on, and the completed job tells them whether the brand was actually used.
 
 ### Acceptance criteria
 
@@ -117,6 +124,20 @@ sequenceDiagram
 - [ ] `POST /ai/videos/tools/{tool_key}` executes `motion-control`, `lip-sync`, and `video-clips-highlights`.
 - [ ] Requesting a mode, resolution, or duration the chosen model does not support returns `422` naming the unsupported combination.
 - [ ] An unknown `tool_key` returns `404`.
+
+**Brand knowledge**
+- [ ] `GET /ai/brand` returns whether brand knowledge is set up for the workspace and whether it is currently enabled.
+- [ ] The generate and tool endpoints accept an optional `use_brand` boolean.
+- [ ] When `use_brand` is true and the workspace has brand knowledge, generation is conditioned on it.
+- [ ] The completed job includes `brand_applied` as a boolean, so a caller can tell whether the brand was actually used.
+- [ ] Requesting `use_brand: true` on a workspace with no brand knowledge succeeds, generates without brand conditioning, and returns `brand_applied: false`. It does not error.
+- [ ] The endpoints accept **no** brand ID parameter.
+- [ ] The endpoints accept **no** caller-supplied `brand_guidelines` object, even though the internal `VideoJobRequest` has that field. Brand guidelines are resolved server side from the workspace brand.
+- [ ] Omitting `use_brand` honours the workspace's stored `brand_enabled` flag, which the backend defaults to true, so a workspace with brand knowledge set up in the app gets on-brand API video by default.
+- [ ] Passing `use_brand` explicitly overrides the stored flag for that request only, without changing the stored preference.
+- [ ] **Parity:** for the same workspace and the same inputs, an API video generation and a web app video generation apply brand knowledge identically. There is no API-specific brand configuration, default, or source of truth.
+- [ ] `use_brand` semantics and the `GET /ai/brand` response are **identical** to the image epic. A caller cannot observe a difference between the two domains.
+- [ ] No endpoint in this story creates, updates, or deletes brand knowledge. Brand setup remains a web app activity.
 
 **One job contract over two engines**
 - [ ] All five tools return a job handle in the **same** response shape, whichever internal engine runs them.
@@ -202,6 +223,7 @@ None directly. Web app, mobile apps, and Chrome extension unchanged. Everything 
 
 - None blocking, but shipping the sibling image epic first establishes the `/ai/*` namespace, error shapes, and credit-metering pattern this extends.
 - PRD open questions 1, 2, 3, 4, 6, 7, and 8 need answers before build: the bounded-wait cap, whether credits are reserved or only checked, the concurrency cap, the retention window, who absorbs upstream cost on late failure, whether batch is in v1, and whether generated media needs a provenance marker.
+- The `GET /ai/brand` shape and `use_brand` semantics must match the image epic exactly. Build one, reuse it.
 
 ### Global quality & compliance (wherever applicable)
 - [ ] Mobile responsiveness — N/A, backend-only story
@@ -232,6 +254,13 @@ None directly. Web app, mobile apps, and Chrome extension unchanged. Everything 
 - `contentstudio-backend/app/Http/Middleware/ApiKeyMiddleware.php:88-108` — API credit check and increment.
 - `contentstudio-backend/config/kafka.php:67-70` — `ai-agents.video.job.lifecycle`, `.batch.`, `.transform.`, `.reels.` topics. These are how completion is learned without polling the service ourselves, and are the natural trigger for the webhook events in S-2.
 
+**Brand knowledge:**
+- `contentstudio-frontend/src/api/composer.ts:428-429` — the existing internal pattern: `use_brand_voice?: boolean` with `brand_voice_id` annotated *"unused — backend uses the workspace default"*, and `brand_voice_applied: boolean` in the response.
+- `contentstudio-frontend/src/modules/publisher/ai-content-library/types/index.ts:137-146` — the shipped v2 model. `brand_enabled?: boolean` is commented *"v2 on/off flag; backend defaults true and gates brand application in generation/chat"*, with `brand_style`, `brand_profile`, `brand_voice`, `brand_topics` all singular and the legacy arrays marked removed. This is the source of the "honour the stored flag" default.
+- `contentstudio-frontend/src/modules/AI-tools/components/BrandVoiceSelector.vue` — the web app toggle. It sets the session voice and style **and** persists `brand_enabled`, so it is both a per-request override and a stored preference. The API mirrors both halves.
+- `contentstudio-frontend/src/modules/publisher/ai-content-library/composables/useBrandKnowledgePresence.ts` — the existing "is brand knowledge set up" determination the status endpoint should reuse.
+- **`VideoJobRequest.brand_guidelines` is a free-form `dict[str, Any]`.** Do not plumb this to the public API. Accepting caller-supplied guidelines forks brand definition away from Brand Knowledge and publicly commits us to a dict shape the Brand Knowledge Revamp is actively restructuring. Resolve guidelines server side from the workspace brand.
+
 **Gotchas:**
 - **Two async engines.** Four tools on Dramatiq, `video-clips-highlights` on Temporal. Different identifier names, different status routes, a separate result route, and status values in caps (`RUNNING`, `COMPLETED`). Normalising these is the core of this story, not an afterthought.
 - **Result shapes differ by origin.** Per the comment in `contentstudio-frontend/src/modules/AI-tools/composables/useVideoJobPolling.ts`, dedicated-tool jobs (`motion-control`, `lip-sync`) return a **flat** result with a direct `url` and `tool` key, while chat-originated generation returns a `content[]` array. The status endpoint carries no top-level `source`, so `tool` is the only signal telling them apart. The public API has to normalise this.
@@ -247,7 +276,7 @@ None directly. Web app, mobile apps, and Chrome extension unchanged. Everything 
 ### Description
 As an API developer, I want a signed webhook when my video finishes so that I do not have to poll at all.
 
-Adds `video.completed` and `video.failed` to the existing webhooks system. This builds entirely on the public webhooks epic's delivery stack. No new delivery machinery.
+Adds `video.completed` and `video.failed` to the **already live** webhooks system. Per the `WebhookEmitter` docblock, adding an event is *"one enum case + a payload builder + an emit() call — no plumbing changes"*. This is a small story, not a second delivery system.
 
 ### Workflow
 1. The user registers a webhook and subscribes to the video events.
@@ -261,7 +290,8 @@ Adds `video.completed` and `video.failed` to the existing webhooks system. This 
 - [ ] `video.completed` carries the job ID, media ID, media URL, duration, resolution, and the final charged credit cost.
 - [ ] `video.failed` carries the job ID and the failure reason.
 - [ ] Cancellation emits no event, since the caller initiated it.
-- [ ] Both events inherit HMAC signing, at-least-once delivery, exponential-backoff retries into the dead-letter queue, and delivery logs from the existing webhooks system.
+- [ ] Both events are added as `WebhookEventType` enum cases with payload builders, following the 7 existing post events rather than introducing a parallel mechanism.
+- [ ] Both events inherit HMAC signing, at-least-once delivery, exponential-backoff retries into the dead-letter queue, and delivery logs from the existing webhooks system, with no changes to that plumbing.
 - [ ] Both events are available through the existing test-event flow.
 - [ ] Delivery metering follows the existing rule of one API request per successful delivery.
 - [ ] A workspace with no webhook registered is unaffected, and polling continues to work identically.
@@ -275,7 +305,14 @@ None.
 
 ### Dependencies
 - Depends on: **[BE] Add AI video generation endpoints and the async job contract to the public API**
-- **Hard dependency on the public webhooks epic**, currently In Review. That epic must land first. Its PRD already scopes non-publishing events as a future phase, which this story fills.
+- The public webhooks system is **already shipped**, so there is no epic dependency here.
+
+**Implementation references**
+*Pointers from research — not a contract. Engineering may choose a different approach.*
+- `contentstudio-backend/app/Data/Webhooks/Enums/WebhookEventType.php` — the 7 live event cases to follow. Its comment documents the extension recipe: one enum case, one payload builder, one `emit()` call.
+- `contentstudio-backend/app/Services/Webhooks/WebhookEmitter.php` — the single internal entry point. Publishes a domain-event envelope to the cross-service Kafka ingress topic; the `WebhookEventHandler` consumer resolves recipients and delivers. Note its `recipientUserIds` parameter: post events workspace-broadcast to owner plus admins, so decide whether video events broadcast the same way or go only to the submitting key's owner.
+- `contentstudio-backend/app/Services/Webhooks/WebhookSigner.php`, `WebhookDeliverer.php`, `app/Repository/Webhooks/WebhookRepo.php` — signing, delivery, and persistence, all reused unchanged.
+- `contentstudio-backend/config/kafka.php` — the video lifecycle topics are the natural trigger for `emit()`.
 
 ### Global quality & compliance (wherever applicable)
 - [ ] Mobile responsiveness — N/A, backend-only story
@@ -303,6 +340,7 @@ Terminal users expect to wait and watch, so the CLI blocks with a progress indic
 
 ### Acceptance criteria
 - [ ] A `videos` command group exists with `videos:generate`, `videos:tools`, `videos:models`, `videos:estimate`, and `videos:job`.
+- [ ] Generate accepts a brand on/off flag, and the output reports whether the brand was applied.
 - [ ] One command exists per dedicated tool: `motion-control`, `lip-sync`, and clips extraction.
 - [ ] All 5 tools from S-1 are reachable from the CLI. A tool in the API but missing from the CLI fails this story.
 - [ ] Generate blocks by default, rendering progress and stage from the polling response.
@@ -352,6 +390,7 @@ As an AI agent operator, I want ContentStudio's video tools available as callabl
 - [ ] One MCP tool exists per video tool from S-1, all 5.
 - [ ] A discovery tool exposes available models with their supported modes, resolutions, and durations.
 - [ ] An estimate tool returns credit cost before generation, so an agent can check cost before spending.
+- [ ] Generation tools expose the brand on/off option, and a discovery or status tool reports whether brand knowledge is set up.
 - [ ] A check-status tool retrieves a job by ID.
 - [ ] Generation tools wait server-side up to the bounded-wait cap and return the finished video directly when it completes in time.
 - [ ] When the wait elapses, the tool returns a job handle plus the estimated remaining time, so the agent knows when to check rather than polling blindly.
@@ -415,7 +454,7 @@ Three independent connector releases.
 
 ### Dependencies
 - Depends on: **[BE] Add AI video generation endpoints and the async job contract to the public API**
-- Benefits from **[BE] Add video job events to the public webhooks system**, since a webhook-driven trigger is a cleaner resume path than polling on platforms that support it.
+- Benefits from **[BE] Add video job events to the public webhooks system**, since a webhook-driven trigger is a cleaner resume path than polling on platforms that support it. That story is small, because the webhooks system is already live.
 - Marketplace review for n8n and Make is the schedule long pole for this epic. Submit early.
 
 ### Global quality & compliance (wherever applicable)
@@ -466,3 +505,69 @@ Public docs site and help centre.
 - [ ] UI theming support — N/A, no interface
 - [ ] White-label domains impact review
 - [ ] Cross-product impact assessment (web, mobile apps, Chrome extension)
+
+
+---
+
+## S-7 · [BE] Give API-centric plans video generation credits and an addon
+**Project:** Billing · **Group:** Backend · **Skill:** Backend · **Product area:** Public API · **Priority:** High · **Type:** Feature
+
+### Description
+
+As a customer on an API-centric plan, I want video generation credits included in my plan and the ability to buy more, so that I can actually use the video generation endpoints instead of being rejected at submit.
+
+Same gap as the image epic's equivalent story. The `api-centric` and `api-centric-annual` plans hide AI Studio entirely, so they have never carried video generation credits and the video credit addon has never been offered to them. Once the video endpoints ship, the plan most likely to call them is the one plan that cannot.
+
+**Video makes this sharper than image does, for two reasons:**
+
+**The rejection happens at submit.** Per S-1, video credits are checked before a job is enqueued. So an API-plan customer does not get a partial or degraded experience, they get a hard `403` on every single call with nothing to show for it.
+
+**Video cost is dynamic, so a flat allocation is harder to reason about.** Credit cost varies by model, duration, resolution, and audio. "You get N video credits" does not tell a customer how many videos they can make. Whatever allocation Business sets should be expressed to customers in terms they can act on, ideally alongside the cost estimate endpoint from S-1 so they can work out their own budget.
+
+### Workflow
+1. A customer on an API-centric plan looks at their plan and sees a video generation credit allowance.
+2. They call the estimate endpoint to see what a given video will cost against that allowance.
+3. They submit generations, which draw down the allowance on completion.
+4. When they run low, they buy more through the same Increase Limits flow other plans use.
+5. Existing API-plan customers receive the new allowance without contacting support.
+
+### Acceptance criteria
+- [ ] The `api-centric` and `api-centric-annual` plans include a non-zero default video generation credit allocation in their plan limits.
+- [ ] The video generation credit addon is purchasable on API-centric plans, using the existing addon mechanism rather than a new one.
+- [ ] The addon appears in the Increase Limits surface for API-centric plans alongside the API credit addon.
+- [ ] Purchasing the addon increases available video credits, and generation draws down the combined plan plus addon balance.
+- [ ] **Existing** API-plan subscribers receive the new default allocation, not only new subscriptions. The migration path is defined and applied.
+- [ ] An API-centric workspace with credits remaining can submit and complete jobs through every endpoint in this epic.
+- [ ] An API-centric workspace with insufficient credits receives the same distinct `403` at submit as any other plan, with no plan-specific behaviour.
+- [ ] The cost estimate endpoint from S-1 works on API-centric plans and reports cost against that plan's balance, so a customer can budget before submitting.
+- [ ] Failed and cancelled jobs do not consume the allocation, consistent with S-1.
+- [ ] Credit consumption and remaining balance are visible to the customer through the same surfaces other plans use.
+- [ ] Annual and monthly variants both carry the allocation, and renewal resets it on the same cycle as other credit types.
+- [ ] If video clip extraction meters against a separate credit type from generation, both are allocated. A plan that can generate video but cannot extract clips from it is a half-shipped feature.
+
+### Impact on existing data
+Changes the plan limits objects for two plan types and applies a new allocation to existing subscriptions. No change to how video credits are metered or consumed.
+
+### Impact on other products
+Billing. Verify the addon renders for API plans in the Increase Limits surface and stays hidden where it should be.
+
+### Dependencies
+- Independent of S-1. Start early.
+- **Blocked on a Business decision:** default allocation and addon pricing for API-centric plans. Harder than the image equivalent because video cost is variable, so the allocation needs framing customers can act on.
+- The sibling image epic has an equivalent story. Decide both allocations together.
+
+### Global quality & compliance (wherever applicable)
+- [ ] Mobile responsiveness — N/A, backend and billing story
+- [ ] Multilingual support (frontend + backend, translations available or fallback handled)
+- [ ] UI theming support — N/A, no new interface
+- [ ] White-label domains impact review
+- [ ] Cross-product impact assessment (web, mobile apps, Chrome extension)
+
+### Implementation references
+*Pointers from research — not a contract. Engineering may choose a different approach.*
+
+- `contentstudio-backend/app/Libraries/Account/IncreaseLimitsAddon.php` — `VIDEO_GENERATION_LIMIT` is the per-unit constant and `video_generation_credits` is the addon key. There is a separate `VIDEO_CLIP_LIMIT` constant, which is why the clip-credit acceptance criterion above exists: confirm whether `video-clips-highlights` meters against generation credits or clip credits, and allocate whichever applies.
+- `contentstudio-backend/app/Libraries/Settings/SubscriptionLimits.php` — reads `used_video_credits` and `used_video_clip_credits` from the workspace, confirming the two are tracked separately.
+- `contentstudio-backend/app/Repository/Settings/WorkspaceRepo.php:484` — where the video credit value is written per workspace.
+- `contentstudio-backend/app/Models/Account/Subscription.php` — plan model with `features` and `limits`. API plan slugs are `api-centric` and `api-centric-annual`.
+- **Gotcha:** API-centric plans hide AI Studio, so these customers never see the in-app credit meters. Combined with dynamic per-video pricing, they have the least visibility of any segment into what they are spending. The estimate endpoint from S-1 is doing more work for this audience than for anyone else.

@@ -6,6 +6,8 @@
 
 > These stories are documentation for the Product Owner to create in the tracker manually. Structure each story with the New Feature Template sections. Per current team preference, no trailing PM "fields" block is included; priorities are in the story table below. Web-only for v1 (no mobile stories). No em dashes in user-facing copy. Never expose X's raw per-read cost or ContentStudio's markup.
 
+> **Dual-currency model (applies across these stories).** The currency for an account is decided by the existing `WalletService::isEnabledForUser` gate. **Wallet users** pay in **dollars** from the X wallet. **Legacy users** who hold the old X posting-credit add-on (`x_wallet_disabled = true`) pay in **X credits** deducted from their `x_posting_credits` allowance, at the verified rate **1 credit = $0.0166** (60 credits = $1), cost-proportional and rounded up (a 30-tweet sync is about 10 credits). A given account only ever sees one currency. The legacy top-up path is the existing `$5 / 300` X posting-credit add-on purchase; the wallet top-up path is the Manage X Wallet modal. Today an analytics sync charges nothing for anyone, so this metering is net-new for both currencies.
+
 ---
 
 ## Epic
@@ -79,28 +81,31 @@ Web only. Mobile, Chrome extension not in scope for this epic.
 ## Story 2 — [BE] Meter X analytics syncs against the X wallet
 
 ### Description
-As the platform, I want to charge X analytics syncs to the shared X wallet based on what a sync actually reads, so that ContentStudio recovers its X API cost with margin while the user is only ever charged for a successful sync and only for the tweets actually returned.
+As the platform, I want to charge X analytics syncs in the account's own currency (dollars for wallet users, X credits for legacy add-on users) based on what a sync actually reads, so that ContentStudio recovers its X API cost with margin while the user is only ever charged for a successful sync and only for the tweets actually returned.
 
 ### Workflow
-This is a backend story. Behavior, from the user's point of view: before a sync runs, the system knows whether the wallet can cover it and what it will cost. After a successful sync, the wallet balance drops by the sync's cost and a new line appears in the X wallet usage log. A failed or empty sync costs nothing.
+This is a backend story. Behavior, from the user's point of view: before a sync runs, the system knows whether the account's wallet or credit balance can cover it and what it will cost in that account's currency. After a successful sync, the balance drops by the sync's cost and a new entry appears in the usage history. A failed or empty sync costs nothing.
 
 ### Acceptance criteria
-- [ ] A per-sync cost is computed from the wallet's pricing config as: (number of tweets to read times the configured per-post-read rate) plus one configured user-read rate, times the configured markup. Rates come from the wallet config, never hardcoded.
-- [ ] An endpoint returns the projected cost for a given tweet count so the frontend can show a live estimate. It returns the payable dollar amount only, never the raw X cost or the markup.
-- [ ] Before a manual sync runs, the system checks the account X wallet balance. If the balance (after any auto-recharge) cannot cover the projected cost, the sync is rejected with a clear "insufficient X wallet balance" reason and nothing is deducted.
-- [ ] On a successful sync, the wallet is charged the actual cost based on the number of tweets actually returned (not the estimate), even when fewer tweets were available than requested.
+- [ ] The charging currency for an account is decided by the existing `WalletService::isEnabledForUser` logic: wallet users are charged in dollars, legacy add-on users in X credits. A new flag is not introduced.
+- [ ] The dollar cost of a sync is computed from the pricing config as: (number of tweets to read times the configured per-post-read rate) plus one configured user-read rate, times the configured markup. Rates come from config, never hardcoded.
+- [ ] For legacy users, the same dollar cost basis is converted to X credits at 1 credit = $0.0166 (60 credits = $1) and rounded up to whole credits.
+- [ ] An endpoint returns the projected cost and its unit (dollars or credits) for a given tweet count and account, so the frontend can show a live estimate in the right currency. It returns the payable amount only, never the raw X cost or the markup.
+- [ ] Before a manual sync runs, the system checks the account's balance in its currency. If the wallet (after any auto-recharge) or the credit allowance cannot cover the projected cost, the sync is rejected with a clear insufficient-balance reason and nothing is deducted.
+- [ ] On a successful sync, the account is charged the actual cost based on the number of tweets actually returned (not the estimate), even when fewer tweets were available than requested.
 - [ ] A failed sync or a sync that returns zero tweets deducts nothing.
-- [ ] The deduction is atomic and idempotent per sync, so a manual and a scheduled sync running close together cannot double-charge or lose a charge.
-- [ ] Each charge writes a usage-ledger entry of a distinct analytics-sync type, recording date, workspace, connected X account, tweet count, cost, and resulting balance, visible in the existing X wallet usage log alongside publishing entries.
-- [ ] When a sync is charged, an `x_analytics_sync_charged` Usermaven event fires server-side with `{ amount_usd, tweet_count, source: 'manual' | 'scheduled' }`.
-- [ ] The wallet balance for X analytics is the same account-level balance used for X publishing (no separate analytics balance).
+- [ ] The deduction is atomic and idempotent per sync, so a manual and a scheduled sync running close together cannot double-charge or lose a charge, in both currencies.
+- [ ] Wallet charges write a usage-ledger entry of a distinct analytics-sync type (date, workspace, connected X account, tweet count, cost, resulting balance) visible in the X wallet usage log. Legacy charges decrement the same `x_posting_credits` allowance posting uses and are reflected in the credit usage view.
+- [ ] When a sync is charged, an `x_analytics_sync_charged` Usermaven event fires server-side with `{ amount, unit: 'usd' | 'credits', tweet_count, source: 'manual' | 'scheduled' }`.
+- [ ] Wallet spend uses the same account-level wallet balance as X publishing; legacy spend uses the same `x_posting_credits` allowance as X publishing. No separate analytics-only balance is created.
 
 ### Mock-ups
 N/A, backend only.
 
 ### Impact on existing data
 - Adds a new consumption type to the existing X wallet usage ledger. No change to the wallet balance model itself.
-- The analytics fetch path begins reporting the actual number of tweets read so the charge can reconcile to reality.
+- Legacy charges decrement the existing `x_posting_credits` allowance (the same field posting consumes); no new credit balance is introduced.
+- The analytics fetch path begins reporting the actual number of tweets read so the charge can reconcile to reality (today `credits_used = rawTweetsFetched (+1)` is recorded but never charged).
 
 ### Impact on other products
 Web only. Charges apply to any X analytics sync regardless of trigger surface. Mobile not in scope.
@@ -120,14 +125,18 @@ Web only. Charges apply to any X analytics sync regardless of trigger surface. M
 *Pointers from research — not a contract. Engineering may choose a different approach.*
 
 **Primary entry points:**
-- `contentstudio-social-analytics-go/src/services/twitter/twitter-fetcher/run.go` — the fetch loop already counts tweets fetched (`rawTweetsFetched`); this is the actual-tweets-read figure the charge should reconcile against.
+- `contentstudio-social-analytics-go/src/services/twitter/twitter-fetcher/run.go` — the fetch loop already counts tweets fetched (`rawTweetsFetched`) and computes `credits_used = rawTweetsFetched (+1 if the user read ran)`; this is the actual-tweets-read figure the charge should reconcile against.
 - `contentstudio-social-analytics-go/src/api/immediate_work_apis.go` and `src/models/kafka/twitter.go` (`NTweets`) — the manual sync trigger path carrying the requested tweet count.
 - `contentstudio-social-analytics-go/src/cmd/jobs/fetcher/twitter.go` — the scheduled path (`jobSetting.PostCount`).
-- The wallet balance getter and deduct/consume engine live in the wallet backend foundation (`contentstudio-backend`, unmerged branch `feature/cont-2623-story-1-credit-consumption-engine-foundation`). Reuse its atomic decrement plus ledger insert; do not reimplement.
+- `contentstudio-backend/app/Services/Billing/XWallet/WalletService.php` — `isEnabledForUser` is the single cohort gate; call it to pick the currency. Do not add a new flag.
+- Wallet deduction: reuse the wallet's atomic decrement + ledger insert (`XWalletDebitService`, `Pricing`). Legacy deduction: reuse the existing `x_posting_credits` decrement / `used_x_posting_credits` counting that publishing uses.
+- Credit rate is `IncreaseLimitsAddon::X_POSTING_LIMIT = 60` (60 credits = $1); mirror it, do not hardcode a second copy.
 
 **Gotcha:**
 - X analytics is count-based. `FetchUserTweets` sends only `max_results` and `pagination_token`, no time window, so cost must key off tweet count, not a date range.
 - Requested count and returned count can differ (an account with fewer tweets than requested). Charge on returned count.
+- Read pricing is net-new: `config/x_pay_per_use.php` today holds only post-write costs (`plain_usd_mills`, `link_usd_mills`). Add `post_read` and `user_read` rates there so both cohorts derive from one config.
+- A large sync can cost more credits than a plan's whole monthly allowance (about 46 credits for 150 tweets vs a Standard plan's 45/month). Block and prompt a top-up rather than partial-syncing.
 
 ---
 
@@ -140,14 +149,14 @@ As the platform, I want to store whether an account has enabled X analytics mete
 This is a backend story. Behavior, from the user's point of view: X analytics stays off until an admin turns it on. Each workspace confirms once before it starts spending. A scheduled refresh that cannot be paid for is skipped and paused, the user is notified, and it starts running again on its own once the wallet is funded.
 
 ### Acceptance criteria
-- [ ] An account-level "X analytics enabled" flag is stored, defaulting to off for all accounts.
+- [ ] An account-level "X analytics enabled" flag is stored for wallet users, defaulting to off. Legacy add-on users have no such flag (they have no X Wallet card); for them X analytics is treated as available and the per-workspace unlock card is the only gate.
 - [ ] Only billing-capable users (permission `can_see_subscription` or super admin) can change the flag; a request from a non-billing user is rejected.
-- [ ] A per-workspace "X analytics unlocked" state is stored and returned so the frontend knows whether to show the unlock card in a given workspace.
-- [ ] Turning the flag on for the first time also allows the workspace unlock to proceed in the same action for a billing user.
-- [ ] When a scheduled X sync is due and the wallet (after any auto-recharge) cannot cover it, the run is skipped, the schedule is set to a paused state, and nothing is deducted.
-- [ ] When a paused schedule's next run is due and the wallet can now cover it (via top-up or a successful auto-recharge), the schedule resumes automatically with no manual step.
-- [ ] When a scheduled run is auto-paused for low balance, an `x_analytics_schedule_paused_insufficient_balance` Usermaven event fires server-side.
-- [ ] The account-enabled state and the per-workspace unlock state are readable by the frontend in one call so the analytics tab can decide what to render without extra round trips.
+- [ ] A per-workspace "X analytics unlocked" state is stored and returned so the frontend knows whether to show the unlock card in a given workspace, for both cohorts.
+- [ ] For a wallet user, turning the flag on for the first time also allows the workspace unlock to proceed in the same action.
+- [ ] When a scheduled X sync is due and the account's balance in its currency (wallet after any auto-recharge, or the credit allowance) cannot cover it, the run is skipped, the schedule is set to a paused state, and nothing is deducted.
+- [ ] When a paused schedule's next run is due and the account can now cover it (wallet top-up or successful auto-recharge, or a credit pack purchase or the monthly credit reset), the schedule resumes automatically with no manual step.
+- [ ] When a scheduled run is auto-paused for low balance or credits, an `x_analytics_schedule_paused_insufficient_balance` Usermaven event fires server-side.
+- [ ] The cohort (wallet vs legacy), the account-enabled state, the per-workspace unlock state, and the current balance in the account's currency are readable by the frontend in one call so the analytics tab can decide what to render without extra round trips.
 
 ### Mock-ups
 N/A, backend only.
@@ -211,7 +220,8 @@ flowchart TD
 - [ ] When the X analytics tab opens and the account has not enabled X analytics, a card is shown over a blurred demo dashboard.
 - [ ] For a billing-capable user, the enable-required card shows the title "Turn on X (Twitter) analytics", the body "X now charges per data pull, so refreshing X analytics uses your X wallet balance, the same balance you use for X posting. Turn it on to start pulling X analytics.", a primary button "Enable and fetch data", and a learn more link opening the help doc in a new tab.
 - [ ] For a non-billing user, the ask-admin card shows the title "X (Twitter) analytics is off", the body "X analytics uses your workspace X wallet. Ask your super admin to turn on X analytics and top up the wallet.", and no enable button.
-- [ ] When X analytics is enabled but the workspace has not unlocked it, the unlock card shows the title "Refreshing X (Twitter) analytics uses your X wallet", the body "X charges per data pull. Each refresh here costs from your shared X wallet, based on how many tweets you pull. You will always see the cost before you sync.", a primary button "Unlock and fetch data", and the learn more link.
+- [ ] When X analytics is enabled but the workspace has not unlocked it, the unlock card (wallet cohort) shows the title "Refreshing X (Twitter) analytics uses your X wallet", the body "X charges per data pull. Each refresh here costs from your shared X wallet, based on how many tweets you pull. You will always see the cost before you sync.", a primary button "Unlock and fetch data", and the learn more link.
+- [ ] For a legacy credit user, the unlock card shows the title "Refreshing X (Twitter) analytics uses your X credits", the body "X charges per data pull. Each refresh here uses X credits from your plan, based on how many tweets you pull. You will always see the cost before you sync.", the same "Unlock and fetch data" button, and the learn more link. Legacy users do not see the enable-required card (they have no account toggle); they go straight to this unlock card.
 - [ ] The blurred demo dashboard uses placeholder data and is visibly non-interactive behind the card.
 - [ ] When a billing user confirms the enable-required card, X analytics is enabled for the account and the workspace is unlocked in the same action, then the first sync is attempted.
 - [ ] When a user confirms the unlock card, the workspace is marked unlocked and the first sync is attempted.
@@ -281,17 +291,18 @@ flowchart TD
 6. The current X wallet balance is always visible near the sync controls, with a top-up shortcut for billing users.
 
 ### Acceptance criteria
-- [ ] The X sync settings modal shows a live cost estimate in dollars for the selected tweet count, with the copy "This sync will cost about {amount} for {count} tweets".
+- [ ] All cost, balance, and top-up copy renders in the account's currency, decided by the cohort returned from the backend: dollars for wallet users, X credits for legacy users. A given user only ever sees one currency, and the amount is formatted for that currency (for example "$0.16" or "10 credits").
+- [ ] The X sync settings modal shows a live cost estimate for the selected tweet count, with the copy "This sync will cost about {amount} for {count} tweets" (for example "about $0.16" for wallet users, "about 10 credits" for legacy users).
 - [ ] Changing the tweet count updates the estimate and the primary button label within a moment, with no page reload.
 - [ ] When the balance covers the estimate, the primary button reads "Sync {count} tweets for about {amount}" and runs the sync when clicked.
 - [ ] The Sync data button on the analytics header also shows the estimate for the current default tweet count.
 - [ ] After a sync completes, the actual amount charged is shown next to the estimate with the copy "Charged {actual}", and the visible balance updates.
-- [ ] When the balance cannot cover the estimate and the user is billing-capable, the primary button becomes "Top up X wallet" and opens the Manage X Wallet top up modal.
-- [ ] When the balance cannot cover the estimate and the user is not billing-capable, an inline message shows "Your X wallet is too low for this sync. Ask your super admin to top up." and the sync cannot start.
-- [ ] The current X wallet balance is visible near the sync controls at all times, shown as "X wallet: {balance}".
-- [ ] A learn more affordance next to the cost explains the pricing in plain language: "You pay from your X wallet for each refresh. Cost depends on how many tweets you pull. For example, pulling 30 tweets costs about $0.16."
+- [ ] When the balance cannot cover the estimate and the user is billing-capable: wallet users see the primary button become "Top up X wallet" opening the Manage X Wallet modal; legacy users see it become "Get more X credits" opening the X posting-credit add-on purchase.
+- [ ] When the balance cannot cover the estimate and the user is not billing-capable, an inline message shows "Your X wallet is too low for this sync. Ask your super admin to top up." (wallet) or "You are out of X credits for this sync. Ask your super admin to add more." (legacy), and the sync cannot start.
+- [ ] The current balance is visible near the sync controls at all times, shown as "X wallet: {balance}" for wallet users or "X credits: {count} left" for legacy users.
+- [ ] A learn more affordance next to the cost explains the pricing in plain language, in the user's currency: "You pay from your X wallet for each refresh. Cost depends on how many tweets you pull. For example, pulling 30 tweets costs about $0.16." (wallet) or "Each refresh uses X credits from your plan. Cost depends on how many tweets you pull. For example, pulling 30 tweets uses about 10 credits." (legacy)
 - [ ] The estimate and all amounts show only the price the user pays, never the raw X cost or any markup.
-- [ ] When a manual sync is blocked because the balance is too low, an `x_analytics_sync_blocked_insufficient_balance` Usermaven event fires with `{}`.
+- [ ] When a manual sync is blocked because the balance or credits are too low, an `x_analytics_sync_blocked_insufficient_balance` Usermaven event fires with `{ unit: 'usd' | 'credits' }`.
 - [ ] All new copy is available in every locale under `src/locales`, added in one commit.
 
 ### Mock-ups
@@ -304,9 +315,9 @@ Reads the X wallet balance and the projected cost. Replaces the existing analyti
 Web only. Mobile not in scope.
 
 ### Dependencies
-- Depends on **[BE] Meter X analytics syncs against the X wallet** for the projected cost, the balance gate, and the actual charge.
+- Depends on **[BE] Meter X analytics syncs against the X wallet** for the cohort, the projected cost and its unit, the balance gate, and the actual charge.
 - Depends on **[Design] Design the X analytics metering experience**.
-- Reuses the Manage X Wallet top up modal from the epic **X (Twitter) Pay-Per-Use Credit Wallet**.
+- Reuses the Manage X Wallet top up modal from the epic **X (Twitter) Pay-Per-Use Credit Wallet** (wallet users), and the existing X posting-credit add-on purchase (`TwitterPostingAddon.vue`, the `$5 / 300` pack) as the legacy top-up path.
 
 ### Global quality & compliance (wherever applicable)
 - [ ] Mobile responsiveness (frontend, responsive web)
@@ -344,10 +355,11 @@ As a user setting up automatic X analytics refreshes, I want to see what each sc
 4. If a scheduled run cannot be paid for, it is skipped, the schedule pauses, and the user is notified. When the wallet is funded again, the schedule resumes on its own.
 
 ### Acceptance criteria
-- [ ] The scheduled sync settings modal shows the projected per-run cost for the selected tweet count with the copy "Each run costs about {amount} for {count} tweets".
+- [ ] All projected cost and pause copy renders in the account's currency (dollars for wallet users, X credits for legacy users).
+- [ ] The scheduled sync settings modal shows the projected per-run cost for the selected tweet count with the copy "Each run costs about {amount} for {count} tweets" (for example "about $0.16" or "about 10 credits").
 - [ ] The modal shows the projected recurring spend for the selected frequency with the copy "About {monthly amount} per month at this schedule".
-- [ ] The modal explains the pause behavior with the copy "If your X wallet runs low, scheduled runs pause and we will let you know. They start again automatically once you top up."
-- [ ] When a scheduled run has been auto-paused for low balance, the X analytics tab shows a notice with the copy "Scheduled X analytics refreshes are paused because your X wallet is low." plus a Top up X wallet action for billing users, or "Ask your super admin to top up." for non-billing users.
+- [ ] The modal explains the pause behavior with the copy "If your X wallet runs low, scheduled runs pause and we will let you know. They start again automatically once you top up." (wallet) or "If you run out of X credits, scheduled runs pause and we will let you know. They start again automatically once you have credits, including at your monthly reset." (legacy)
+- [ ] When a scheduled run has been auto-paused, the X analytics tab shows a notice: "Scheduled X analytics refreshes are paused because your X wallet is low." (wallet) or "Scheduled X analytics refreshes are paused because you are out of X credits." (legacy), plus a top-up action for billing users (Top up X wallet, or Get more X credits) or "Ask your super admin to top up." for non-billing users.
 - [ ] The projected costs show only the price the user pays, never the raw X cost or any markup.
 - [ ] All new copy is available in every locale under `src/locales`, added in one commit.
 
@@ -387,7 +399,7 @@ Web only. Mobile not in scope.
 ## Story 7 — [FE] Add the Enable X analytics toggle to the billing X Wallet card
 
 ### Description
-As a super admin managing billing, I want a toggle on the X Wallet card to turn X analytics metering on or off for the account, so that I control whether we spend on X analytics and can see it as a clear wallet setting.
+As a super admin managing billing on a wallet account, I want a toggle on the X Wallet card to turn X analytics metering on or off for the account, so that I control whether we spend on X analytics and can see it as a clear wallet setting. This applies to the wallet cohort only; legacy add-on accounts have no X Wallet card and enable X analytics through the per-workspace unlock card instead.
 
 ### Workflow
 1. Super admin opens Billing and finds the X Wallet card.
@@ -402,6 +414,7 @@ As a super admin managing billing, I want a toggle on the X Wallet card to turn 
 - [ ] A user without billing access sees the toggle in a read-only state with the copy "Only your super admin can change this."
 - [ ] Turning the toggle on makes X analytics available to unlock in the account's workspaces; turning it off hides X analytics behind the enable-required card again.
 - [ ] When the toggle is turned on, an `x_analytics_enabled` Usermaven event fires with `{}`.
+- [ ] The toggle appears only for the wallet cohort (accounts with an X Wallet card). Legacy add-on accounts do not see this toggle; their enablement path is the per-workspace unlock card covered by the unlock story.
 - [ ] All new copy is available in every locale under `src/locales`, added in one commit.
 
 ### Mock-ups

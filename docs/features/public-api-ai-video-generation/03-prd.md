@@ -83,6 +83,7 @@ Usermaven is frontend-dispatched and this feature has no frontend. Adoption is m
 - As a no-code automator, I want a submit step and a separate resume step, because my platform will time out if I wait inline.
 - As a developer, I want a failed or cancelled job not to cost me credits.
 - As a developer, I want the finished video in my workspace media library so I can publish it in the next call.
+- As a developer, I want my generations conditioned on my workspace's brand knowledge, the same way the web app's brand toggle does it.
 
 ---
 
@@ -94,6 +95,7 @@ Usermaven is frontend-dispatched and this feature has no frontend. Adoption is m
 |---|---|---|
 | `GET` | `/workspaces/{workspace_id}/ai/videos/tools` | Discovery: tools, supported modes, input schemas |
 | `GET` | `/workspaces/{workspace_id}/ai/videos/models` | Discovery: models with supported modes, resolutions, durations |
+| `GET` | `/workspaces/{workspace_id}/ai/brand` | Read-only: is brand knowledge set up, and is it enabled |
 | `POST` | `/workspaces/{workspace_id}/ai/videos/estimate` | Credit cost and time estimate for a given request, without submitting |
 | `POST` | `/workspaces/{workspace_id}/ai/videos/generate` | `text-to-video`, `image-to-video`, `reference-to-video` |
 | `POST` | `/workspaces/{workspace_id}/ai/videos/tools/{tool_key}` | `motion-control`, `lip-sync`, `video-clips-highlights` |
@@ -103,13 +105,28 @@ Usermaven is frontend-dispatched and this feature has no frontend. Adoption is m
 
 The job resource is deliberately `/ai/jobs`, not `/ai/videos/jobs`. It is a generic async job resource so that any future async AI work, including batch image, uses the same contract rather than growing a parallel one.
 
-### 6.2 One job contract over two internal engines
+### 6.2 Brand knowledge
+
+Same requirement and same shape as the image epic. **The governing principle: brand knowledge is created and maintained in the web app, and when a user calls the API with their key, video generation behaves exactly as it does in the app.**
+
+- **Request:** generate and tool endpoints accept an optional `use_brand` boolean.
+- **Response:** the completed job carries `brand_applied` as a boolean.
+- **Default: match the app.** Omitting `use_brand` honours the workspace's stored `brand_enabled` flag, which the backend defaults to **true**. That flag already gates brand application in generation and chat, so a workspace with brand knowledge set up gets on-brand API video by default. An explicit `use_brand` overrides it for that request only.
+- **A boolean, never a brand ID.** The Brand Knowledge Revamp has shipped: one brand per workspace, on/off toggle rather than dropdown, so there is no ID to pass. The internal contract already annotates its brand ID field *"unused — backend uses the workspace default"*.
+- **Read-only status:** `GET /workspaces/{workspace_id}/ai/brand` reports whether brand knowledge is set up and enabled, so setting the flag is not a silent no-op.
+- **`brand_guidelines` is not exposed.** The internal `VideoJobRequest` accepts a free-form `brand_guidelines` dict. The public API must **not** accept it. Letting callers hand-construct guidelines forks brand definition away from Brand Knowledge and produces API output that diverges from the app, which is exactly the parity this section exists to guarantee. The public contract is the boolean; the backend resolves the guidelines from the workspace brand.
+
+**Parity is testable and required:** for the same workspace and the same inputs, an API video generation and a web app video generation apply brand knowledge identically. No API-specific brand configuration, default, or source of truth.
+
+**CRUD is out of scope by product decision.** Creating and editing brand voice, style, profile, and source materials stays in the web app. Brand definition is a considered activity with async source ingestion behind it and is better served by the UI that already does it. The API consumes the brand, it does not define it.
+
+### 6.3 One job contract over two internal engines
 
 Four of the five tools run on Dramatiq. `video-clips-highlights` runs on Temporal, with a different identifier, different status routes, a separate result route, and different status casing.
 
 **The public API must present one job resource and normalise both.** A caller must not be able to tell which internal queue ran their job. Exposing `workflow_id` for one tool and `job_id` for the other four would leak implementation into a contract we then cannot change.
 
-### 6.3 Job state machine
+### 6.4 Job state machine
 
 **Public, stable, safe to branch on:**
 
@@ -123,7 +140,7 @@ Four of the five tools run on Dramatiq. `video-clips-highlights` runs on Tempora
 
 The internal stream emits seven active stages, several of which are pipeline internals. Committing those to a public contract means integrator code breaks whenever the pipeline changes. The coarse set is the contract; the granular stage is a display detail.
 
-### 6.4 Bounded wait
+### 6.5 Bounded wait
 
 Submit accepts an optional `wait` parameter, capped at a value to be confirmed against gateway and load-balancer timeouts, provisionally 90 seconds.
 
@@ -132,7 +149,7 @@ Submit accepts an optional `wait` parameter, capped at a value to be confirmed a
 
 This lets fast jobs collapse into a single call and makes the documented quickstart one request instead of three. It is never the only mechanism: polling and webhooks both remain available regardless.
 
-### 6.5 Webhooks
+### 6.6 Webhooks
 
 Two new events on the existing webhooks delivery stack:
 
@@ -141,11 +158,11 @@ Two new events on the existing webhooks delivery stack:
 | `video.completed` | A job reaches `completed`, carrying the media ID and final charged credit cost |
 | `video.failed` | A job reaches `failed`, carrying the failure reason |
 
-These inherit HMAC signing, at-least-once delivery, exponential-backoff retries into a dead-letter queue, delivery logs, and the test-event button from the public webhooks epic. No new delivery machinery is built.
+The webhooks system is **already live** with 7 post events. These two are additive: per the `WebhookEmitter` docblock, adding an event is *"one enum case + a payload builder + an emit() call — no plumbing changes"*. They inherit HMAC signing, at-least-once delivery, exponential-backoff retries into the dead-letter queue, delivery logs, and the test-event flow for free. No new delivery machinery.
 
 Cancellation does not emit an event. The caller initiated it and already knows.
 
-### 6.6 Cost estimation and credits
+### 6.7 Cost estimation and credits
 
 Video credit cost is computed from model, duration, resolution, and audio, against a per-model, per-resolution cost matrix. It is not a flat rate.
 
@@ -159,24 +176,24 @@ Video credit cost is computed from model, duration, resolution, and audio, again
 
 An API request also spends one API credit at submit, consistent with every other v1 endpoint and with the image epic.
 
-### 6.7 Output
+### 6.8 Output
 
 Every completed job persists the video into the workspace media library and the result carries a media ID usable directly by `POST /workspaces/{workspace_id}/posts`.
 
 Video files are far larger than images, so this interacts hard with workspace storage limits. A workspace at its storage limit must fail at **submit** with a clear error, not after spending minutes of generation.
 
-### 6.8 Rate limiting and concurrency
+### 6.9 Rate limiting and concurrency
 
 - Video submit endpoints get their own throttle bucket, separate from the general v1 throttle and separate from image.
 - A concurrent running-job cap per workspace, so one automated caller cannot occupy the queue.
 - Job status polling gets a more permissive limit than submit, since polling is the mechanism we are telling people to use. Throttling polling defeats the design.
 - Exceeding either returns `429` with `Retry-After`.
 
-### 6.9 Job retention
+### 6.10 Job retention
 
 Completed and failed jobs stay queryable for a documented retention window. After it, `GET /ai/jobs/{job_id}` returns `410`, distinct from a `404` for an ID that never existed. The generated media in the library is unaffected by job pruning.
 
-### 6.10 Errors
+### 6.11 Errors
 
 | Condition | Status |
 |---|---|
@@ -195,11 +212,11 @@ Completed and failed jobs stay queryable for a documented retention window. Afte
 
 Every error uses the same top-level shape as the rest of v1.
 
-### 6.11 SSE stays internal
+### 6.12 SSE stays internal
 
 The service exposes `GET /jobs/{job_id}/events`. It is **not** exposed publicly in this epic. Our own web app polls and does not use it, so we have no production evidence it works well, and a public streaming contract is expensive to support and hard to withdraw. Revisit if an integrator asks.
 
-### 6.12 Surface parity and behaviour
+### 6.13 Surface parity and behaviour
 
 All 5 tools ship on every surface.
 
@@ -261,8 +278,10 @@ sequenceDiagram
 6. Generated video counts against workspace media storage limits, and storage is checked at submit.
 7. SSE is not part of the public contract in this epic.
 8. Webhooks ship in this epic, not a later phase, and reuse the webhooks epic's delivery stack.
-9. No UI, so no dark mode, RTL, or theming considerations.
-10. Image generation is a separate epic. Caption, hashtag, and post generation, bulk schedule, and smart scheduling remain out of scope.
+9. Brand conditioning is a boolean, never a brand ID and never a caller-supplied guidelines object.
+10. Brand knowledge is read-only on the public API. It is created and maintained in the web app, and API generation must behave identically to app generation for the same workspace.
+11. No UI, so no dark mode, RTL, or theming considerations.
+12. Image generation is a separate epic. Caption, hashtag, and post generation, bulk schedule, and smart scheduling remain out of scope.
 
 ---
 
@@ -291,20 +310,21 @@ sequenceDiagram
 | Two async engines leak into the contract | A contract we cannot change without breaking integrators | Single normalised job resource is an acceptance criterion, not a nice-to-have |
 | Granular stages committed by accident | Integrator code breaks on any pipeline change | Coarse state machine is contractual, `stage` documented as unstable |
 | Storage limits hit mid-pipeline | Minutes of generation wasted, credits disputed | Storage checked at submit, not on completion |
-| Webhooks epic slips | Video ships polling-only, missing a stated goal | Polling is independently complete. Webhooks are a separable story that can land after, at the cost of one goal |
+| Webhook events land late | Video ships polling-only, missing a stated goal | Low risk now that the webhooks system is live. Polling is independently complete, and adding the two events is a small change |
 | AI service outage | Perceived API instability | Video endpoints fail in isolation with 502, other v1 domains unaffected |
 
 ---
 
 ## **11. Dependencies**
 
-- **`public-webhooks` epic**, status *In Review*. Hard dependency for S-2. Should land before or alongside this epic. Its PRD already scopes non-publishing events as a future phase, which this fills.
+- **`public-webhooks` has shipped** and is verified in code. Not a blocker. The enum already carries 7 event types and the emitter comment states that adding one is *"one enum case + a payload builder + an emit() call — no plumbing changes"*, so S-2 is a small additive change rather than a dependent epic.
 - `contentstudio-ai-agents` Dramatiq job routes and Temporal reel workflow, both live.
 - `AiAgentService` and `AiToolCapabilityService` in the Laravel backend, both live.
 - `POST /workspaces/{workspace_id}/media` for persistence, live.
 - The CLI, agent skill, and MCP server from the public CLI and agent skills epic.
 - Zapier, Make, and n8n connector codebases. Marketplace review for n8n and Make is the schedule long pole.
-- The sibling image generation epic. Not a blocker, but shipping image first establishes the `/ai/*` namespace, error shapes, and credit-metering pattern that this epic extends.
+- The sibling image generation epic. Not a blocker, but shipping image first establishes the `/ai/*` namespace, error shapes, brand parameter, and credit-metering pattern that this epic extends. The `use_brand` semantics and the `GET /ai/brand` endpoint must be identical across both epics.
+- **Brand Knowledge Revamp** has shipped, so the brand model this epic reads is stable: one brand per workspace, a single `brand_enabled` flag defaulting to true. No dependency.
 
 ---
 
@@ -312,7 +332,7 @@ sequenceDiagram
 
 **In scope, 5 tools:** `text-to-video`, `image-to-video`, `video-clips-highlights`, `motion-control`, `lip-sync`. Plus `reference-to-video` as a third mode on the generate endpoint.
 
-**Out of scope:** image generation (separate epic), caption, hashtag, and post generation, bulk schedule, smart scheduling, smart insights, public SSE.
+**Out of scope:** image generation (separate epic), caption, hashtag, and post generation, bulk schedule, smart scheduling, smart insights, public SSE, caller-supplied `brand_guidelines`, and brand knowledge CRUD (stays in the web app by product decision).
 
 **Reference:** 25 video models in `contentstudio-ai-agents/src/utils/model_registry.py`. Mode support is per model.
 

@@ -10,13 +10,15 @@
 
 Expose ContentStudio's 8 AI image tools through the public REST API, then through every downstream developer surface: the CLI and agent skill, the MCP server and Claude Desktop bundle, and the Zapier, Make, and n8n connectors.
 
-The generation engine already runs in production behind AI Studio. This epic builds the public contract in front of it: API key auth, workspace scoping, credit metering against both the API and image quotas, a dedicated rate limit, normalised errors, and persistence of every result into the workspace media library so a generated image can be published in the very next call.
+The generation engine already runs in production behind AI Studio. This epic builds the public contract in front of it: API key auth, workspace scoping, credit metering against both the API and image quotas, a dedicated rate limit, normalised errors, brand-knowledge conditioning matching the web app's per-prompt brand toggle, and persistence of every result into the workspace media library so a generated image can be published in the very next call.
 
 The outcome is that generate-then-publish becomes two API calls, and an AI agent using our MCP server or CLI can complete a content request without leaving ContentStudio for its visuals.
 
 **Tools in scope (8):** `text-to-image`, `image-to-image`, `product-image`, `headshot`, `face-swap`, `outfit-swap`, `upscale`, `remove-background`.
 
 **Out of scope:** all video generation, which ships as a separate epic because it is asynchronous and needs a job and webhook contract. Also out: caption, hashtag, and post generation, bulk schedule, and smart scheduling.
+
+**Brand knowledge is set up in the web app, and the API must behave identically.** Generation takes a brand on/off boolean and a read-only brand status endpoint, and with brand knowledge configured in the app an API call with the user's key produces the same on-brand output the app produces. **CRUD is out of scope by product decision** — creating and editing brand voice, style, profile, and source materials stays in the web app. The API consumes the brand, it does not define it.
 
 | # | Story | Priority |
 |---|---|---|
@@ -25,8 +27,9 @@ The outcome is that generate-then-publish becomes two API calls, and an AI agent
 | S-3 | [BE] Expose image generation tools in the MCP server and Claude Desktop bundle | High |
 | S-4 | [BE] Add image generation actions to Zapier, Make, and n8n | Medium |
 | S-5 | [BE] Publish public documentation and quickstarts for image generation | Medium |
+| S-6 | [BE] Give API-centric plans image generation credits and an addon | High |
 
-S-1 gates everything else. S-2, S-3, S-4, and S-5 can run in parallel once it lands.
+S-1 gates everything else. S-2, S-3, S-4, and S-5 can run in parallel once it lands. S-6 is independent of S-1 and should start early, because without it the entire feature is unreachable for the plan most likely to use it.
 
 ---
 
@@ -41,12 +44,13 @@ The public API can schedule and publish a post but cannot produce the image that
 
 The generation itself already works. The AI agents service exposes all 8 tools and Laravel already talks to it server to server through `AiAgentService`. This story builds the public contract: authentication, workspace scoping, credit metering, rate limiting, error normalisation, and persistence into the workspace media library.
 
-**Four endpoints cover all 8 tools:**
+**Five endpoints cover all 8 tools, plus read-only brand status:**
 
 | Method | Path | Covers |
 |---|---|---|
 | `GET` | `/workspaces/{workspace_id}/ai/images/tools` | Discovery: tools and their input schemas |
 | `GET` | `/workspaces/{workspace_id}/ai/images/models` | Discovery: models and supported dimensions |
+| `GET` | `/workspaces/{workspace_id}/ai/brand` | Read-only: is brand knowledge set up and enabled |
 | `POST` | `/workspaces/{workspace_id}/ai/images/generate` | `text-to-image`, `image-to-image` |
 | `POST` | `/workspaces/{workspace_id}/ai/images/tools/{tool_key}` | `product-image`, `headshot`, `face-swap`, `outfit-swap`, `upscale`, `remove-background` |
 
@@ -64,14 +68,17 @@ sequenceDiagram
     Dev->>API: GET /ai/images/tools
     API-->>Dev: available tools and input schemas
 
-    Dev->>API: POST /ai/images/generate with prompt and model
+    Dev->>API: GET /ai/brand
+    API-->>Dev: brand set up and enabled
+
+    Dev->>API: POST /ai/images/generate with prompt, model and use_brand
     API->>API: validate key, workspace, both credit balances, rate limit
     API->>AI: proxy with internal service key
     AI-->>API: generated image
     API->>Media: persist as workspace media
     Media-->>API: media_id
     API->>API: spend one API credit and one image credit
-    API-->>Dev: media_id, url, dimensions
+    API-->>Dev: media_id, url, dimensions, brand_applied
 
     Dev->>API: POST /posts with that media_id
     API-->>Dev: scheduled post
@@ -83,8 +90,9 @@ sequenceDiagram
 4. The image is generated and saved into the workspace media library.
 5. They receive a media ID, a URL, and the image dimensions.
 6. They pass that media ID straight into the create-post endpoint and the image is attached to a scheduled post.
-7. If their prompt is refused by content policy, they get a clear validation error explaining the refusal, not a server error.
-8. If either credit balance is exhausted, they get an error that tells them specifically which one ran out.
+7. They check whether brand knowledge is set up for the workspace, and ask for generation with the brand applied so the output matches what the web app produces with its brand toggle on.
+8. If their prompt is refused by content policy, they get a clear validation error explaining the refusal, not a server error.
+9. If either credit balance is exhausted, they get an error that tells them specifically which one ran out.
 
 ### Acceptance criteria
 
@@ -101,6 +109,18 @@ sequenceDiagram
 **Model selection**
 - [ ] The generate endpoint accepts an optional model parameter and uses the configured default when it is omitted.
 - [ ] Requesting a model that does not exist or is not permitted returns `422` naming the invalid model.
+
+**Brand knowledge**
+- [ ] `GET /api/v1/workspaces/{workspace_id}/ai/brand` returns whether brand knowledge is set up for the workspace and whether it is currently enabled.
+- [ ] The generate and tool endpoints accept an optional `use_brand` boolean.
+- [ ] When `use_brand` is true and the workspace has brand knowledge, generation is conditioned on it and the output reflects the workspace brand.
+- [ ] Every successful generation response includes `brand_applied` as a boolean, so a caller can tell whether the brand was actually used rather than assuming it.
+- [ ] Requesting `use_brand: true` on a workspace with no brand knowledge set up succeeds, generates without brand conditioning, and returns `brand_applied: false`. It does not error.
+- [ ] The endpoints accept **no** brand ID parameter. Brand selection is a boolean and the backend resolves the workspace's brand, matching the existing internal contract and surviving the Brand Knowledge Revamp.
+- [ ] Omitting `use_brand` honours the workspace's stored `brand_enabled` flag, which the backend defaults to true. A workspace with brand knowledge set up in the app therefore gets on-brand API output by default, with no extra parameter.
+- [ ] Passing `use_brand` explicitly overrides the stored flag for that request only, and does not change the stored preference.
+- [ ] **Parity:** for the same workspace and the same inputs, an API generation and a web app generation apply brand knowledge identically. There is no API-specific brand configuration, default, or source of truth.
+- [ ] No endpoint in this story creates, updates, or deletes brand knowledge. Brand access is read-only, and brand setup remains a web app activity.
 
 **Output and media persistence**
 - [ ] Every successful generation persists the image into the workspace media library.
@@ -156,6 +176,7 @@ None directly. The web app, mobile apps, and Chrome extension are unchanged. Eve
 
 - None. This story gates S-2, S-3, S-4, and S-5.
 - Open questions 1, 2, 3, and 5 in the PRD need answers before build starts: the credit charging model, the rate limit value, whether all 20 models are exposed, and whether generated media needs a provenance marker.
+- **Brand Knowledge Revamp** has shipped, so the brand model is stable. No dependency.
 
 ### Global quality & compliance (wherever applicable)
 - [ ] Mobile responsiveness — N/A, backend-only story
@@ -180,6 +201,14 @@ None directly. The web app, mobile apps, and Chrome extension are unchanged. Eve
 - `POST /api/v1/tools/{key}` — the 6 dedicated tools, uniform contract via `make_tool_route`
 - `GET /api/v1/image/models`, `GET /api/v1/image/dimensions`, `GET /api/v1/tools`, `GET /api/v1/tools/{key}`
 - `POST /api/v1/image/batch` for batch generation
+
+**Brand knowledge, for the `use_brand` parameter and status endpoint:**
+- `contentstudio-frontend/src/api/composer.ts:428-429` — the existing internal contract: `use_brand_voice?: boolean` alongside `brand_voice_id?: string | null` annotated *"unused — backend uses the workspace default"*. The response carries `brand_voice_applied: boolean`, which is the precedent for `brand_applied`.
+- `contentstudio-frontend/src/modules/publisher/ai-content-library/types/index.ts:137-146` — the shipped v2 model. `brand_enabled?: boolean` is commented *"v2 on/off flag; backend defaults true and gates brand application in generation/chat"*, and `brand_style`, `brand_profile`, `brand_voice`, `brand_topics` are all singular. The legacy `styles[]` and `brand_voices[]` arrays are marked removed by `brand-knowledge:strip-legacy`. **`brand_enabled` defaulting to true is why the API default is "honour the stored flag" rather than "off"** — it is what the app already does.
+- `contentstudio-frontend/src/modules/AI-tools/components/BrandVoiceSelector.vue` — the web app's per-prompt toggle. It sets the session brand voice and style **and** persists `brand_enabled`, so the toggle is both a per-request override and a stored preference. The API mirrors that: an explicit `use_brand` is the per-request override, omitting it falls back to the stored flag.
+- `contentstudio-frontend/src/modules/publisher/ai-content-library/composables/useBrandKnowledgePresence.ts` — already computes "does this workspace have brand knowledge". The read-only status endpoint should return the same determination rather than inventing a second one.
+- `contentstudio-frontend/src/modules/publisher/config/api-utils.ts` — the internal brand endpoints (`profile/get`, `profile/setBrandEnabled`, `profile/updateBrandSection`, `profile/sources/*`). These are the CRUD surface a **future** epic would expose. Do not expose them here.
+- `contentstudio-ai-agents/src/agents/image/brand_pass.py` and `brand_intent_classifier.py` — where brand conditioning is applied during image generation.
 
 **Gotchas:**
 - **`image-to-image` is not a uniform dedicated tool.** Its route comment in `contentstudio-ai-agents/src/api/routers/dedicated_tools_router.py` says it is *"bespoke — exposes model selection / free-text prompt / N attachments / mentions / logo, so it delegates to the chat core, not the ToolSpec engine."* That is why the PRD routes it through `/generate` rather than `/tools/{tool_key}`. Mapping it generically will not work.
@@ -349,3 +378,63 @@ Public docs site and help centre.
 - [ ] UI theming support — N/A, no interface
 - [ ] White-label domains impact review
 - [ ] Cross-product impact assessment (web, mobile apps, Chrome extension)
+
+
+---
+
+## S-6 · [BE] Give API-centric plans image generation credits and an addon
+**Project:** Billing · **Group:** Backend · **Skill:** Backend · **Product area:** Public API · **Priority:** High · **Type:** Feature
+
+### Description
+
+As a customer on an API-centric plan, I want image generation credits included in my plan and the ability to buy more, so that I can actually use the image generation endpoints instead of hitting a zero balance on my first call.
+
+**This story exists because of a gap the rest of the epic would otherwise walk into.** The `api-centric` and `api-centric-annual` plans were built for publishing automation. They hide AI Studio from the navigation entirely, so there has never been a reason to give them image generation credits, and the image credit addon has never been offered to them. Their `image_generation_credit` allocation is effectively zero and there is no path to buy any.
+
+The consequence is that once the image endpoints ship, **the plan most likely to call them is the one plan that cannot**. Every request would return the "image credits exhausted" `403` from S-1, correctly and uselessly.
+
+Note the credit is metered per workspace regardless of surface, so once an allocation exists these customers spend it through the API exactly as UI customers spend it through AI Studio. Nothing about the metering changes. What is missing is the allocation and the top-up path.
+
+### Workflow
+1. A customer on an API-centric plan looks at their plan and sees an image generation credit allowance.
+2. They call the image generation endpoints and the generations succeed, drawing down that allowance.
+3. When they approach or reach the limit, they can buy more through the same Increase Limits flow other plans use.
+4. Existing API-plan customers receive the new allowance without having to ask support or re-subscribe.
+
+### Acceptance criteria
+- [ ] The `api-centric` and `api-centric-annual` plans include a non-zero default `image_generation_credit` allocation in their plan limits.
+- [ ] The image generation credit addon is purchasable on API-centric plans, using the existing addon mechanism rather than a new one.
+- [ ] The addon appears in the Increase Limits surface for API-centric plans alongside the API credit addon.
+- [ ] Purchasing the addon increases the workspace's available image generation credits, and generation through the API draws down the combined plan plus addon balance.
+- [ ] **Existing** API-plan subscribers receive the new default allocation, not only newly created subscriptions. The migration path for current subscribers is defined and applied.
+- [ ] An API-centric workspace with credits remaining can generate images successfully through every endpoint in this epic.
+- [ ] An API-centric workspace that exhausts its balance receives the same distinct `403` image-credit error as any other plan, with no plan-specific behaviour.
+- [ ] Credit consumption and remaining balance are visible to the customer through the same surfaces other plans use.
+- [ ] Annual and monthly variants both carry the allocation, and renewal resets it on the same cycle as other credit types.
+
+### Impact on existing data
+Changes the plan limits objects for two plan types and applies a new allocation to existing subscriptions on those plans. No change to how credits are metered or consumed.
+
+### Impact on other products
+Billing. The Increase Limits surface renders the addon catalog, so verify the new addon displays correctly for API plans and does not appear on plans that should not see it.
+
+### Dependencies
+- Independent of S-1. Start early, since it is a prerequisite for the feature being usable rather than merely available.
+- **Blocked on a Business decision:** the default allocation for API-centric plans and the addon pricing. This is the same open item the API-centric plan epic already carries as "Pricing, limits, and add-on structure must be finalized by Business team".
+- The sibling video epic has an equivalent story. Decide both allocations together so the plan is coherent.
+
+### Global quality & compliance (wherever applicable)
+- [ ] Mobile responsiveness — N/A, backend and billing story
+- [ ] Multilingual support (frontend + backend, translations available or fallback handled)
+- [ ] UI theming support — N/A, no new interface
+- [ ] White-label domains impact review
+- [ ] Cross-product impact assessment (web, mobile apps, Chrome extension)
+
+### Implementation references
+*Pointers from research — not a contract. Engineering may choose a different approach.*
+
+- `contentstudio-backend/app/Libraries/Account/IncreaseLimitsAddon.php` — the addon engine. `IMAGE_LIMIT` is the per-unit constant and `image_generation_credit` is the addon key. Adding the addon to a plan should be catalog and plan configuration, not new addon logic.
+- `contentstudio-backend/app/Libraries/Settings/SubscriptionLimits.php:49,75` — where `image_generation_credit` usage is read and returned.
+- `contentstudio-backend/app/Repository/Settings/WorkspaceRepo.php:479,539` — where the image credit allocation is written per workspace.
+- `contentstudio-backend/app/Models/Account/Subscription.php` — the plan model carrying `features` and `limits`. The API plan slugs are `api-centric` and `api-centric-annual`, defined in the `subscription_plans` collection.
+- **Gotcha:** API-centric plans hide AI Studio from navigation, so these customers will never see the in-app credit meters that UI customers rely on. Their only visibility into remaining balance is through the API and the billing page. Make sure at least one of those reports it clearly, or they will discover the limit by getting a `403`.

@@ -11,7 +11,7 @@
 
 ContentStudio has 8 AI image tools powering AI Studio in the web app, backed by 20 image models. None of them are reachable programmatically. This feature exposes all 8 through the public REST API, and then through every downstream developer surface: the CLI and agent skill, the MCP server and Claude Desktop bundle, and the Zapier, Make, and n8n connectors.
 
-The generation engine already exists and is production proven. This is a public contract in front of it: API key auth, workspace scoping, credit metering, a tighter rate limit, normalised errors, and persistence of results into the workspace media library so a generated image can be published in the very next call.
+The generation engine already exists and is production proven. This is a public contract in front of it: API key auth, workspace scoping, credit metering, a tighter rate limit, normalised errors, brand-knowledge conditioning to match the web app's per-prompt brand toggle, and persistence of results into the workspace media library so a generated image can be published in the very next call.
 
 Video generation is deliberately excluded and ships as a separate epic, because it is asynchronous and needs a job and webhook contract that image does not.
 
@@ -77,6 +77,8 @@ Usermaven is frontend-dispatched and this feature has no frontend. Adoption is m
 - As a no-code automator, I want a "Generate image" action that returns a usable asset, so that I can wire it between any trigger and a ContentStudio post action.
 - As a developer, I want to know before I call how much a generation costs me in credits, and to get a clear, distinct error when I run out.
 - As a developer, I want a content policy refusal to look different from a server error, so that I do not page someone at 3am over a rejected prompt.
+- As a developer, I want my generations conditioned on my workspace's brand knowledge, the same way the web app's brand toggle does it, so that API output is not visibly off-brand next to UI output.
+- As a developer, I want to check whether brand knowledge is even set up before I ask for it, so that turning it on is not a silent no-op.
 
 ---
 
@@ -84,12 +86,13 @@ Usermaven is frontend-dispatched and this feature has no frontend. Adoption is m
 
 ### 6.1 Endpoints
 
-Four public paths cover all 8 tools, under the existing workspace-scoped v1 group.
+Five public paths cover all 8 tools, under the existing workspace-scoped v1 group.
 
 | Method | Path | Purpose |
 |---|---|---|
 | `GET` | `/workspaces/{workspace_id}/ai/images/tools` | List available image tools with their input schema |
 | `GET` | `/workspaces/{workspace_id}/ai/images/models` | List available models and supported dimensions |
+| `GET` | `/workspaces/{workspace_id}/ai/brand` | Read-only: is brand knowledge set up, and is it enabled |
 | `POST` | `/workspaces/{workspace_id}/ai/images/generate` | `text-to-image` and `image-to-image` |
 | `POST` | `/workspaces/{workspace_id}/ai/images/tools/{tool_key}` | The 6 dedicated tools |
 
@@ -112,7 +115,43 @@ POST /workspaces/{ws}/posts                → uses that media_id
 
 Generated assets are indistinguishable from uploaded ones to every downstream consumer, and are subject to the same workspace media storage limits.
 
-### 6.3 Credits and billing
+### 6.3 Brand knowledge
+
+In the web app, every AI generation surface carries a brand on/off toggle. When it is on, generation is conditioned on the workspace's brand knowledge (voice, style, and brand profile). The API must offer the same control, or API generations will be systematically off-brand while UI generations are on-brand, which undermines the whole point of exposing generation.
+
+**Request parameter:** generate and tool endpoints accept an optional `use_brand` boolean.
+
+**Response field:** every successful generation returns `brand_applied` as a boolean, so a caller can tell whether the brand was actually used rather than assuming it.
+
+**Default: match the app.** When `use_brand` is omitted, the API honours the workspace's stored `brand_enabled` flag, which the backend defaults to **true**. This is not a new rule, it is the existing app behaviour: `brand_enabled` is the v2 on/off flag that already gates brand application in generation and chat. An API caller with brand knowledge set up in the web app therefore gets on-brand output by default, exactly as they would in the UI. Passing `use_brand` explicitly overrides the stored flag for that one request, which is what the web app's per-prompt toggle does.
+
+**A boolean, not a brand ID.** This is deliberate and forward-compatible:
+
+- The existing internal contract already works this way. `contentstudio-frontend/src/api/composer.ts` carries `use_brand_voice?: boolean` alongside `brand_voice_id?: string | null` annotated *"unused — backend uses the workspace default"*.
+- The **Brand Knowledge Revamp** has shipped. There is now exactly **one brand per workspace**, selected by an on/off toggle rather than a dropdown, so there is no ID for a caller to pass.
+
+So a boolean is the only shape that survives the revamp. Accepting a brand ID now would publish a public contract that the revamp breaks in the same quarter.
+
+**Read-only status endpoint:** `GET /workspaces/{workspace_id}/ai/brand` returns whether brand knowledge is set up for the workspace and whether it is currently enabled. Without it a caller cannot tell whether `use_brand: true` will do anything, and setting the flag against an empty brand profile is a silent no-op. This is read-only by design, see 6.4.
+
+### 6.4 Brand knowledge is set up in the web app, and the API must behave identically
+
+**The governing principle for this section: brand knowledge is created and maintained in the web app. When a user then calls the API with their key, generation behaves exactly as it does in the app.** No separate configuration, no divergent defaults, no second source of truth for what the brand is.
+
+Concretely, parity means:
+
+- The same single brand per workspace resolves for API calls as for UI calls.
+- The stored `brand_enabled` flag governs both surfaces identically.
+- The same brand voice, style, brand profile, and source-derived content condition the generation.
+- Identical inputs through the API and the UI produce equivalently on-brand output.
+
+The Brand Knowledge Revamp has **shipped**, so this is well-defined: one brand per workspace, a single `brand_enabled` on/off flag, and the five-section structure (Brand Style, Brand Profile, Brand Voice, Source Materials, Brand Assets). There is no multi-brand ambiguity for the API to resolve and no ID for a caller to choose between.
+
+**CRUD is out of scope by product decision.** Creating or editing brand voice, style, and profile, and adding, syncing, or removing source materials stays in the web app. This is a deliberate choice about where brand setup belongs, not a sequencing constraint: brand definition is a considered, human activity with async source ingestion behind it, and it is better served by the UI that already does it well. The API's job is to *consume* the brand, not to define it.
+
+If a public write surface is ever wanted, it becomes its own epic. Nothing in this epic forecloses that, because read-only status and a boolean toggle are both additive.
+
+### 6.5 Credits and billing
 
 An API image generation spends **both**:
 
@@ -123,11 +162,11 @@ This is the deliberate choice. The API credit pays for the request, the image cr
 
 Exhausting either balance returns `403` with a distinct machine-readable error code so the caller can tell which quota ran out. Credits are only spent on success. A failed or policy-refused generation does not consume an image credit.
 
-### 6.4 Rate limiting
+### 6.6 Rate limiting
 
 Image endpoints get their own throttle bucket, separate from `throttle:api-v1`. The general v1 limit of 100 requests per minute is far too permissive for a call that costs real money per invocation and takes tens of seconds. The image bucket is workspace-scoped, and exceeding it returns `429` with `Retry-After`.
 
-### 6.5 Latency contract
+### 6.7 Latency contract
 
 Generation takes roughly 5 to 60 seconds depending on model. The API must:
 
@@ -137,7 +176,7 @@ Generation takes roughly 5 to 60 seconds depending on model. The API must:
 
 Zapier, Make, and n8n each impose their own request timeouts that may be shorter than a slow model. The connector story must pin a fast default model and document which models are unsafe to select there.
 
-### 6.6 Errors
+### 6.8 Errors
 
 Distinct, documented, machine-readable codes. A policy refusal is not a server error and must never be reported as one.
 
@@ -152,7 +191,7 @@ Distinct, documented, machine-readable codes. A policy refusal is not a server e
 | Model or provider failure | 502 | Upstream generation failed, safe to retry |
 | Generation timeout | 504 | Exceeded route timeout |
 
-### 6.7 Surface parity
+### 6.9 Surface parity
 
 The same 8 tools ship on every surface. A tool available in the API but missing from MCP is a bug, not a phase.
 
@@ -203,9 +242,11 @@ sequenceDiagram
 3. Generated media counts against workspace media storage limits like any upload.
 4. Image endpoints are workspace-scoped and respect the same permission model as the rest of v1.
 5. Discovery endpoints are proxied from the live capability feed, not hardcoded, so the API does not drift from the service.
-6. No dark mode, RTL, or UI considerations apply. This feature has no interface.
-7. Video generation is out of scope and ships separately.
-8. Caption, hashtag, post generation, bulk schedule, and smart scheduling are explicitly out of scope. Text generation is something API consumers can already do with their own model, and the bulk and scheduling tools are mid-rework.
+6. Brand conditioning is controlled by a boolean, never a brand ID, because the Brand Knowledge Revamp unifies to one brand per workspace.
+7. Brand knowledge is read-only on the public API. It is created and maintained in the web app, and API generation must behave identically to app generation for the same workspace.
+8. No dark mode, RTL, or UI considerations apply. This feature has no interface.
+9. Video generation is out of scope and ships separately.
+10. Caption, hashtag, post generation, bulk schedule, and smart scheduling are explicitly out of scope. Text generation is something API consumers can already do with their own model, and the bulk and scheduling tools are mid-rework.
 
 ---
 
@@ -241,6 +282,7 @@ sequenceDiagram
 - `POST /workspaces/{workspace_id}/media` for persistence, already live.
 - The CLI, agent skill, and MCP server shipped by the public CLI and agent skills epic.
 - Zapier, Make, and n8n connector codebases, each with an independent release and review cycle. n8n and Make reviews are the long pole and should start early.
+- **Brand Knowledge Revamp** has shipped, so the brand model this epic reads is already stable: one brand per workspace, a single `brand_enabled` flag, five sections. No dependency, no migration risk.
 
 ---
 
@@ -248,7 +290,7 @@ sequenceDiagram
 
 **In scope, 8 tools:** `text-to-image`, `image-to-image`, `product-image`, `headshot`, `face-swap`, `outfit-swap`, `upscale`, `remove-background`.
 
-**Out of scope:** all video tools (separate epic), caption, hashtag, post generation, bulk schedule, smart scheduling, smart insights.
+**Out of scope:** all video tools (separate epic), caption, hashtag, post generation, bulk schedule, smart scheduling, smart insights, and brand knowledge CRUD (stays in the web app by product decision).
 
 **Reference:** 20 image models in `contentstudio-ai-agents/src/utils/model_registry.py`, default `nano-banana-pro`.
 

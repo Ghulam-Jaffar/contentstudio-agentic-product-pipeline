@@ -3,7 +3,31 @@
 **Feature slug:** `x-analytics-metering`
 **Pipeline:** `/feature` — Step 2 (Workflow)
 
-> **Decided (research gate):** cost is shown in **dollars** and charged against the **existing X Pay-Per-Use Credit Wallet**. The older analytics "credits used" count is retired as a user-facing spend unit (kept only internally as the driver of the dollar cost). Unlock/consent is **per workspace**. Scheduled syncs that the wallet cannot cover **auto-pause and notify**. Web-only for v1. Never expose X's raw cost or ContentStudio's markup (BR-12).
+> **Decided (research gate):** cost is shown in the user's currency and charged on a successful fetch. Metering is **dual-currency**: wallet users pay **dollars** from the X Pay-Per-Use Credit Wallet; legacy add-on users pay **X credits** from their posting-credit allowance (see §1.5). The older analytics "credits used" count is retired as a user-facing spend unit (kept only internally as the driver of the cost). Unlock/consent is **per workspace**. Scheduled syncs that cannot be funded **auto-pause and notify**, and auto-resume once funded. Web-only for v1. Never expose X's raw cost or ContentStudio's markup (BR-12).
+
+## 1.5 Cohort and currency (which money a sync spends)
+
+The currency for an account is decided by the existing `WalletService::isEnabledForUser` gate. There are two cohorts, and a given account only ever sees one:
+
+| | **Wallet cohort** (dollars) | **Legacy cohort** (X credits) |
+|---|---|---|
+| Who | New and provisioned accounts | Accounts holding the old X posting-credit add-on (`x_wallet_disabled = true`) |
+| Currency shown | Dollars ("about $0.16") | X credits ("about 10 credits") |
+| Balance | X wallet balance | `x_posting_credits` monthly allowance (shared with posting) |
+| Sync cost | (tweets x read rate + user read) x markup | Same cost basis, converted at 1 credit = $0.0166, rounded up |
+| Top up | Manage X Wallet modal | Buy more X posting-credit packs (`$5 / 300`) |
+| Master enable | Enable X analytics toggle on the X Wallet card | No card, no toggle; the per-workspace unlock card is the only gate |
+
+```mermaid
+flowchart TD
+    Sync([A sync is about to run or be priced]) --> Cohort{Wallet enabled for this account}
+    Cohort -->|Yes| Dollars[Show and charge in dollars from the X wallet]
+    Cohort -->|No| Credits[Show and charge in X credits from the posting allowance]
+    Dollars --> TopA[Top up via Manage X Wallet]
+    Credits --> TopB[Top up via X posting credit packs]
+```
+
+Everything below applies to both cohorts. Where a surface differs by currency, both variants are called out.
 
 ---
 
@@ -61,7 +85,8 @@ flowchart TD
 
 ## 4. Alternative / edge flows
 
-- **Insufficient balance at a manual sync.** The sync modal's primary CTA switches to a top-up state. Billing users get **"Top up X wallet"** which opens the Manage X Wallet modal, then returns them to the sync. Non-billing users see **"Ask your super admin to top up the X wallet."** No sync runs and nothing is deducted.
+- **Insufficient balance at a manual sync.** The sync modal's primary CTA switches to a top-up state. For **wallet users**, billing users get **"Top up X wallet"** opening the Manage X Wallet modal; for **legacy users**, billing users get **"Get more X credits"** opening the X posting-credit add-on purchase. Both return to the sync afterward. Non-billing users see an ask-your-super-admin message. No sync runs and nothing is deducted.
+- **Legacy cohort (X credits).** Everything works the same but in credits: the estimate reads "about 10 credits", the balance reads "X credits: 45 left", and a legacy user with the add-on skips the account master toggle entirely (the unlock card is their only gate). A single large sync can cost more credits than the plan's whole monthly allowance (for example ~46 credits for 150 tweets on a Standard plan's 45/month), in which case it is blocked with a get-more-credits prompt rather than partially syncing.
 - **Insufficient balance for a scheduled run.** The run is **skipped**, the schedule is **paused**, and the user is notified to top up (reusing the wallet low-balance notification). It resumes when the wallet is topped up or auto-recharge succeeds. Mirrors the publishing rule of "fails, not held."
 
 ```mermaid

@@ -89,7 +89,6 @@
       "Bash(cp:*)",
       "Bash(mv:*)",
       "WebFetch(domain:developers.facebook.com)",
-      "Bash(TOKEN=\"sct_rw_contentstudio-team_NWUwYzU2MjUtODNmMS00YzRmLWI5YTMtYWM3OWUwMmUxZjA3OjYyZWNlYTIzLWZmNWUtNDQ0YS04ZmZkLWY1MmYwNzViNmVhYTo3YTFhNzE5OTEwMjc4ZWM4YzliMzc2ZGViMTllZTBmZQ\")",
       "WebFetch(domain:engineering.teknasyon.com)",
       "WebFetch(domain:gurusup.com)",
       "Bash(bash:*)",
@@ -260,7 +259,9 @@
       "Bash(rg -rn \"singleBox\" src/modules/composer --include=\"*.ts\" -l)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebFetch(domain:www.npmjs.com)",
-      "Bash(mkdir -p /home/casper/code/contentstudio-agentic-product-pipeline/docs/stories/multi-workspace-analytics-report)"
+      "Bash(mkdir -p /home/casper/code/contentstudio-agentic-product-pipeline/docs/stories/multi-workspace-analytics-report)",
+      "Bash(sed 's/^[0-9. `]*//')",
+      "Bash(cd *)"
     ],
     "additionalDirectories": [
       "/home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories",

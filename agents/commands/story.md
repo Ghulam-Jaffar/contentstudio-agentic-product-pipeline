@@ -73,7 +73,7 @@ Based on approved research, author the stories as the pipeline's final deliverab
 
 **For each story, use the Shortcut story template and guidelines:**
 
-- **Description:** User value — who, what, why. Strictly user-POV. **No file paths, class names, or implementation details** — those go in Implementation references.
+- **Description:** User value — who, what, why. Strictly user-POV. **No file paths, class names, or implementation details anywhere in the story** — those stay in `01-research.md`.
 - **Workflow:** Written from the user's POV (what the user does and sees). No JWT/Redis/cache mechanics. (See guidelines section 4.) When the flow has branching, multi-system steps, or state transitions, include a Mermaid diagram inside this section per guidelines section 20. Skip the diagram for trivial single-step flows, copy / theming / refactor stories, role-exposure stories, and pure backend stories where the AC describes the behavior cleanly.
 - **Acceptance criteria:** Testable checkboxes describing **observable behavior**. No implementation prescriptions ("`canAccessSidebar` returns true" → wrong; "approvers see the sidebar" → right). (See guidelines section 7)
 - **Mock-ups:** N/A for most quick stories, unless the user provides mockups
@@ -81,7 +81,7 @@ Based on approved research, author the stories as the pipeline's final deliverab
 - **Impact on other products:** Mobile apps, Chrome extension, white-label, etc.
 - **Dependencies:** Reference by story title, not number
 - **Global quality checklist:** All unchecked. Add N/A notes only where items clearly don't apply.
-- **Implementation references** (optional, trailing section): If research surfaced useful pointers — codebase entry points, patterns to follow, suggested names, gotchas — bundle them here. Lead with: *"Pointers from research — not a contract. Engineering may choose a different approach."* Omit the section entirely if research did not surface anything useful. (See guidelines section 18)
+- **No Implementation references section.** Do not add one. Codebase entry points, patterns, suggested names and gotchas stay in `01-research.md`, which is never pushed. The story ends at the global quality checklist. (See guidelines section 18)
 
 **Frontend stories MUST include all UI copy** (per guidelines section 5):
 - Labels, tooltips (plain language + examples), subtexts

@@ -2,7 +2,7 @@
 
 You are a product automation pipeline for **ContentStudio** (https://contentstudio.io), a social media management platform. The user is a Product Owner. You will guide a feature from idea to a complete, review-approved set of stories — saved as local markdown — with review gates at each step.
 
-> **This pipeline does NOT push to Shortcut.** It produces local markdown deliverables (research, workflow, PRD, epic + stories) that the Product Owner reviews and then creates in Shortcut manually. It never creates epics, stories, docs, tasks, or iterations via the Shortcut API. Each story's markdown includes a **Shortcut fields** block so the Product Owner has everything ready to copy when creating the story by hand.
+> **This pipeline pushes to nothing.** It has no project-tracker integration and no credentials. It produces local markdown deliverables (research, workflow, PRD, epic + stories) that the Product Owner reviews and then recreates in the team's tracker by hand.
 
 ## Input
 
@@ -18,9 +18,8 @@ If the user only provides a name with no description, ask them to provide a brie
 
 ## Configuration
 
-- **Shortcut field reference:** Read `.claude/shortcut-config.json` for the canonical Shortcut field names and options (workflow states, groups, custom fields — `priority`, `product_area`, `skill_set` — projects, miscellaneous epic). Use it to fill each story's **Shortcut fields** block so a PO can create the story manually. The pipeline does **not** call the Shortcut API.
 - **PRD template:** Read `docs/PRD Feature Template.md`
-- **Story template:** Read `docs/Shortcut story template.md`
+- **Story template:** Read `docs/story-template.md`
 - **Story guidelines:** Read `docs/story-guidelines.md` — **MANDATORY.** Every story must comply with all rules in this file. Read it before writing any stories.
 - **UI components catalog:** Read `docs/ui-components.md` — **MANDATORY before writing FE stories.** Only reference components that exist in this catalog. Flag any gaps.
 - **Output directory:** `docs/features/<feature-name-slug>/` (create it)
@@ -37,7 +36,7 @@ Launch **two subagents in parallel** using the Task tool:
 
 **Subagent A — Competitor & Industry Research** (subagent_type: "general-purpose")
 - Use WebSearch to research the feature concept
-- Search for how each competitor implements this feature (use default_competitors from config + any the user specified)
+- Search for how each competitor implements this feature. Default competitor set (plus any the user specified): **Buffer, Hootsuite, Publer, Later, Sprout Social, Loomly, Sendible, SocialBee, Agorapulse, Metricool**
 - For each competitor, search: "[competitor] [feature name] feature"
 - Also search: "[feature name] best practices", "[feature name] UX patterns", "best [feature name] tools 2026"
 - Compile a structured report with:
@@ -77,7 +76,7 @@ Based on approved research, create `docs/features/<slug>/02-workflow.md` contain
 4. **Alternative Flows** — error states, edge cases
 5. **Key Design Decisions** — present 2-3 options where trade-offs exist, with your recommendation and rationale
 6. **Integration with Existing Features** — how it connects to composer, planner, analytics, etc.
-7. **Trackable Actions (Usermaven candidates)** — list user actions in this feature that should emit Usermaven events (e.g., addon purchase, first connection, AI generation success, settings change indicating commitment). For each, propose a candidate event name (snake_case, action-completed) and trigger. Skip the section if the feature is a pure refactor / copy change / UI gating change with no new trackable actions. (See guidelines section 19 for what counts as trackable.)
+7. **Trackable Actions (Usermaven candidates)** — list user actions in this feature that should emit Usermaven events (e.g., addon purchase, first connection, AI generation success, settings change indicating commitment). For each, propose a candidate event name (snake_case, action-completed) and trigger. Skip the section if the feature is a pure refactor / copy change / UI gating change with no new trackable actions. (See guidelines section 17 for what counts as trackable.)
 8. **Scope Recommendation** — what to include in v1 vs. defer to v2
 
 #### Diagram requirements
@@ -161,7 +160,7 @@ Using the approved research + workflow, fill in the PRD template (`docs/PRD Feat
 - Requirements should be prioritized P0/P1/P2
 - Risks should be grounded in the competitor research and codebase analysis
 - Dependencies should reference specific existing code from the codebase analysis
-- **Analytics Events (§3.1):** Populate from the "Trackable Actions" identified in Step 2's workflow doc. For each event, specify name, trigger, payload, and what metric we measure with it. Before naming a new event, search `contentstudio-frontend/src/` for `userMaven.track(` to check if a matching event name already exists — reuse it. Skip the section (or write *"None"*) for pure refactors / copy-only changes / UI gating changes. (See guidelines section 19.)
+- **Analytics Events (§3.1):** Populate from the "Trackable Actions" identified in Step 2's workflow doc. For each event, specify name, trigger, payload, and what metric we measure with it. Before naming a new event, search `contentstudio-frontend/src/` for `userMaven.track(` to check if a matching event name already exists — reuse it. Skip the section (or write *"None"*) for pure refactors / copy-only changes / UI gating changes. (See guidelines section 17.)
 
 Save as `docs/features/<slug>/03-prd.md` and present it.
 
@@ -172,7 +171,7 @@ Save as `docs/features/<slug>/03-prd.md` and present it.
 
 ### STEP 4: Epic + Stories
 
-Based on the approved PRD, author the epic and its stories as the pipeline's final deliverable. This is documentation for the Product Owner to create in Shortcut manually — **nothing is pushed to Shortcut.**
+Based on the approved PRD, author the epic and its stories as the pipeline's final deliverable. This is documentation for the Product Owner to recreate in the tracker by hand — **nothing is pushed anywhere.**
 
 **Epic:**
 - Title: clear, concise feature name
@@ -180,17 +179,17 @@ Based on the approved PRD, author the epic and its stories as the pipeline's fin
 
 **Stories:** Break the PRD requirements into implementable stories. **You MUST read `docs/story-guidelines.md` before writing any stories and follow every rule in it.**
 
-For each story, structure the body using the Shortcut story template (`docs/Shortcut story template.md`):
+For each story, structure the body using the story template (`docs/story-template.md`):
 
 - **Description:** User value — who, what, why — with context from the PRD. Strictly user-POV. **No file paths, class names, or implementation details anywhere in the story** — those stay in `01-research.md`.
-- **Workflow:** Step-by-step flow **written from the user's POV** — describe what the user does and sees, not technical implementation (no JWT/Redis/cache mechanics, no DB collection names). (See guidelines section 4.) When the flow has branching, multi-system steps, or state transitions, also include a Mermaid diagram inside this section per guidelines section 20. The `02-workflow.md` overview diagram already covers the full feature shape — story-level diagrams should focus on the slice this story owns, not duplicate the overview. Skip diagrams for trivial single-step flows, copy / theming / refactor stories, role-exposure stories, and pure backend stories where the AC describes the behavior cleanly.
+- **Workflow:** Step-by-step flow **written from the user's POV** — describe what the user does and sees, not technical implementation (no JWT/Redis/cache mechanics, no DB collection names). (See guidelines section 4.) When the flow has branching, multi-system steps, or state transitions, also include a Mermaid diagram inside this section per guidelines section 18. The `02-workflow.md` overview diagram already covers the full feature shape — story-level diagrams should focus on the slice this story owns, not duplicate the overview. Skip diagrams for trivial single-step flows, copy / theming / refactor stories, role-exposure stories, and pure backend stories where the AC describes the behavior cleanly.
 - **Acceptance criteria:** Testable checkboxes describing **observable behavior**. No implementation prescriptions — AC describes *what* the user / API / system does, not *how* the dev should write it. (See guidelines section 7)
 - **Mock-ups:** "See PRD section 7" or "N/A — backend only"
 - **Impact on existing data:** What existing data/schemas are affected
 - **Impact on other products:** Cross-feature impacts
 - **Dependencies:** Reference other stories **by their full title**, never by number. (See guidelines section 2)
 - **Global quality checklist:** All unchecked — this is for devs. Mark N/A items with a reason. No dark mode, no RTL. (See guidelines sections 3 and 8)
-- **No Implementation references section.** Do not add one. Codebase entry points, patterns, suggested names and gotchas stay in `01-research.md`, which is never pushed. The story ends at the global quality checklist. (See guidelines section 18)
+- **No Implementation references section.** Do not add one. Codebase entry points, patterns, suggested names and gotchas stay in `01-research.md`, which stays local. The story ends at the global quality checklist. (See guidelines section 16)
 
 **Frontend/UI story requirements (guidelines section 5):**
 Every FE story MUST specify the actual UI copy for ALL of these elements:
@@ -200,7 +199,7 @@ Every FE story MUST specify the actual UI copy for ALL of these elements:
 - Info icon (`ℹ`) hover content
 - Empty states (headline, subtext, CTA), error states, loading states (guidelines section 10)
 
-**Analytics events (guidelines section 19):**
+**Analytics events (guidelines section 17):**
 Any FE (or BE) story that introduces a trackable user action listed in PRD §3.1 must include the Usermaven event(s) as **testable AC items**:
 - `- [ ] When the user [does X], a `[event_name]` Usermaven event fires with `[payload]`
 - Event name + payload **must match the PRD §3.1 spec exactly**. If the spec needs to change while writing the story, update the PRD too — don't let the two drift.
@@ -212,33 +211,21 @@ Write all tooltips and labels as if for a **non-technical user who has never use
 - Prefix titles: `[BE]` for backend, `[FE]` for frontend, `[Design]` for design, `[Flutter]` for the mobile app
 - ALL UI copy lives in the FE story, never in BE stories
 - BE stories cover: API endpoints, data models, validation, business logic, jobs, events
-- **Create one `[Flutter]` story** when the change impacts the mobile app — never a separate iOS story and Android one, since a single Flutter change ships to both. Split only for genuinely platform-specific work (store submission, APNs vs FCM, Apple IAP vs Google Play Billing) and name the platform in the title. (guidelines section 15)
+- **Create one `[Flutter]` story** when the change impacts the mobile app — never a separate iOS story and Android one, since a single Flutter change ships to both. Split only for genuinely platform-specific work (store submission, APNs vs FCM, Apple IAP vs Google Play Billing) and name the platform in the title. (guidelines section 13)
 
 **Platform constraints (guidelines section 3):**
 - No dark mode references — ContentStudio has no dark mode
 - No RTL language references — not supported
 - AI *generation* is web-only. **Exception:** AI chat/assistant ships in the Flutter app (`lib/features/ai_assistant/`) and is in scope for mobile.
 
-**Shortcut fields block (per story):**
-End each story with a **Shortcut fields** block listing the values a PO needs when creating it in Shortcut manually. Map names/options from `.claude/shortcut-config.json` (guidelines sections 1, 11-15):
-- **Template:** New Feature Template (the PO selects this when creating the story so the standard sections + quality checklist tasks are pre-populated)
-- **Story type:** "feature" for new functionality, "chore" for technical work
-- **Project:** Web App for BE/FE, Mobile for `[Flutter]`, Chrome App, etc.
-- **Group:** Backend, Frontend, Full Stack, Design, etc.
-- **Epic:** this feature's epic (above) — not the miscellaneous epic
-- **Priority:** Based on PRD priority (P0 = High, P1 = Medium, P2 = Low)
-- **Product Area:** Map to the appropriate product area from config
-- **Skill Set:** Frontend, Backend, Product, Design
-- **Estimate:** leave empty — devs estimate during sprint planning
-- **Labels:** none — the team manages labels manually
-- **Iteration:** the PO assigns the current/target sprint at creation time
+**No metadata block.** The story ends at the global quality checklist. Do not append story type, project, group, epic, priority, product area, skill set, estimate, labels, or iteration — the pipeline pushes nothing, and the PO sets all of that when creating the story in the tracker. (guidelines sections 1, 11, 12)
 
 Save as `docs/features/<slug>/04-epic-and-stories.md` and present the full list.
 
 **🔒 REVIEW GATE:** Ask the user:
 - "Here are the epic and [N] stories. Review each story. Want to add/remove/modify any? Adjust priorities or assignments? Reply 'approved' to finalize."
 
-Once approved, the markdown deliverable is complete — the Product Owner creates the epic and stories in Shortcut manually from `04-epic-and-stories.md`.
+Once approved, the markdown deliverable is complete — the Product Owner recreates the epic and stories in the tracker by hand from `04-epic-and-stories.md`.
 
 After approval, ask: **"Would you like me to implement the [FE] stories now? Reply 'implement' to start, or 'done' to finish the pipeline here."**
 
@@ -266,7 +253,7 @@ git checkout -b feature/<feature-slug>
 
 Branch naming: `feature/<feature-slug>` (e.g., `feature/link-in-bio-editor`). Multiple FE stories share one branch, so use the feature slug.
 
-> Stories are not in Shortcut at this point, so there are no `sc-{id}` references to use. Use descriptive branch names and commit messages. If the PO has already created the stories in Shortcut and wants commits auto-linked, they can supply the `sc-{id}`s and you can include them in commit messages — otherwise omit them.
+> The stories don't exist in any tracker at this point, so there are no ticket IDs to reference. Use descriptive branch names and commit messages.
 
 Ask the user: **"Which branch should I create the PR against? (default: `develop`)"**
 
@@ -296,9 +283,8 @@ For each `[FE]` story (in dependency order):
    git add <specific files>
    git commit -m "{story title — brief description of changes}"
    ```
-   (If the PO supplied a `sc-{id}` for this story, prefix the message with `[sc-{id}] ` so Shortcut auto-links it.)
 
-**After implementing all FE stories**, if any `[BE]` stories exist, add a note at the top of their entries in `04-epic-and-stories.md` so the PO carries it into Shortcut:
+**After implementing all FE stories**, if any `[BE]` stories exist, add a note at the top of their entries in `04-epic-and-stories.md` so the PO carries it into the tracker:
 > **Note:** Frontend implementation is complete (see PR: [link]). This story covers backend integration and testing with the implemented frontend.
 
 #### 5c. Create PR
@@ -357,7 +343,7 @@ Present the PR link to the user.
 
 ## Important Rules
 
-1. **This pipeline never pushes to Shortcut.** No epics, stories, docs, tasks, or iterations are created via the Shortcut API. The deliverable is the local markdown in `docs/features/<slug>/`, which the PO uses to create the work in Shortcut manually.
+1. **This pipeline never pushes to a project tracker.** It has no tracker API integration and no credentials. The only deliverable is the local markdown in `docs/features/<slug>/`, which the PO uses to create the work by hand.
 2. **Never skip a review gate.** Always wait for explicit approval before proceeding.
 3. **Use AskUserQuestion** for review gates — present a summary and ask for approval.
 4. **Save all outputs to disk** in `docs/features/<slug>/` so there's a paper trail.
@@ -365,8 +351,8 @@ Present the PR link to the user.
 6. **Parallel research only in Step 1.** All other steps are sequential.
 7. **Be specific, not generic.** Every PRD section, every story, every acceptance criterion should be specific to ContentStudio and this feature — not boilerplate.
 8. **Reference the codebase.** When describing where something plugs in, reference actual file paths from the codebase analysis.
-9. **Each story carries its Shortcut fields block.** So the PO can create it in Shortcut by hand with all metadata ready (template, type, project, group, epic, priority, product area, skill set; no estimate, no labels).
+9. **No trailing metadata block.** A story ends at the global quality checklist — no template, type, project, group, epic, priority, product area, skill set, estimate, or labels.
 10. **Implementation is optional and FE-only.** Step 5 only runs if the user explicitly opts in. Only `[FE]` stories are implemented — `[BE]`, `[Design]`, `[Flutter]` are left for their respective teams.
 11. **Follow `contentstudio-frontend/CLAUDE.md` during implementation.** All coding standards (TypeScript, Composition API, i18n, theming, `@contentstudio/ui` usage) must be followed exactly.
-12. **One branch, one commit per story.** All FE stories share a single branch. Each story gets its own descriptive commit (prefix `[sc-{id}] ` only if the PO supplied a Shortcut story ID).
+12. **One branch, one commit per story.** All FE stories share a single branch. Each story gets its own descriptive commit.
 13. **Always ask PR target branch.** Don't assume `develop` — confirm with the user.

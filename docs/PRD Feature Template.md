@@ -49,13 +49,13 @@ Skip the section (or write *"None — feature does not introduce a new trackable
 | `ai_posts_generated` | AI generation request succeeds | `{ profile_id, number_of_posts, post_type }` | AI Studio usage volume, breakdown by post type |
 | `connected_social_accounts` | OAuth completes for any platform | `{ platform: 'facebook' }` | Account-connection funnel completion, breakdown by platform |
 
-**Event naming rules** (see story guidelines section 19):
+**Event naming rules** (see story guidelines section 17):
 - `snake_case`, action-completed past tense (`addon_purchased`, not `purchaseAddon`)
 - Reuse existing event names where the action already has one — search `contentstudio-frontend/src/` for `userMaven.track(` first
 - Payload property names are `snake_case`; no PII; ≤ ~6 properties
 - Whether the event fires from FE (most common) or BE (server-side jobs, webhooks) — note in the trigger column
 
-These events become **acceptance criteria** in the FE (or BE) stories — see story guidelines section 19. Story-level AC must match this PRD spec exactly; if it has to change, update both.
+These events become **acceptance criteria** in the FE (or BE) stories — see story guidelines section 17. Story-level AC must match this PRD spec exactly; if it has to change, update both.
 
 ---
 

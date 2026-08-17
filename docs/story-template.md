@@ -41,11 +41,6 @@
 - [ ] White-label domains impact review
 - [ ] Cross-product impact assessment (web, mobile apps, Chrome extension)
 
----
-
-### Implementation references
-// Optional. Include only if research surfaced useful pointers — codebase entry points, patterns to follow, suggested names, gotchas. See guidelines section 18.
-// Lead with the non-binding header verbatim:
-//   *Pointers from research — not a contract. Engineering may choose a different approach.*
-// Group pointers under sub-headings (Primary entry points, Existing patterns, Suggested names, Gotchas, Existing behavior to preserve).
-// Omit this section entirely if there's nothing useful to add.
+// The story ends here. Do not add an "Implementation references" section or any
+// other trailing block. Codebase entry points, patterns, suggested names and
+// gotchas stay in the local 01-research.md. See guidelines section 16.

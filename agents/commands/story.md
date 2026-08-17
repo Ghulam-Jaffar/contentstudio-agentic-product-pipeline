@@ -32,7 +32,7 @@ This contains a description of the change/improvement. It may include context ab
 - Use **Grep** to quickly find relevant files (e.g., search for route names, component names, model fields)
 - Use **Read** only on the specific files/sections you need — read targeted line ranges, not entire 500-line files
 - Identify: key file paths, current behavior, what needs to change, what can be reused
-- **If the story involves mobile/iOS/Android:** Also search `contentstudio-ios-v2/` (Swift) and `contentstudio-android-v2/` (Kotlin) for related view controllers/activities, models, services, API clients, and screens
+- **If the story involves mobile:** Also search `contentstudio-flutter/` — the single Flutter app for iOS + Android, and the only source of truth for mobile. Look in `lib/features/<feature>/` for screens, widgets, providers/controllers, models, and API clients, plus `lib/core/` and `lib/shared/`. There is no other mobile codebase — the native iOS/Android repos are retired and no longer mounted.
 
 **Light external research** (only if the change involves a UX pattern):
 - Do 1-2 quick WebSearches max — just for UX inspiration, not a full analysis
@@ -42,7 +42,7 @@ This contains a description of the change/improvement. It may include context ab
 - **Current State** — brief summary + key file paths
 - **What Needs to Change** — bullet list of specific changes
 - **UX Reference** (only if applicable) — 1-2 sentence summary of how others do it
-- **Mobile Context** (only if the story involves mobile) — existing iOS/Android screens/flows affected, what the apps currently support
+- **Mobile Context** (only if the story involves mobile) — existing Flutter screens/flows affected (with `contentstudio-flutter/lib/...` paths), what the app currently supports
 - **Files Involved** — list of files that will be touched
 
 Present a short summary to the user.
@@ -62,13 +62,13 @@ Based on approved research, author the stories as the pipeline's final deliverab
 - **No labels** — don't add labels (guidelines section 12)
 - **Assign a project** — Web App, Mobile, Chrome App, etc. (guidelines section 13)
 - **Use the miscellaneous epic** — if no dedicated epic, note the current Miscellaneous epic from config (guidelines section 14)
-- **Create mobile stories if impacted** — separate `[iOS]` and `[Android]` stories when mobile apps are affected (guidelines section 15)
+- **Create a mobile story if impacted** — one `[Flutter]` story when the mobile app is affected, never separate `[iOS]`/`[Android]` stories (guidelines section 15)
 
 **Determine the story split:**
 - If it's purely frontend (UI change, no new API) → single `[FE]` story
 - If it's purely backend (new endpoint, data change, no UI) → single `[BE]` story
 - If it needs both → `[BE]` + `[FE]` stories
-- If it impacts mobile apps → also create `[iOS]` and/or `[Android]` stories
+- If it impacts the mobile app → also create one `[Flutter]` story (both platforms ship from the same codebase)
 - If you're creating 5+ stories, stop and tell the user this needs the `/feature` pipeline.
 
 **For each story, use the Shortcut story template and guidelines:**
@@ -78,7 +78,7 @@ Based on approved research, author the stories as the pipeline's final deliverab
 - **Acceptance criteria:** Testable checkboxes describing **observable behavior**. No implementation prescriptions ("`canAccessSidebar` returns true" → wrong; "approvers see the sidebar" → right). (See guidelines section 7)
 - **Mock-ups:** N/A for most quick stories, unless the user provides mockups
 - **Impact on existing data:** What changes to existing schemas/data
-- **Impact on other products:** Mobile apps, Chrome extension, white-label, etc.
+- **Impact on other products:** Mobile app (Flutter), Chrome extension, white-label, etc.
 - **Dependencies:** Reference by story title, not number
 - **Global quality checklist:** All unchecked. Add N/A notes only where items clearly don't apply.
 - **No Implementation references section.** Do not add one. Codebase entry points, patterns, suggested names and gotchas stay in `01-research.md`, which is never pushed. The story ends at the global quality checklist. (See guidelines section 18)
@@ -101,7 +101,7 @@ If the story introduces a **new trackable user action** — addon purchase/unloc
 End each story with a **Shortcut fields** block listing the values a PO needs when creating it in Shortcut manually. Map names/options from `.claude/shortcut-config.json` (guidelines sections 1, 11-15):
 - **Template:** New Feature Template (the PO selects this when creating the story so the standard sections + quality checklist tasks are pre-populated)
 - **Story type:** "feature" for new functionality, "chore" for technical work
-- **Project:** Web App for BE/FE, Mobile for iOS/Android, Chrome App, etc.
+- **Project:** Web App for BE/FE, Mobile for `[Flutter]`, Chrome App, etc.
 - **Group:** Backend, Frontend, Full Stack, Design, etc.
 - **Epic:** the current Miscellaneous epic from config, unless the user specifies a different epic
 - **Priority / Product Area / Skill Set:** map to the appropriate options from config
@@ -126,7 +126,7 @@ If the user replies 'done' or skips, the pipeline ends here. If they reply 'impl
 
 ### STEP 3: Implement FE Stories (Optional)
 
-**This step only runs if the user explicitly opts in.** It implements **only `[FE]` stories** — all other story types (`[BE]`, `[Design]`, `[iOS]`, `[Android]`) are skipped.
+**This step only runs if the user explicitly opts in.** It implements **only `[FE]` stories** — all other story types (`[BE]`, `[Design]`, `[Flutter]`) are skipped.
 
 #### 3a. Setup
 
@@ -238,8 +238,8 @@ Present the PR link to the user.
 8. **UI copy is mandatory** for FE stories — tooltips, labels, error messages. Written for layman users.
 9. **No estimates, no labels** in the story's Shortcut fields block.
 10. **Each story carries its Shortcut fields block** — project, group, epic (miscellaneous if none specified), priority, product area, skill set, story type, template — so the PO can create it in Shortcut by hand.
-11. **Create mobile stories** when the change impacts iOS/Android apps.
-12. **Implementation is optional and FE-only.** Step 3 only runs if the user explicitly opts in. Only `[FE]` stories are implemented — `[BE]`, `[Design]`, `[iOS]`, `[Android]` are left for their respective teams.
+11. **Create one `[Flutter]` story** when the change impacts the mobile app — `contentstudio-flutter/` is the only mobile codebase, so no separate iOS/Android stories.
+12. **Implementation is optional and FE-only.** Step 3 only runs if the user explicitly opts in. Only `[FE]` stories are implemented — `[BE]`, `[Design]`, `[Flutter]` are left for their respective teams.
 13. **Follow `contentstudio-frontend/CLAUDE.md` during implementation.** All coding standards (TypeScript, Composition API, i18n, theming, `@contentstudio/ui` usage) must be followed exactly.
 14. **One branch, one commit per story.** All FE stories share a single branch. Each story gets its own descriptive commit (prefix `[sc-{id}] ` only if the PO supplied a Shortcut story ID).
 15. **Always ask PR target branch.** Don't assume `develop` — confirm with the user.

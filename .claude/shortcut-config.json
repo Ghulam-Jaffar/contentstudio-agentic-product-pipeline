@@ -62,6 +62,7 @@
     },
     "product_area": {
       "field_id": "621606f4-5c13-40aa-ae91-fec842e6a547",
+      "_note": "Mobile is now a single Flutter app (contentstudio-flutter/). For [Flutter] stories prefer the functional product area (composer, planner, inbox, billing, ...). The legacy android_mobile / ios_mobile options remain valid field values but should only be used for work that is genuinely specific to one store/platform.",
       "values": {
         "onboarding": "621606f4-d982-4f68-b165-62f949edc3fe",
         "inbox": "621606f4-4055-455c-9641-ae80bc30ce6f",

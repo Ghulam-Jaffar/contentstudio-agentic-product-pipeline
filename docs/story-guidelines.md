@@ -23,7 +23,8 @@ The pipeline does **not** push to Shortcut, so there is no `story_template_id` A
 
 - **No dark mode.** ContentStudio does not have dark mode. Never mention dark mode support, theming toggles, or light/dark variants in stories or acceptance criteria.
 - **No RTL language support.** Do not mention RTL layouts, bidirectional text, or RTL-specific styling.
-- **Most AI features are web-only — with one exception: AI chat/assistant exists on mobile.** AI *generation* features (e.g., AI image/video/caption generation, AI Content Library) are web-only — scope those to web and don't create mobile AI stories for them. **AI chat / AI assistant is available on mobile** (native iOS today, Flutter going forward) and IS in scope for mobile. For a web-only AI generation feature with a non-AI mobile part, note explicitly: _"AI generation is web-only; mobile app gets [specific non-AI scope]."_
+- **Mobile is one Flutter app.** iOS and Android ship from the single `contentstudio-flutter/` codebase. All mobile stories use the `[Flutter]` prefix — never `[iOS]` or `[Android]` (see section 15).
+- **Most AI features are web-only — with one exception: AI chat/assistant exists on mobile.** AI *generation* features (e.g., AI image/video/caption generation, AI Content Library) are web-only — scope those to web and don't create mobile AI stories for them. **AI chat / AI assistant ships in the Flutter mobile app** (`contentstudio-flutter/lib/features/ai_assistant/`) and IS in scope for mobile. For a web-only AI generation feature with a non-AI mobile part, note explicitly: _"AI generation is web-only; mobile app gets [specific non-AI scope]."_
 
 ---
 
@@ -236,8 +237,7 @@ Every story must note a **Shortcut project** in its **Shortcut fields** block, b
 |---|---|
 | Backend (API, server, database) | Web App |
 | Frontend (web UI) | Web App |
-| iOS mobile app | Mobile |
-| Android mobile app | Mobile |
+| Mobile app (Flutter, iOS + Android) | Mobile |
 | Chrome extension | Chrome App |
 | Billing/payments | Billing |
 | DevOps/infra | DevOps |
@@ -257,18 +257,24 @@ Update the epic each quarter. See `.claude/shortcut-config.json` → `miscellane
 
 ## 15. Mobile App Stories
 
-ContentStudio has separate iOS and Android development teams. When a feature or change **impacts mobile apps**, you must create separate mobile stories:
+ContentStudio's mobile app is a **single Flutter app** that ships to both iOS and Android from one codebase: `contentstudio-flutter/`. It is the **only** source of truth for mobile. The old native iOS and Android repos are retired and no longer mounted in this project — never write stories against them.
 
-- **Evaluate impact:** If the change adds a new API field, changes existing API behavior, or introduces a feature that users expect on mobile too — create mobile stories.
-- **Prefix:** `[iOS]` for iOS, `[Android]` for Android
-- **Group:** Use the appropriate mobile team group (if available) or the general team
+When a feature or change **impacts the mobile app**, create **one** `[Flutter]` story:
+
+- **Evaluate impact:** If the change adds a new API field, changes existing API behavior, or introduces a feature that users expect on mobile too — create a mobile story.
+- **Prefix:** `[Flutter]` — never `[iOS]` or `[Android]`
+- **One story, not two.** One Flutter change ships to both platforms, so a separate iOS story and Android story for the same change is duplicate work. Only split when the work is genuinely platform-specific (App Store vs Play Console submission, APNs vs FCM plumbing, Apple IAP vs Google Play Billing) — and then say which platform in the title, e.g. `[Flutter] Wire Google Play Billing purchase flow`.
+- **Group:** Use the mobile team group (if available) or the general team
 - **Project:** Assign to "Mobile" project
-- **Scope appropriately:** Mobile stories should describe what changes in the mobile app specifically, not repeat the full backend/frontend spec
-- **AI generation features are web-only; AI chat/assistant is on mobile:** Don't create mobile stories for AI *generation* features (image/video/caption generation, AI Content Library). **AI chat / AI assistant is available on mobile** (native iOS today, Flutter going forward) — create mobile stories for it when in scope.
+- **Product area:** Prefer the **functional** area the work belongs to (composer, planner, inbox, billing, settings, …) rather than the legacy `android_mobile` / `ios_mobile` options. Use those two only when the work really is store- or platform-specific.
+- **Skill set:** Frontend
+- **Scope appropriately:** Describe what changes in the app specifically, not the full backend/frontend spec
+- **Ground it in the Flutter codebase:** point research at the matching `contentstudio-flutter/lib/features/<feature>/` module (composer, planner, inbox, ai_assistant, approval_workflows, billing, media_library, social_channels, workspaces, auth, settings, notifications, …) plus `lib/core/` and `lib/shared/` for cross-cutting concerns.
+- **Note platform differences in AC** when one exists (permission prompts, share sheets, notification behavior, safe-area/notch handling) rather than splitting the story.
+- **AI generation features are web-only; AI chat/assistant is on mobile:** Don't create mobile stories for AI *generation* features (image/video/caption generation, AI Content Library). **AI chat / AI assistant ships in the Flutter app** (`lib/features/ai_assistant/`) — create a `[Flutter]` story for it when in scope.
 
-Example: If a backend story adds `last_login_method` to the API response, and users log in via mobile apps too, create:
-- `[iOS] Display last used login method on iOS sign-in screen`
-- `[Android] Display last used login method on Android sign-in screen`
+Example: If a backend story adds `last_login_method` to the API response, and users log in via the app too, create one story:
+- `[Flutter] Display last used login method on the sign-in screen`
 
 ---
 

@@ -51,14 +51,14 @@ Launch **two subagents in parallel** using the Task tool:
 **Subagent B — Codebase Analysis** (subagent_type: "Explore", thoroughness: "medium")
 - Search `contentstudio-backend/` for: related models, controllers, services, routes
 - Search `contentstudio-frontend/` for: related modules, components, composables, routes
-- **If the feature involves mobile/iOS/Android:** Also search `contentstudio-ios-v2/` (Swift) and `contentstudio-android-v2/` (Kotlin) for: related view controllers/activities, models, services, API clients, screens
+- **If the feature involves mobile:** Also search `contentstudio-flutter/` — the single Flutter app that ships to both iOS and Android, and the only source of truth for mobile. Look in `lib/features/<feature>/` for related screens, widgets, providers/controllers, models, and API clients, plus `lib/core/` and `lib/shared/` for cross-cutting concerns. There is no other mobile codebase — the native iOS/Android repos are retired and no longer mounted.
 - Be token-efficient: use Grep to find files, then Read only the specific sections needed — don't read entire large files
 - Compile a concise report:
   - **Existing Related Code** — what we already have (with file paths)
   - **Reusable Components/Services** — what can be leveraged
   - **Integration Points** — where the new feature would plug in
   - **Technical Considerations** — database, API, queue, caching implications
-  - **Mobile Impact** (if applicable) — existing mobile screens/flows affected, what the iOS/Android apps currently support for this area
+  - **Mobile Impact** (if applicable) — existing Flutter screens/flows affected (with `contentstudio-flutter/lib/...` paths), what the app currently supports for this area, and any genuinely platform-specific concerns (permissions, share sheet, notifications, in-app purchase)
 
 **After both complete**, combine into `docs/features/<slug>/01-research.md` and present a summary to the user.
 
@@ -209,21 +209,21 @@ Any FE (or BE) story that introduces a trackable user action listed in PRD §3.1
 Write all tooltips and labels as if for a **non-technical user who has never used a social media management tool**. Include concrete examples in tooltips so the user understands instantly without thinking twice.
 
 **Story splitting (guidelines section 6):**
-- Prefix titles: `[BE]` for backend, `[FE]` for frontend, `[Design]` for design, `[iOS]` for iOS, `[Android]` for Android
+- Prefix titles: `[BE]` for backend, `[FE]` for frontend, `[Design]` for design, `[Flutter]` for the mobile app
 - ALL UI copy lives in the FE story, never in BE stories
 - BE stories cover: API endpoints, data models, validation, business logic, jobs, events
-- **Create mobile stories** when the change impacts iOS/Android apps (guidelines section 15)
+- **Create one `[Flutter]` story** when the change impacts the mobile app — never a separate iOS story and Android one, since a single Flutter change ships to both. Split only for genuinely platform-specific work (store submission, APNs vs FCM, Apple IAP vs Google Play Billing) and name the platform in the title. (guidelines section 15)
 
 **Platform constraints (guidelines section 3):**
 - No dark mode references — ContentStudio has no dark mode
 - No RTL language references — not supported
-- Mobile apps have no AI features — AI is web-only
+- AI *generation* is web-only. **Exception:** AI chat/assistant ships in the Flutter app (`lib/features/ai_assistant/`) and is in scope for mobile.
 
 **Shortcut fields block (per story):**
 End each story with a **Shortcut fields** block listing the values a PO needs when creating it in Shortcut manually. Map names/options from `.claude/shortcut-config.json` (guidelines sections 1, 11-15):
 - **Template:** New Feature Template (the PO selects this when creating the story so the standard sections + quality checklist tasks are pre-populated)
 - **Story type:** "feature" for new functionality, "chore" for technical work
-- **Project:** Web App for BE/FE, Mobile for iOS/Android, Chrome App, etc.
+- **Project:** Web App for BE/FE, Mobile for `[Flutter]`, Chrome App, etc.
 - **Group:** Backend, Frontend, Full Stack, Design, etc.
 - **Epic:** this feature's epic (above) — not the miscellaneous epic
 - **Priority:** Based on PRD priority (P0 = High, P1 = Medium, P2 = Low)
@@ -248,7 +248,7 @@ If the user replies 'done' or skips, the pipeline ends here. If they reply 'impl
 
 ### STEP 5: Implement FE Stories (Optional)
 
-**This step only runs if the user explicitly opts in.** It implements **only `[FE]` stories** — all other story types (`[BE]`, `[Design]`, `[iOS]`, `[Android]`) are skipped.
+**This step only runs if the user explicitly opts in.** It implements **only `[FE]` stories** — all other story types (`[BE]`, `[Design]`, `[Flutter]`) are skipped.
 
 #### 5a. Setup
 
@@ -366,7 +366,7 @@ Present the PR link to the user.
 7. **Be specific, not generic.** Every PRD section, every story, every acceptance criterion should be specific to ContentStudio and this feature — not boilerplate.
 8. **Reference the codebase.** When describing where something plugs in, reference actual file paths from the codebase analysis.
 9. **Each story carries its Shortcut fields block.** So the PO can create it in Shortcut by hand with all metadata ready (template, type, project, group, epic, priority, product area, skill set; no estimate, no labels).
-10. **Implementation is optional and FE-only.** Step 5 only runs if the user explicitly opts in. Only `[FE]` stories are implemented — `[BE]`, `[Design]`, `[iOS]`, `[Android]` are left for their respective teams.
+10. **Implementation is optional and FE-only.** Step 5 only runs if the user explicitly opts in. Only `[FE]` stories are implemented — `[BE]`, `[Design]`, `[Flutter]` are left for their respective teams.
 11. **Follow `contentstudio-frontend/CLAUDE.md` during implementation.** All coding standards (TypeScript, Composition API, i18n, theming, `@contentstudio/ui` usage) must be followed exactly.
 12. **One branch, one commit per story.** All FE stories share a single branch. Each story gets its own descriptive commit (prefix `[sc-{id}] ` only if the PO supplied a Shortcut story ID).
 13. **Always ask PR target branch.** Don't assume `develop` — confirm with the user.

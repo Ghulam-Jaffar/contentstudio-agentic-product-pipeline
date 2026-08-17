@@ -5,6 +5,8 @@
 > Single source of truth for what UI components exist in the ContentStudio design system. The `/feature` and `/story` pipelines read this file before writing stories to ensure they only reference available components.
 >
 > **To update:** Edit this file when components are added/removed from `@contentstudio/ui` or `src/components/UI/`. The package is `@contentstudio/ui` (currently v0.2.21).
+>
+> **Scope: web only.** This catalog covers the Vue web app (`contentstudio-frontend/`) and applies to `[FE]` stories. `[Flutter]` mobile stories must **not** reference these components — the mobile app has its own widget layer in `contentstudio-flutter/lib/shared/` and `lib/core/`. Describe mobile UI by behavior and copy, and cite Flutter widgets from that codebase when a specific one matters.
 
 ---
 

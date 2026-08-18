@@ -255,7 +255,8 @@
       "WebFetch(domain:www.npmjs.com)",
       "Bash(mkdir -p /home/casper/code/contentstudio-agentic-product-pipeline/docs/stories/multi-workspace-analytics-report)",
       "Bash(sed 's/^[0-9. `]*//')",
-      "Bash(cd *)"
+      "Bash(cd *)",
+      "Bash(exit 1)"
     ],
     "additionalDirectories": [
       "/home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories",

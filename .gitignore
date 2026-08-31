@@ -5,6 +5,8 @@ contentstudio-ai-agents/
 contentstudio-social-analytics-go/
 contentstudio-social-analytics-go-main/
 social-inbox-manager/
+contentstudio-ios-v2/
+contentstudio-android-v2/
 cs-prototypes/
 .env
 .env.local

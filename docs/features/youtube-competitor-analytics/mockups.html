@@ -1,0 +1,925 @@
+<title>YouTube Competitor Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+  /* ============================================================
+     Tokens lifted verbatim from the running app, not invented.
+
+       primary/gray/success/danger/warning  @contentstudio/ui dist/style.css
+       --line  #DEE2E6                      tailwind.css --color-border-default
+       --canvas #F4F6FA                     FacebookCompetitorReport.vue
+       --ink   #000D21                      CompetitorTile.vue / AccountStatistics.vue
+       card    p-5 rounded-xl + shadow      AnalyticsCardWrapper.vue
+       chart series                         metaAdsChartColors.ts DONUT_COLORS
+       axis #979CA0 / grid #F2F4F6          PerformanceComparison.vue, DoubleBarChart.vue
+
+     Pinned light on purpose: ContentStudio ships no dark mode, so a
+     theme-reactive deck would document a product that does not exist.
+     Every colour below is stated explicitly so the page holds on any host.
+     ============================================================ */
+  :root{
+    color-scheme:light;
+
+    --primary:#2A70FC;  --primary-50:#F0F7FF; --primary-100:#BDD3FE; --primary-600:#2666E5;
+    --gray-50:#FBFCFC;  --gray-100:#F8F8F8;  --gray-200:#ECEEF5;  --gray-250:#ECECEC;
+    --gray-300:#868686; --gray-400:#6E6E6E;  --gray-500:#4A4A4A;  --gray-900:#1F1F1F;
+    --success:#56C288;  --success-50:#EEF9F3;
+    --danger:#F5144C;   --danger-50:#FEE8ED;
+    --warning:#FF922B;  --warning-50:#FFF4EA; --warning-700:#B5681F;
+    --line:#DEE2E6;     --canvas:#F4F6FA;    --ink:#000D21;
+    --axis:#979CA0;     --grid:#F2F4F6;      --grid-2:#E9EFF6;
+    --yt:#FF0000;
+
+    --card-shadow:0 3px 10px 0 rgba(211,217,236,.30);
+    --head-shadow:0 1px 2px 0 rgba(0,0,0,.05);
+
+    /* Deck chrome — the paper the screens sit on. Deliberately duller than
+       the app so the app reads as the subject and the frame recedes. */
+    --paper:#E4E8EF; --paper-ink:#20293A; --paper-muted:#66718A; --paper-line:#CFD6E1;
+
+    /* Channel series. Own channel takes the brand blue; rivals take the
+       app's real donut palette, ordered for maximum separation. */
+    --s-you:#2A70FC; --s-buf:#8AC1A2; --s-hoot:#CDA819; --s-late:#8081B9; --s-metr:#61BAE4;
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--paper-ink);
+    font-family:Inter,ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:14px; line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    font-variant-numeric:tabular-nums;
+  }
+
+  .deck{max-width:1500px; margin:0 auto; padding:44px 24px 88px; display:flex; flex-direction:column; gap:34px;}
+
+  .deck-head{display:flex; flex-direction:column; gap:9px; padding-bottom:26px; border-bottom:1px solid var(--paper-line);}
+  .kicker{font-size:11px; font-weight:600; letter-spacing:.15em; text-transform:uppercase; color:var(--paper-muted);}
+  .deck-head h1{font-size:27px; line-height:1.15; margin:0; letter-spacing:-.021em; font-weight:600; text-wrap:balance;}
+  .deck-head p{margin:0; max-width:70ch; color:var(--paper-muted);}
+
+  .note{display:flex; gap:10px; align-items:flex-start; background:#fff; border:1px solid var(--paper-line);
+        border-radius:10px; padding:11px 13px; font-size:12.5px; color:var(--paper-muted); max-width:70ch;}
+  .note b{color:var(--paper-ink); font-weight:600;}
+
+  .screen-cap{display:flex; align-items:baseline; gap:11px; flex-wrap:wrap; margin-bottom:11px;}
+  .screen-cap .n{font-size:11px; font-weight:600; letter-spacing:.13em; text-transform:uppercase; color:var(--paper-muted);}
+  .screen-cap h2{font-size:16px; margin:0; font-weight:600; letter-spacing:-.01em;}
+  .screen-cap .d{font-size:12.5px; color:var(--paper-muted);}
+
+  /* ===================== APP SHELL ===================== */
+  .app{
+    background:var(--canvas); border:1px solid var(--paper-line); border-radius:14px; overflow:hidden;
+    display:grid; grid-template-columns:74px 240px 1fr; color:var(--gray-900);
+    box-shadow:0 24px 60px -34px rgba(24,33,46,.42);
+  }
+
+  /* --- global icon rail --- */
+  .rail{background:#fff; border-right:1px solid var(--line); padding:10px 0 14px; display:flex;
+        flex-direction:column; align-items:center; gap:2px;}
+  .rail-ws{display:flex; flex-direction:column; align-items:center; gap:4px; padding-bottom:10px;}
+  .rail-ws .av{width:34px; height:34px; border-radius:50%; background:linear-gradient(140deg,#5b8def,#2A70FC);
+               color:#fff; display:grid; place-items:center; font-weight:600; font-size:12px;}
+  .rail-ws .nm{font-size:9.5px; color:var(--gray-400); font-weight:500;}
+  .rail-i{width:56px; padding:6px 0 5px; border-radius:9px; display:flex; flex-direction:column; align-items:center;
+          gap:3px; color:var(--gray-300); font-size:9.5px; font-weight:500; position:relative;}
+  .rail-i .g{width:30px; height:26px; border-radius:8px; display:grid; place-items:center;}
+  .rail-i.on{color:var(--primary);}
+  .rail-i.on .g{background:var(--primary-50);}
+  .rail-i .new{position:absolute; top:-1px; right:4px; background:var(--success); color:#fff; font-size:7px;
+               font-weight:700; letter-spacing:.04em; padding:1px 3px; border-radius:3px;}
+  .rail-sp{flex:1;}
+
+  /* --- analytics sidebar (240px, AnalyticsSidebar.vue) --- */
+  .side{background:#fff; border-right:1px solid var(--line); padding:16px 12px; display:flex;
+        flex-direction:column; gap:16px; overflow:hidden;}
+  .grp{display:flex; flex-direction:column; gap:4px;}
+  .grp-h{display:flex; align-items:center; justify-content:space-between; background:var(--gray-100);
+         border-radius:8px; padding:7px 10px; font-size:12.5px; font-weight:500; color:var(--gray-900);}
+  .grp-h .chev{color:var(--gray-300); font-size:10px;}
+  .li{display:flex; align-items:center; gap:11px; padding:7px 10px; border-radius:8px; font-size:12.5px;
+      color:var(--gray-500);}
+  .li .ic{width:18px; height:18px; display:grid; place-items:center; flex:none;}
+  .li.on{background:var(--primary-50); color:var(--primary); font-weight:500;}
+  .li .tag{margin-left:auto; background:var(--success); color:#fff; font-size:8px; font-weight:700;
+           letter-spacing:.05em; padding:1px 4px; border-radius:3px;}
+
+  /* --- main --- */
+  .main{display:flex; flex-direction:column; min-width:0; background:var(--canvas);}
+  .head{padding:12px 20px 0; position:sticky; top:0;}
+  .head-card{background:#fff; border-radius:12px; padding:11px 16px; box-shadow:var(--head-shadow);
+             display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
+  .back{width:34px; height:34px; border-radius:50%; background:var(--gray-100); display:grid; place-items:center;
+        color:var(--gray-500); flex:none;}
+  .vr{width:1px; height:20px; background:rgba(110,110,110,.25);}
+  .crumb{display:flex; align-items:center; gap:7px; font-size:13px; color:var(--gray-400); min-width:0;}
+  .crumb .cur{color:var(--gray-900); font-weight:500;}
+  .crumb .sep{color:var(--gray-300); font-size:11px;}
+  .head-sp{flex:1; min-width:12px;}
+
+  .dp{display:inline-flex; align-items:center; gap:8px; border:1px solid var(--line); border-radius:8px;
+      padding:6px 10px; font-size:12.5px; color:var(--gray-500); background:#fff;}
+  .btn{border:1px solid transparent; border-radius:6px; padding:6px 12px; font-size:12.5px; font-weight:500;
+       display:inline-flex; align-items:center; gap:6px; white-space:nowrap;}
+  .btn.pri{background:var(--primary); color:#fff;}
+  .btn.sec{background:var(--gray-100); color:var(--gray-500);}
+  .btn.out{background:#fff; border-color:var(--line); color:var(--gray-500);}
+
+  .canvas{padding:14px 20px 22px; display:flex; flex-direction:column; gap:16px; min-width:0;}
+
+  /* --- competitor tiles (CompetitorTile.vue) --- */
+  .tiles{display:grid; grid-template-columns:repeat(5,1fr); gap:16px;}
+  .tile{background:#fff; border-radius:12px; padding:12px; height:136px; box-shadow:var(--card-shadow);
+        display:flex; flex-direction:column; justify-content:space-between;}
+  .tile .top{display:flex; align-items:center; gap:11px; min-width:0;}
+  .tile .ava{width:40px; height:40px; border-radius:50%; flex:none; display:grid; place-items:center;
+             color:#fff; font-weight:600; font-size:13px; overflow:hidden;}
+  .tile .nm{font-size:15px; color:var(--ink); font-weight:500; overflow:hidden; text-overflow:ellipsis;
+            white-space:nowrap;}
+  .tile .you{font-size:9px; font-weight:700; letter-spacing:.06em; color:var(--primary);
+             background:var(--primary-50); border-radius:4px; padding:1px 5px; margin-top:2px; display:inline-block;}
+  .tile .met{display:flex; align-items:center; justify-content:space-between; gap:8px;}
+  .tile .met .k{font-size:12.5px; color:var(--gray-300);}
+  .pill{font-size:12px; font-weight:500; padding:2px 10px; border-radius:999px;}
+  .pill.g{background:var(--success-50); color:#2E8B5B;}
+  .pill.r{background:var(--danger-50); color:#C21040;}
+  .pill.n{background:var(--gray-100); color:var(--gray-500);}
+  .tile.add{border:2px dashed var(--line); box-shadow:none; align-items:center; justify-content:center;
+            color:var(--gray-300);}
+
+  /* --- notice strip --- */
+  .strip{display:flex; gap:11px; align-items:flex-start; background:var(--warning-50);
+         border:1px solid #FFE0C2; border-radius:12px; padding:12px 15px;}
+  .strip .ic{width:22px; height:22px; border-radius:50%; background:var(--warning); color:#fff; flex:none;
+             display:grid; place-items:center; font-size:13px; font-weight:700;}
+  .strip .tx{font-size:12.5px; color:var(--warning-700); line-height:1.6;}
+  .strip .tx b{color:#8E5115;}
+
+  /* --- cards (AnalyticsCardWrapper.vue) --- */
+  .card{background:#fff; border-radius:12px; padding:20px; box-shadow:var(--card-shadow); min-width:0;}
+  .card-h{display:flex; align-items:center; gap:10px; margin-bottom:18px; flex-wrap:wrap;}
+  .card-h h3{margin:0; font-size:14.5px; font-weight:600; color:var(--gray-900); letter-spacing:-.005em;}
+  .card-h .q{width:15px; height:15px; border-radius:50%; border:1.4px solid var(--primary); color:var(--primary);
+             font-size:10px; font-weight:700; display:grid; place-items:center; flex:none;}
+  .card-h .sp{flex:1;}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+
+  .seg{display:inline-flex; background:var(--gray-100); border-radius:7px; padding:3px; gap:2px;}
+  .seg span{padding:4px 11px; border-radius:5px; font-size:11.5px; color:var(--gray-400); font-weight:500;}
+  .seg span.on{background:#fff; color:var(--gray-900); box-shadow:0 1px 2px rgba(24,33,46,.10);}
+  .drop{display:inline-flex; align-items:center; gap:7px; border:1px solid var(--line); border-radius:7px;
+        padding:5px 10px; font-size:12px; color:var(--gray-500); background:#fff;}
+  .ai{display:inline-flex; align-items:center; gap:6px; border:1px solid var(--line); border-radius:6px;
+      padding:5px 10px; font-size:12px; color:var(--gray-500); background:#fff;}
+  .ai .sp2{width:13px; height:13px; display:grid; place-items:center; color:var(--primary);}
+
+  /* --- legend --- */
+  .lgd{display:flex; flex-wrap:wrap; gap:14px; margin-top:14px;}
+  .lgd i{display:inline-flex; align-items:center; gap:6px; font-style:normal; font-size:11.5px; color:var(--gray-400);}
+  .lgd i b{width:9px; height:9px; border-radius:2.5px; display:inline-block;}
+
+  /* --- tables --- */
+  .tw{overflow-x:auto;}
+  table{border-collapse:collapse; width:100%; font-size:12.5px; min-width:720px;}
+  th,td{padding:10px 12px; text-align:right; border-bottom:1px solid var(--grid); white-space:nowrap;}
+  th{font-size:10.5px; letter-spacing:.045em; text-transform:uppercase; color:var(--gray-300); font-weight:600;
+     background:var(--gray-50);}
+  th:first-child,td:first-child{text-align:left;}
+  tbody tr:last-child td{border-bottom:0;}
+  tr.me td{background:var(--primary-50);}
+  tr.me td:first-child{border-left:2.5px solid var(--primary);}
+  .ch{display:inline-flex; align-items:center; gap:9px;}
+  .ch .av{width:24px; height:24px; border-radius:50%; flex:none; display:grid; place-items:center; color:#fff;
+          font-size:9.5px; font-weight:600;}
+  .ch .t{font-weight:500; color:var(--ink);}
+  .up{color:#2E8B5B; font-weight:500;}
+  /* YouTube's terms require metrics we compute to be visually distinct from
+     metrics the API reports directly. Dotted underline + sigma superscript. */
+  .der{border-bottom:1px dotted #A9B6C6;}
+  .der::after{content:"\2211"; font-size:.72em; vertical-align:super; color:var(--primary); margin-left:1px;}
+  .foot{margin-top:14px; padding-top:12px; border-top:1px solid var(--grid); font-size:11.5px;
+        color:var(--gray-300); line-height:1.6;}
+  .foot b{color:var(--gray-500); font-weight:600;}
+  .dn{color:#C21040; font-weight:500;}
+  .mut{color:var(--gray-300);}
+  .bar-cell{display:flex; align-items:center; gap:9px; justify-content:flex-end;}
+  .bar-cell .tr{width:74px; height:6px; border-radius:3px; background:var(--grid); overflow:hidden; flex:none;}
+  .bar-cell .tr b{display:block; height:100%; border-radius:3px;}
+
+  /* --- tag chips --- */
+  .tags{display:flex; flex-wrap:wrap; gap:8px;}
+  .tg{display:inline-flex; align-items:center; gap:7px; border:1px solid var(--line); border-radius:999px;
+      padding:5px 11px; font-size:12px; color:var(--gray-500); background:#fff;}
+  .tg b{color:var(--ink); font-weight:600;}
+  .tg .ct{background:var(--gray-100); border-radius:999px; padding:1px 7px; font-size:11px; color:var(--gray-400);}
+
+  /* --- video cards --- */
+  .vids{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+  .vid{border:1px solid var(--line); border-radius:10px; overflow:hidden; background:#fff;}
+  .vid .thumb{height:84px; position:relative; display:grid; place-items:center;}
+  .vid .thumb .dur{position:absolute; right:6px; bottom:6px; background:rgba(0,0,0,.78); color:#fff;
+                   font-size:10px; font-weight:500; padding:1px 5px; border-radius:3px;}
+  .vid .thumb .pl{width:34px; height:24px; border-radius:6px; background:var(--yt); display:grid;
+                  place-items:center; color:#fff; font-size:11px;}
+  .vid .b{padding:10px 11px; display:flex; flex-direction:column; gap:7px;}
+  .vid .ti{font-size:12px; font-weight:500; color:var(--ink); line-height:1.4; display:-webkit-box;
+           -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:34px;}
+  .vid .by{display:flex; align-items:center; gap:6px; font-size:11px; color:var(--gray-300);}
+  .vid .by .d{width:8px; height:8px; border-radius:2px; flex:none;}
+  .vid .st{display:flex; gap:12px; font-size:11px; color:var(--gray-400); border-top:1px solid var(--grid);
+           padding-top:7px;}
+  .vid .st b{color:var(--ink); font-weight:600;}
+
+  svg{display:block;}
+  .ax{font-size:10.5px; fill:var(--axis); font-family:inherit;}
+  .vlab{font-size:10.5px; fill:var(--gray-400); font-weight:500; font-family:inherit;}
+
+  @media (max-width:1180px){
+    .app{grid-template-columns:1fr;}
+    .rail,.side{display:none;}
+    .tiles{grid-template-columns:repeat(2,1fr);}
+    .grid2,.grid3,.vids{grid-template-columns:1fr;}
+  }
+</style>
+
+<div class="deck">
+
+  <header class="deck-head">
+    <span class="kicker">ContentStudio · Competitor Analytics</span>
+    <h1>YouTube competitor report</h1>
+    <p>The YouTube tab of Competitor Analytics, drawn against the shipped Facebook and Instagram
+       reports. Chrome, spacing, card treatment, and palette are taken from the running components
+       rather than approximated — the same 240px analytics sidebar, the same sticky header card, the
+       same <code>rounded-xl</code> white cards on the <code>#F4F6FA</code> canvas.</p>
+    <div class="note">
+      <span><b>Syncing is free and carries no wallet, price, or confirmation step</b> — unlike X, YouTube's API
+        charges nothing per call. The limit is a daily quota, not money, so the sync button behaves exactly as it
+        does on the Facebook and Instagram reports.</span>
+    </div>
+    <div class="note">
+      <span>Every widget shown here is buildable from public YouTube Data API v3 fields. Nothing on this
+        page depends on owner-only metrics — no watch time, no retention, no traffic sources, no
+        demographics, no dislikes. <b>Subscriber counts are rounded by the API to three significant
+        figures for everyone except the channel owner</b>, which the report discloses inline rather than
+        burying in a help article.</span>
+    </div>
+  </header>
+
+  <section>
+    <div class="screen-cap">
+      <span class="n">Screen</span>
+      <h2>Social tools benchmark — synced report</h2>
+      <span class="d">Your channel plus four tracked rivals · last 30 days</span>
+    </div>
+
+    <div class="app">
+
+      <!-- ============ global rail ============ -->
+      <nav class="rail">
+        <div class="rail-ws">
+          <span class="av">CN</span>
+          <span class="nm">Collab Nest</span>
+        </div>
+        <div class="rail-i">
+          <span class="g"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg></span>
+          Home
+        </div>
+        <div class="rail-i">
+          <span class="new">NEW</span>
+          <span class="g"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2Z"/></svg></span>
+          AI Studio
+        </div>
+        <div class="rail-i">
+          <span class="g"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2.4"/><path d="M3 9.5h18M8 3v3M16 3v3"/></svg></span>
+          Publisher
+        </div>
+        <div class="rail-i">
+          <span class="g"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.5 12 13l9-5.5"/><rect x="3" y="5" width="18" height="14" rx="2.4"/></svg></span>
+          Inbox
+        </div>
+        <div class="rail-i on">
+          <span class="g"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9h-9Z"/><path d="M14.5 2.6A9 9 0 0 1 21.4 9.5h-6.9Z"/></svg></span>
+          Analytics
+        </div>
+        <div class="rail-i">
+          <span class="new">NEW</span>
+          <span class="g"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="18.5" r="1.9"/><path d="M4 11.5a8.5 8.5 0 0 1 8.5 8.5M4 5a15 15 0 0 1 15 15"/></svg></span>
+          Listening
+        </div>
+        <div class="rail-i">
+          <span class="g"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="2.4"/><path d="m3 15 5-4.5 4.5 4M14 13l2.5-2.2L21 14.5"/></svg></span>
+          Library
+        </div>
+        <div class="rail-i">
+          <span class="g"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m9 8-5 4 5 4M15 8l5 4-5 4"/></svg></span>
+          API
+        </div>
+        <div class="rail-sp"></div>
+        <div class="rail-i">
+          <span class="g"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 12h.01M12 12h.01M18 12h.01"/></svg></span>
+          More
+        </div>
+      </nav>
+
+      <!-- ============ analytics sidebar ============ -->
+      <aside class="side">
+        <div class="grp">
+          <div class="grp-h"><span>Social Analytics</span><span class="chev">▾</span></div>
+          <div class="li"><span class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.6"/></svg></span>Overview</div>
+          <div class="li"><span class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="#1877F2"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 22 12Z"/></svg></span>Facebook</div>
+          <div class="li"><span class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#E1306C" stroke-width="1.9"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.8"/><circle cx="17.2" cy="6.8" r="1.1" fill="#E1306C" stroke="none"/></svg></span>Instagram</div>
+          <div class="li"><span class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.4 3H3.6A.6.6 0 0 0 3 3.6v16.8a.6.6 0 0 0 .6.6h16.8a.6.6 0 0 0 .6-.6V3.6a.6.6 0 0 0-.6-.6ZM8.3 18.3H5.6V9.7h2.7v8.6ZM6.9 8.5a1.6 1.6 0 1 1 0-3.1 1.6 1.6 0 0 1 0 3.1Zm11.4 9.8h-2.7v-4.2c0-1 0-2.3-1.4-2.3s-1.6 1.1-1.6 2.2v4.3H9.9V9.7h2.6v1.2a2.9 2.9 0 0 1 2.6-1.4c2.8 0 3.3 1.8 3.3 4.2v4.6Z"/></svg></span>LinkedIn</div>
+          <div class="li"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="#0F1419"><path d="M17.7 3h3.3l-7.2 8.3L22 21h-6.6l-5.2-6.8L4.3 21H1l7.7-8.9L1.3 3H8l4.7 6.2L17.7 3Zm-1.2 16h1.8L7.6 4.9H5.6L16.5 19Z"/></svg></span>X (Twitter)</div>
+          <div class="li"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="#0F1419"><path d="M16.5 2h-3v13.4a2.6 2.6 0 1 1-2.2-2.6v-3a5.6 5.6 0 1 0 5.2 5.6V9.1a6.7 6.7 0 0 0 4 1.3V7.5a3.9 3.9 0 0 1-4-3.9V2Z"/></svg></span>TikTok</div>
+          <div class="li on"><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="#FF0000"><path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4a2.5 2.5 0 0 0-1.8 1.8A26 26 0 0 0 2 12a26 26 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8A26 26 0 0 0 22 12a26 26 0 0 0-.4-4.8ZM10 15.1V8.9l5.2 3.1-5.2 3.1Z"/></svg></span>YouTube</div>
+          <div class="li"><span class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="#E60023"><path d="M12 2a10 10 0 0 0-3.6 19.3c-.1-.8-.2-2 0-2.9l1.2-5s-.3-.6-.3-1.5c0-1.4.8-2.5 1.8-2.5.9 0 1.3.6 1.3 1.4 0 .9-.6 2.2-.9 3.4-.2 1 .5 1.9 1.5 1.9 1.8 0 3.2-1.9 3.2-4.7 0-2.4-1.8-4.1-4.3-4.1a4.9 4.9 0 0 0-5.1 4.9c0 1 .4 2 .9 2.6.1.1.1.2.1.3l-.3 1.2c0 .2-.2.2-.4.1-1.3-.6-2.1-2.5-2.1-4 0-3.3 2.4-6.3 6.9-6.3 3.6 0 6.4 2.6 6.4 6 0 3.6-2.2 6.5-5.4 6.5-1 0-2-.6-2.4-1.2l-.6 2.5c-.2.9-.8 2-1.2 2.6A10 10 0 1 0 12 2Z"/></svg></span>Pinterest</div>
+          <div class="li"><span class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="1.8" stroke-linecap="round"><path d="M12 21s7-5.4 7-11a7 7 0 1 0-14 0c0 5.6 7 11 7 11Z"/><circle cx="12" cy="10" r="2.6"/></svg></span>Google Business</div>
+        </div>
+
+        <div class="grp">
+          <div class="grp-h"><span>Competitor Analytics</span><span class="chev">▾</span></div>
+          <div class="li"><span class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="#1877F2"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 22 12Z"/></svg></span>Facebook</div>
+          <div class="li"><span class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#E1306C" stroke-width="1.9"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.8"/><circle cx="17.2" cy="6.8" r="1.1" fill="#E1306C" stroke="none"/></svg></span>Instagram</div>
+          <div class="li"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="#0F1419"><path d="M17.7 3h3.3l-7.2 8.3L22 21h-6.6l-5.2-6.8L4.3 21H1l7.7-8.9L1.3 3H8l4.7 6.2L17.7 3Zm-1.2 16h1.8L7.6 4.9H5.6L16.5 19Z"/></svg></span>X (Twitter)</div>
+          <div class="li on">
+            <span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="#FF0000"><path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4a2.5 2.5 0 0 0-1.8 1.8A26 26 0 0 0 2 12a26 26 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8A26 26 0 0 0 22 12a26 26 0 0 0-.4-4.8ZM10 15.1V8.9l5.2 3.1-5.2 3.1Z"/></svg></span>
+            YouTube<span class="tag">NEW</span>
+          </div>
+        </div>
+
+        <div class="grp">
+          <div class="grp-h"><span>Ad Analytics</span><span class="chev">▾</span></div>
+          <div class="li"><span class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="#0081FB"><path d="M6.7 5C4 5 2 7.9 2 11.4c0 3.4 1.7 5.6 4.3 5.6 1.9 0 3.2-1 5.2-4.3l1.2-2c.3-.6.6-1 .9-1.4.4.6.8 1.3 1.3 2.2l1.6 2.9c1.6 2.7 2.7 3.6 4.5 3.6 2.2 0 3.4-2.2 3.4-5.6C24.4 8.4 22.3 5 19.4 5c-1.6 0-2.9.9-4.3 2.8-1-1.7-2.3-2.8-4-2.8Zm-.2 2.6c1 0 1.9.8 3 2.5l-.6 1c-1.6 2.7-2.3 3.3-3.2 3.3-1 0-1.8-1-1.8-2.9 0-2.3.9-3.9 2.6-3.9Zm12.6 0c1.5 0 2.5 1.7 2.5 4 0 1.9-.6 2.8-1.6 2.8-.9 0-1.5-.6-2.8-2.8l-1-1.7c1.1-1.6 2-2.3 2.9-2.3Z"/></svg></span>Meta Ads</div>
+          <div class="li"><span class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FBBC05" stroke-width="1.9" stroke-linecap="round"><path d="M9 3.5 2.8 14.2M15 3.5 21.2 14.2"/><circle cx="12" cy="18" r="3.2" stroke="#34A853"/></svg></span>Google Ads</div>
+        </div>
+
+        <div class="grp">
+          <div class="grp-h"><span>Reports</span><span class="chev">▾</span></div>
+          <div class="li"><span class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="1.8" stroke-linecap="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg></span>My Reports</div>
+        </div>
+      </aside>
+
+      <!-- ============ main ============ -->
+      <div class="main">
+
+        <div class="head">
+          <div class="head-card">
+            <span class="back"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg></span>
+            <span class="vr"></span>
+            <span class="crumb">
+              Competitor analytics <span class="sep">›</span> YouTube <span class="sep">›</span>
+              <span class="cur">Social tools benchmark</span>
+            </span>
+            <span class="head-sp"></span>
+            <span class="dp">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4.5" width="18" height="16" rx="2.4"/><path d="M3 9.5h18M8 3v3M16 3v3"/></svg>
+              Last 30 days
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
+            </span>
+            <span class="btn pri">Manage competitors</span>
+            <span class="btn sec" title="Free — YouTube's API has no per-call charge">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.5 12a8.5 8.5 0 1 1-2.6-6.1"/><path d="M20.5 4v5h-5"/></svg>
+              Sync data
+            </span>
+            <span class="btn out">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7.5 10.5 12 15l4.5-4.5M4 20h16"/></svg>
+              Export PDF
+            </span>
+          </div>
+        </div>
+
+        <div class="canvas">
+
+          <!-- ---------- channel tiles ---------- -->
+          <div class="tiles">
+            <div class="tile">
+              <div class="top">
+                <span class="ava" style="background:linear-gradient(140deg,#5b8def,#2A70FC)">CN</span>
+                <span style="min-width:0">
+                  <span class="nm">Collab Nest</span>
+                  <span class="you">YOU</span>
+                </span>
+              </div>
+              <div>
+                <div class="met"><span class="k">Subscribers</span><span class="pill n">48.2K</span></div>
+                <div class="met" style="margin-top:6px"><span class="k">ER</span><span class="pill g">4.1 %</span></div>
+              </div>
+            </div>
+            <div class="tile">
+              <div class="top">
+                <span class="ava" style="background:#1A2B4C">BF</span>
+                <span class="nm">Buffer</span>
+              </div>
+              <div>
+                <div class="met"><span class="k">Subscribers</span><span class="pill n">61.4K</span></div>
+                <div class="met" style="margin-top:6px"><span class="k">ER</span><span class="pill g">3.6 %</span></div>
+              </div>
+            </div>
+            <div class="tile">
+              <div class="top">
+                <span class="ava" style="background:#0B2E4F">HS</span>
+                <span class="nm">Hootsuite</span>
+              </div>
+              <div>
+                <div class="met"><span class="k">Subscribers</span><span class="pill n">96.7K</span></div>
+                <div class="met" style="margin-top:6px"><span class="k">ER</span><span class="pill r">1.9 %</span></div>
+              </div>
+            </div>
+            <div class="tile">
+              <div class="top">
+                <span class="ava" style="background:#2B2B2B">LT</span>
+                <span class="nm">Later</span>
+              </div>
+              <div>
+                <div class="met"><span class="k">Subscribers</span><span class="pill n">37.9K</span></div>
+                <div class="met" style="margin-top:6px"><span class="k">ER</span><span class="pill g">4.8 %</span></div>
+              </div>
+            </div>
+            <div class="tile add">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            </div>
+          </div>
+
+          <!-- ---------- data-honesty strip ---------- -->
+          <div class="strip">
+            <span class="ic">i</span>
+            <span class="tx">
+              <b>Subscriber counts are approximate.</b> YouTube rounds every channel's subscriber count to
+              three significant figures for anyone who is not the owner — 48,217 is reported as 48.2K. Growth
+              under roughly 0.5&nbsp;% will not move the number at all, so treat small week-to-week changes as
+              noise. <b>Your own channel is exact.</b> Video-level stats are unrounded for every channel.
+            </span>
+          </div>
+
+          <!-- ---------- comparative table ---------- -->
+          <div class="card">
+            <div class="card-h">
+              <h3>Channels' comparative table</h3>
+              <span class="q">?</span>
+              <span class="sp"></span>
+              <span class="ai"><span class="sp2"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.2 5.8L20 10l-5.8 2.2L12 18l-2.2-5.8L4 10l5.8-2.2Z"/></svg></span>AI insights</span>
+            </div>
+            <div class="tw">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Channel</th><th>Subscribers</th><th>Net change</th><th>Videos</th>
+                    <th>Views</th><th><span class="der">Avg views / video</span></th><th>Likes</th><th>Comments</th><th><span class="der">Eng. rate</span></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="me">
+                    <td><span class="ch"><span class="av" style="background:#2A70FC">CN</span><span class="t">Collab Nest</span></span></td>
+                    <td>48.2K</td><td class="up">+1.30K</td><td>18</td><td>412K</td><td class="der">22.9K</td>
+                    <td>16.9K</td><td>1,284</td><td class="der up">4.1 %</td>
+                  </tr>
+                  <tr>
+                    <td><span class="ch"><span class="av" style="background:#1A2B4C">BF</span><span class="t">Buffer</span></span></td>
+                    <td>61.4K</td><td class="up">+900</td><td>12</td><td>388K</td><td class="der">32.3K</td>
+                    <td>14.0K</td><td>962</td><td class="der">3.6 %</td>
+                  </tr>
+                  <tr>
+                    <td><span class="ch"><span class="av" style="background:#0B2E4F">HS</span><span class="t">Hootsuite</span></span></td>
+                    <td>96.7K</td><td class="dn">−400</td><td>9</td><td>294K</td><td class="der">32.7K</td>
+                    <td>5.6K</td><td>410</td><td class="der dn">1.9 %</td>
+                  </tr>
+                  <tr>
+                    <td><span class="ch"><span class="av" style="background:#2B2B2B">LT</span><span class="t">Later</span></span></td>
+                    <td>37.9K</td><td class="up">+2.10K</td><td>26</td><td>501K</td><td class="der">19.3K</td>
+                    <td>24.0K</td><td>1,910</td><td class="der up">4.8 %</td>
+                  </tr>
+                  <tr>
+                    <td><span class="ch"><span class="av" style="background:#3C6E71">MC</span><span class="t">Metricool</span></span></td>
+                    <td>29.4K</td><td class="up">+1.80K</td><td>31</td><td>337K</td><td class="der">10.9K</td>
+                    <td>13.5K</td><td>1,455</td><td class="der up">4.4 %</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="foot">
+              <b>Columns marked <span class="der" style="border:0"></span> are calculated by ContentStudio</b>, not reported by YouTube —
+              YouTube's terms require computed metrics to be distinguishable from raw ones. Net change is movement in the
+              rounded figure, not a precise gain. Watch time, average view duration, and audience retention are owner-only
+              and cannot appear in any competitor column.
+            </div>
+          </div>
+
+          <!-- ---------- performance comparison ---------- -->
+          <div class="card">
+            <div class="card-h">
+              <h3>Channels' performance comparison</h3>
+              <span class="sp"></span>
+              <span class="seg"><span class="on">Views</span><span>Likes</span><span>Comments</span></span>
+              <span class="drop">Daily<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span>
+            </div>
+            <svg viewBox="0 0 1000 250" width="100%" height="250" preserveAspectRatio="none" role="img" aria-label="Daily views by channel over 30 days">
+              <g stroke="var(--grid)" stroke-width="1">
+                <line x1="52" y1="30" x2="985" y2="30"/><line x1="52" y1="74" x2="985" y2="74"/>
+                <line x1="52" y1="118" x2="985" y2="118"/><line x1="52" y1="162" x2="985" y2="162"/>
+                <line x1="52" y1="206" x2="985" y2="206"/>
+              </g>
+              <g class="ax" text-anchor="end">
+                <text x="44" y="34">32K</text><text x="44" y="78">24K</text>
+                <text x="44" y="122">16K</text><text x="44" y="166">8K</text><text x="44" y="210">0</text>
+              </g>
+              <g class="ax" text-anchor="middle">
+                <text x="60" y="230">Jul 23</text><text x="245" y="230">Jul 30</text>
+                <text x="490" y="230">Aug 6</text><text x="735" y="230">Aug 13</text><text x="965" y="230">Aug 21</text>
+              </g>
+              <g fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="var(--s-late)" d="M60 150 122 138 184 142 246 118 308 126 370 96 432 104 494 82 556 92 618 70 680 78 742 58 804 66 866 48 928 56 966 44"/>
+                <path stroke="var(--s-you)" d="M60 168 122 160 184 166 246 146 308 152 370 132 432 140 494 120 556 128 618 110 680 118 742 100 804 108 866 92 928 98 966 88"/>
+                <path stroke="var(--s-buf)" d="M60 176 122 172 184 178 246 164 308 170 370 158 432 164 494 152 556 158 618 148 680 154 742 144 804 150 866 140 928 146 966 138"/>
+                <path stroke="var(--s-metr)" d="M60 186 122 180 184 184 246 174 308 178 370 168 432 172 494 164 556 168 618 158 680 162 742 154 804 158 866 150 928 154 966 148"/>
+                <path stroke="var(--s-hoot)" d="M60 192 122 194 184 190 246 196 308 192 370 198 432 194 494 200 556 196 618 202 680 198 742 203 804 199 866 204 928 200 966 205"/>
+              </g>
+              <circle cx="966" cy="44" r="3.6" fill="var(--s-late)"/>
+              <circle cx="966" cy="88" r="3.6" fill="var(--s-you)"/>
+            </svg>
+            <div class="lgd">
+              <i><b style="background:var(--s-you)"></b>Collab Nest (you)</i>
+              <i><b style="background:var(--s-buf)"></b>Buffer</i>
+              <i><b style="background:var(--s-hoot)"></b>Hootsuite</i>
+              <i><b style="background:var(--s-late)"></b>Later</i>
+              <i><b style="background:var(--s-metr)"></b>Metricool</i>
+            </div>
+          </div>
+
+          <!-- ---------- subscribers + views ---------- -->
+          <div class="grid2">
+            <div class="card">
+              <div class="card-h"><h3>Subscribers vs net change</h3><span class="q">?</span></div>
+              <svg viewBox="0 0 460 230" width="100%" height="230" role="img" aria-label="Subscriber totals and net change by channel">
+                <g stroke="var(--grid)" stroke-width="1">
+                  <line x1="46" y1="24" x2="450" y2="24"/><line x1="46" y1="64" x2="450" y2="64"/>
+                  <line x1="46" y1="104" x2="450" y2="104"/><line x1="46" y1="144" x2="450" y2="144"/>
+                </g>
+                <line x1="46" y1="184" x2="450" y2="184" stroke="var(--grid-2)" stroke-width="1.4"/>
+                <g class="ax" text-anchor="end">
+                  <text x="38" y="28">100K</text><text x="38" y="68">75K</text>
+                  <text x="38" y="108">50K</text><text x="38" y="148">25K</text><text x="38" y="188">0</text>
+                </g>
+                <g>
+                  <rect x="62" y="107" width="42" height="77" rx="3.5" fill="var(--s-you)"/>
+                  <rect x="140" y="86" width="42" height="98" rx="3.5" fill="var(--s-buf)"/>
+                  <rect x="218" y="30" width="42" height="154" rx="3.5" fill="var(--s-hoot)"/>
+                  <rect x="296" y="124" width="42" height="60" rx="3.5" fill="var(--s-late)"/>
+                  <rect x="374" y="137" width="42" height="47" rx="3.5" fill="var(--s-metr)"/>
+                </g>
+                <g class="vlab" text-anchor="middle">
+                  <text x="83" y="101">48.2K</text><text x="161" y="80">61.4K</text><text x="239" y="24">96.7K</text>
+                  <text x="317" y="118">37.9K</text><text x="395" y="131">29.4K</text>
+                </g>
+                <g class="ax" text-anchor="middle">
+                  <text x="83" y="200">Collab Nest</text><text x="161" y="200">Buffer</text><text x="239" y="200">Hootsuite</text>
+                  <text x="317" y="200">Later</text><text x="395" y="200">Metricool</text>
+                </g>
+                <g text-anchor="middle" font-size="10.5" font-weight="600" font-family="inherit">
+                  <text x="83" y="217" fill="#2E8B5B">+1.30K</text>
+                  <text x="161" y="217" fill="#2E8B5B">+900</text>
+                  <text x="239" y="217" fill="#C21040">−400</text>
+                  <text x="317" y="217" fill="#2E8B5B">+2.10K</text>
+                  <text x="395" y="217" fill="#2E8B5B">+1.80K</text>
+                </g>
+              </svg>
+            </div>
+
+            <div class="card">
+              <div class="card-h">
+                <h3>Views comparison</h3><span class="sp"></span>
+                <span class="seg"><span class="on">Total</span><span>Per video</span></span>
+              </div>
+              <svg viewBox="0 0 460 230" width="100%" height="230" role="img" aria-label="Total views by channel">
+                <g stroke="var(--grid)" stroke-width="1">
+                  <line x1="46" y1="24" x2="450" y2="24"/><line x1="46" y1="64" x2="450" y2="64"/>
+                  <line x1="46" y1="104" x2="450" y2="104"/><line x1="46" y1="144" x2="450" y2="144"/>
+                </g>
+                <line x1="46" y1="184" x2="450" y2="184" stroke="var(--grid-2)" stroke-width="1.4"/>
+                <g class="ax" text-anchor="end">
+                  <text x="38" y="28">600K</text><text x="38" y="68">450K</text>
+                  <text x="38" y="108">300K</text><text x="38" y="148">150K</text><text x="38" y="188">0</text>
+                </g>
+                <g>
+                  <rect x="62" y="74" width="42" height="110" rx="3.5" fill="var(--s-you)"/>
+                  <rect x="140" y="81" width="42" height="103" rx="3.5" fill="var(--s-buf)"/>
+                  <rect x="218" y="106" width="42" height="78" rx="3.5" fill="var(--s-hoot)"/>
+                  <rect x="296" y="51" width="42" height="133" rx="3.5" fill="var(--s-late)"/>
+                  <rect x="374" y="94" width="42" height="90" rx="3.5" fill="var(--s-metr)"/>
+                </g>
+                <g class="vlab" text-anchor="middle">
+                  <text x="83" y="68">412K</text><text x="161" y="75">388K</text><text x="239" y="100">294K</text>
+                  <text x="317" y="45">501K</text><text x="395" y="88">337K</text>
+                </g>
+                <g class="ax" text-anchor="middle">
+                  <text x="83" y="200">Collab Nest</text><text x="161" y="200">Buffer</text><text x="239" y="200">Hootsuite</text>
+                  <text x="317" y="200">Later</text><text x="395" y="200">Metricool</text>
+                </g>
+              </svg>
+            </div>
+          </div>
+
+          <!-- ---------- posting activity + length ---------- -->
+          <div class="grid2">
+            <div class="card">
+              <div class="card-h"><h3>Posting activity by video type</h3><span class="q">?</span></div>
+              <svg viewBox="0 0 460 220" width="100%" height="220" role="img" aria-label="Uploads split between Shorts and long-form by channel">
+                <g stroke="var(--grid)" stroke-width="1">
+                  <line x1="46" y1="24" x2="450" y2="24"/><line x1="46" y1="60" x2="450" y2="60"/>
+                  <line x1="46" y1="96" x2="450" y2="96"/><line x1="46" y1="132" x2="450" y2="132"/>
+                </g>
+                <line x1="46" y1="168" x2="450" y2="168" stroke="var(--grid-2)" stroke-width="1.4"/>
+                <g class="ax" text-anchor="end">
+                  <text x="38" y="28">32</text><text x="38" y="64">24</text>
+                  <text x="38" y="100">16</text><text x="38" y="136">8</text><text x="38" y="172">0</text>
+                </g>
+                <g>
+                  <rect x="64" y="123" width="18" height="45" rx="3" fill="var(--primary)"/>
+                  <rect x="85" y="132" width="18" height="36" rx="3" fill="var(--primary-100)"/>
+                  <rect x="142" y="150" width="18" height="18" rx="3" fill="var(--primary)"/>
+                  <rect x="163" y="132" width="18" height="36" rx="3" fill="var(--primary-100)"/>
+                  <rect x="220" y="159" width="18" height="9" rx="3" fill="var(--primary)"/>
+                  <rect x="241" y="141" width="18" height="27" rx="3" fill="var(--primary-100)"/>
+                  <rect x="298" y="87" width="18" height="81" rx="3" fill="var(--primary)"/>
+                  <rect x="319" y="141" width="18" height="27" rx="3" fill="var(--primary-100)"/>
+                  <rect x="376" y="78" width="18" height="90" rx="3" fill="var(--primary)"/>
+                  <rect x="397" y="146" width="18" height="22" rx="3" fill="var(--primary-100)"/>
+                </g>
+                <g class="ax" text-anchor="middle">
+                  <text x="83" y="184">Collab Nest</text><text x="161" y="184">Buffer</text><text x="239" y="184">Hootsuite</text>
+                  <text x="317" y="184">Later</text><text x="395" y="184">Metricool</text>
+                </g>
+              </svg>
+              <div class="lgd">
+                <i><b style="background:var(--primary)"></b>Shorts (under 60s)</i>
+                <i><b style="background:var(--primary-100)"></b>Long-form</i>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h"><h3>Video length distribution</h3><span class="sp"></span>
+                <span class="drop">All channels<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span>
+              </div>
+              <svg viewBox="0 0 460 220" width="100%" height="220" role="img" aria-label="Share of uploads by video length bucket">
+                <g stroke="var(--grid)" stroke-width="1">
+                  <line x1="46" y1="24" x2="450" y2="24"/><line x1="46" y1="60" x2="450" y2="60"/>
+                  <line x1="46" y1="96" x2="450" y2="96"/><line x1="46" y1="132" x2="450" y2="132"/>
+                </g>
+                <line x1="46" y1="168" x2="450" y2="168" stroke="var(--grid-2)" stroke-width="1.4"/>
+                <g class="ax" text-anchor="end">
+                  <text x="38" y="28">40%</text><text x="38" y="64">30%</text>
+                  <text x="38" y="100">20%</text><text x="38" y="136">10%</text><text x="38" y="172">0</text>
+                </g>
+                <g fill="var(--s-metr)">
+                  <rect x="62" y="60" width="52" height="108" rx="3.5"/>
+                  <rect x="140" y="96" width="52" height="72" rx="3.5"/>
+                  <rect x="218" y="78" width="52" height="90" rx="3.5"/>
+                  <rect x="296" y="123" width="52" height="45" rx="3.5"/>
+                  <rect x="374" y="145" width="52" height="23" rx="3.5"/>
+                </g>
+                <g class="vlab" text-anchor="middle">
+                  <text x="88" y="54">30%</text><text x="166" y="90">20%</text><text x="244" y="72">25%</text>
+                  <text x="322" y="117">12.5%</text><text x="400" y="139">6.4%</text>
+                </g>
+                <g class="ax" text-anchor="middle">
+                  <text x="88" y="184">&lt; 1 min</text><text x="166" y="184">1–5 min</text><text x="244" y="184">5–10 min</text>
+                  <text x="322" y="184">10–20 min</text><text x="400" y="184">20 min +</text>
+                </g>
+              </svg>
+            </div>
+          </div>
+
+          <!-- ---------- engagement split + category mix ---------- -->
+          <div class="grid2">
+            <div class="card">
+              <div class="card-h"><h3>Engagement split</h3><span class="q">?</span></div>
+              <div style="display:flex; align-items:center; gap:26px; flex-wrap:wrap;">
+                <svg viewBox="0 0 170 170" width="164" height="164" role="img" aria-label="Likes versus comments share of engagement">
+                  <circle cx="85" cy="85" r="60" fill="none" stroke="var(--s-metr)" stroke-width="26"/>
+                  <circle cx="85" cy="85" r="60" fill="none" stroke="var(--s-buf)" stroke-width="26"
+                          stroke-dasharray="349 28" stroke-dashoffset="94" transform="rotate(-90 85 85)"/>
+                  <text x="85" y="80" text-anchor="middle" font-size="21" font-weight="700" fill="var(--ink)">18.2K</text>
+                  <text x="85" y="98" text-anchor="middle" font-size="10.5" fill="var(--axis)">interactions</text>
+                </svg>
+                <div style="display:flex; flex-direction:column; gap:14px; min-width:150px;">
+                  <div>
+                    <div style="display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--gray-400);">
+                      <b style="width:9px;height:9px;border-radius:2.5px;background:var(--s-buf);display:inline-block"></b>Likes
+                    </div>
+                    <div style="font-size:20px; font-weight:600; color:var(--ink); margin-top:2px;">16,940 <span style="font-size:12px; color:var(--gray-300); font-weight:500;">92.9 %</span></div>
+                  </div>
+                  <div>
+                    <div style="display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--gray-400);">
+                      <b style="width:9px;height:9px;border-radius:2.5px;background:var(--s-metr);display:inline-block"></b>Comments
+                    </div>
+                    <div style="font-size:20px; font-weight:600; color:var(--ink); margin-top:2px;">1,284 <span style="font-size:12px; color:var(--gray-300); font-weight:500;">7.1 %</span></div>
+                  </div>
+                  <div style="font-size:11.5px; color:var(--gray-300); line-height:1.5; max-width:24ch;">
+                    Dislikes are excluded — YouTube made them private in December 2021 and returns them only to the channel owner.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h"><h3>Content category mix</h3><span class="sp"></span>
+                <span class="drop">Collab Nest<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:13px; padding-top:4px;">
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:5px;">
+                    <span style="color:var(--gray-500)">Science &amp; Technology</span><span style="color:var(--ink); font-weight:600;">44 %</span>
+                  </div>
+                  <div style="height:8px; border-radius:4px; background:var(--grid);"><b style="display:block;height:100%;width:44%;border-radius:4px;background:var(--s-you)"></b></div>
+                </div>
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:5px;">
+                    <span style="color:var(--gray-500)">Education</span><span style="color:var(--ink); font-weight:600;">28 %</span>
+                  </div>
+                  <div style="height:8px; border-radius:4px; background:var(--grid);"><b style="display:block;height:100%;width:28%;border-radius:4px;background:var(--s-buf)"></b></div>
+                </div>
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:5px;">
+                    <span style="color:var(--gray-500)">People &amp; Blogs</span><span style="color:var(--ink); font-weight:600;">17 %</span>
+                  </div>
+                  <div style="height:8px; border-radius:4px; background:var(--grid);"><b style="display:block;height:100%;width:17%;border-radius:4px;background:var(--s-late)"></b></div>
+                </div>
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:5px;">
+                    <span style="color:var(--gray-500)">Howto &amp; Style</span><span style="color:var(--ink); font-weight:600;">11 %</span>
+                  </div>
+                  <div style="height:8px; border-radius:4px; background:var(--grid);"><b style="display:block;height:100%;width:11%;border-radius:4px;background:var(--s-hoot)"></b></div>
+                </div>
+                <div style="font-size:11.5px; color:var(--gray-300); line-height:1.5; margin-top:2px;">
+                  Category is the channel's own declared category per video, not an inferred topic.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ---------- most engaged tags ---------- -->
+          <div class="card">
+            <div class="card-h">
+              <h3>Most engaged tags</h3><span class="q">?</span>
+              <span class="sp"></span>
+              <span class="seg"><span class="on">By engagement</span><span>By frequency</span></span>
+            </div>
+            <div class="tags">
+              <span class="tg"><b>#socialmediamarketing</b><span class="ct">31 videos</span></span>
+              <span class="tg"><b>#contentstrategy</b><span class="ct">27</span></span>
+              <span class="tg"><b>#socialmediatips</b><span class="ct">24</span></span>
+              <span class="tg"><b>#instagramgrowth</b><span class="ct">19</span></span>
+              <span class="tg"><b>#aitools</b><span class="ct">17</span></span>
+              <span class="tg"><b>#creatoreconomy</b><span class="ct">14</span></span>
+              <span class="tg"><b>#schedulingtools</b><span class="ct">12</span></span>
+              <span class="tg"><b>#smallbusiness</b><span class="ct">11</span></span>
+              <span class="tg"><b>#analytics</b><span class="ct">9</span></span>
+              <span class="tg"><b>#shortsstrategy</b><span class="ct">8</span></span>
+            </div>
+            <div class="tw" style="margin-top:18px;">
+              <table>
+                <thead>
+                  <tr><th>Tag</th><th>Used by</th><th>Videos</th><th>Avg views</th><th>Avg engagement</th><th>You use it</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><span class="ch"><span class="t">#socialmediamarketing</span></span></td>
+                    <td>5 of 5 channels</td><td>31</td><td>24.8K</td>
+                    <td><span class="bar-cell">4.2 %<span class="tr"><b style="width:88%;background:var(--s-buf)"></b></span></span></td>
+                    <td class="up">Yes</td>
+                  </tr>
+                  <tr>
+                    <td><span class="ch"><span class="t">#aitools</span></span></td>
+                    <td>3 of 5 channels</td><td>17</td><td>31.6K</td>
+                    <td><span class="bar-cell">5.6 %<span class="tr"><b style="width:100%;background:var(--s-buf)"></b></span></span></td>
+                    <td class="dn">No</td>
+                  </tr>
+                  <tr>
+                    <td><span class="ch"><span class="t">#creatoreconomy</span></span></td>
+                    <td>2 of 5 channels</td><td>14</td><td>28.1K</td>
+                    <td><span class="bar-cell">5.1 %<span class="tr"><b style="width:91%;background:var(--s-buf)"></b></span></span></td>
+                    <td class="dn">No</td>
+                  </tr>
+                  <tr>
+                    <td><span class="ch"><span class="t">#contentstrategy</span></span></td>
+                    <td>4 of 5 channels</td><td>27</td><td>21.4K</td>
+                    <td><span class="bar-cell">3.8 %<span class="tr"><b style="width:68%;background:var(--s-buf)"></b></span></span></td>
+                    <td class="up">Yes</td>
+                  </tr>
+                  <tr>
+                    <td><span class="ch"><span class="t">#schedulingtools</span></span></td>
+                    <td>3 of 5 channels</td><td>12</td><td>14.9K</td>
+                    <td><span class="bar-cell">2.4 %<span class="tr"><b style="width:43%;background:var(--s-buf)"></b></span></span></td>
+                    <td class="up">Yes</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- ---------- top performing videos ---------- -->
+          <div class="card">
+            <div class="card-h">
+              <h3>Top performing videos</h3>
+              <span class="sp"></span>
+              <span class="seg"><span class="on">Top</span><span>Least</span></span>
+              <span class="drop">All channels<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span>
+            </div>
+            <div class="vids">
+              <div class="vid">
+                <div class="thumb" style="background:linear-gradient(135deg,#dfe7f5,#c6d5ee)">
+                  <span class="pl"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7Z"/></svg></span>
+                  <span class="dur">0:48</span>
+                </div>
+                <div class="b">
+                  <span class="ti">I scheduled 100 posts in 10 minutes — here's the exact workflow</span>
+                  <span class="by"><b class="d" style="background:var(--s-late)"></b>Later</span>
+                  <span class="st"><span>Views <b>142K</b></span><span>ER <b>7.9 %</b></span></span>
+                </div>
+              </div>
+              <div class="vid">
+                <div class="thumb" style="background:linear-gradient(135deg,#e6f0e9,#cfe3d7)">
+                  <span class="pl"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7Z"/></svg></span>
+                  <span class="dur">12:04</span>
+                </div>
+                <div class="b">
+                  <span class="ti">The 2026 social media algorithm changes nobody is talking about</span>
+                  <span class="by"><b class="d" style="background:var(--s-you)"></b>Collab Nest</span>
+                  <span class="st"><span>Views <b>96.4K</b></span><span>ER <b>6.2 %</b></span></span>
+                </div>
+              </div>
+              <div class="vid">
+                <div class="thumb" style="background:linear-gradient(135deg,#f2e9dc,#e6d7c1)">
+                  <span class="pl"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7Z"/></svg></span>
+                  <span class="dur">0:59</span>
+                </div>
+                <div class="b">
+                  <span class="ti">Stop posting at "the best time" — do this instead</span>
+                  <span class="by"><b class="d" style="background:var(--s-metr)"></b>Metricool</span>
+                  <span class="st"><span>Views <b>88.1K</b></span><span>ER <b>6.8 %</b></span></span>
+                </div>
+              </div>
+              <div class="vid">
+                <div class="thumb" style="background:linear-gradient(135deg,#e9e6f3,#d5d0ea)">
+                  <span class="pl"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7Z"/></svg></span>
+                  <span class="dur">8:31</span>
+                </div>
+                <div class="b">
+                  <span class="ti">We tested 5 AI caption tools so you don't have to</span>
+                  <span class="by"><b class="d" style="background:var(--s-buf)"></b>Buffer</span>
+                  <span class="st"><span>Views <b>74.6K</b></span><span>ER <b>4.4 %</b></span></span>
+                </div>
+              </div>
+            </div>
+            <div class="lgd">
+              <i><b style="background:var(--gray-300)"></b>Titles and thumbnails are cached for 30 days, so videos older than that appear by ID only.</i>
+            </div>
+          </div>
+
+          <!-- ---------- channel profile analysis ---------- -->
+          <div class="card">
+            <div class="card-h"><h3>Channel profile analysis</h3><span class="q">?</span></div>
+            <div class="tw">
+              <table>
+                <thead>
+                  <tr><th>Channel</th><th>Joined</th><th>Country</th><th>Lifetime videos</th><th>Lifetime views</th><th>Uploads / week</th><th>Shorts share</th><th>Avg length</th></tr>
+                </thead>
+                <tbody>
+                  <tr class="me">
+                    <td><span class="ch"><span class="av" style="background:#2A70FC">CN</span><span class="t">Collab Nest</span></span></td>
+                    <td>Mar 2019</td><td>United States</td><td>412</td><td>18.4M</td><td>4.2</td><td>56 %</td><td>3:24</td>
+                  </tr>
+                  <tr>
+                    <td><span class="ch"><span class="av" style="background:#1A2B4C">BF</span><span class="t">Buffer</span></span></td>
+                    <td>Jan 2011</td><td>United States</td><td>1,204</td><td>44.1M</td><td>2.8</td><td>33 %</td><td>6:12</td>
+                  </tr>
+                  <tr>
+                    <td><span class="ch"><span class="av" style="background:#0B2E4F">HS</span><span class="t">Hootsuite</span></span></td>
+                    <td>Jun 2009</td><td>Canada</td><td>2,318</td><td>61.8M</td><td>2.1</td><td>25 %</td><td>7:45</td>
+                  </tr>
+                  <tr>
+                    <td><span class="ch"><span class="av" style="background:#2B2B2B">LT</span><span class="t">Later</span></span></td>
+                    <td>Sep 2014</td><td>Canada</td><td>876</td><td>29.7M</td><td>6.1</td><td>75 %</td><td>2:08</td>
+                  </tr>
+                  <tr>
+                    <td><span class="ch"><span class="av" style="background:#3C6E71">MC</span><span class="t">Metricool</span></span></td>
+                    <td>Feb 2017</td><td>Spain</td><td>1,542</td><td>22.3M</td><td>7.2</td><td>80 %</td><td>1:52</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="lgd">
+              <i><b style="background:var(--gray-300)"></b>Unlisted and private uploads are invisible to the API, so lifetime video counts can run low.</i>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>

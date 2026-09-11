@@ -11,3 +11,4 @@ cs-prototypes/
 .env
 .env.local
 .env.*.local
+docs/frill/cache/

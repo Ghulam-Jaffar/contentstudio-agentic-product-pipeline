@@ -1,0 +1,4 @@
+{
+  "_comment": "Provenance ledger for the /frill pipeline. Maps a Frill idea idx to what the pipeline decided and produced, so re-runs never reprocess the same idea and every deliverable is traceable back to customer demand. Committed to git; contains no customer PII and no private-idea content. Decisions: routed-feature | routed-story | bug | rejected | deferred.",
+  "processed": {}
+}

@@ -1,9 +1,0 @@
-{
-  "title": "Sink Services",
-  "pages": [
-    "facebook-clickhouse-sink",
-    "instagram-clickhouse-sink",
-    "linkedin-clickhouse-sink",
-    "tiktok-clickhouse-sink"
-  ]
-}

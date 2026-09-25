@@ -8,7 +8,7 @@ A **Codex-powered product development pipeline** for [ContentStudio](https://con
 
 This is **not** a code project. There's no package.json or composer.json at root. The `contentstudio-backend/`, `contentstudio-frontend/`, `contentstudio-flutter/`, `social-inbox-manager/`, and other service directories are **gitignored separate repos** mounted here so the pipeline can analyze the actual codebase when writing stories.
 
-## Two Pipeline Commands
+## Three Pipeline Commands
 
 ### `/feature` — Full Feature Pipeline (4+1 steps)
 For major features requiring PRDs and dedicated epics.
@@ -32,12 +32,27 @@ For small improvements that don't need a full PRD. Max 4 stories; if 5+, redirec
 - Outputs saved to `docs/stories/<slug>/` (01-research.md and 02-stories.md, optionally 03-implementation.md)
 - Optionally implements `[FE]` stories: branches from `develop` in `contentstudio-frontend/`, one descriptive commit per story, creates PR
 
+### `/frill` — Customer Feedback Intake (4 steps)
+Front-end to the other two pipelines. Pulls feature requests off the public Frill board (https://contentstudio.frill.co), triages them, and hands a brief to `/feature` or `/story` in-session — no copy-paste.
+
+**Sync → Triage → Brief → [/feature | /story]**
+
+- **Read-only against Frill.** Never creates, updates, deletes or comments on an idea. Status changes stay a manual job in the Frill UI
+- All Frill I/O goes through `agents/scripts/frill-sync.sh` (retry/backoff, throttling, ordering assertions, atomic snapshot writes)
+- Triage clusters duplicates (5 WhatsApp ideas, 3 Dark Mode), dedupes against the ~238 existing dirs in `docs/features/` and `docs/stories/`, and rejects out-of-scope asks (dark mode, RTL, blog publishing)
+- **Always enriches before routing** — median idea body is ~200 characters, so a raw idea is a seed, not a brief. Requirements get mined from the idea's comment thread and its duplicate cluster
+- Provenance goes in `01-research.md` only, never in a story body
+- Every processed idea gets a `docs/frill/ledger.json` entry (including rejections) so it never resurfaces
+
 ## Key Files
 
 | File | Purpose |
 |---|---|
-| `.Codex/commands/feature.md` | `/feature` pipeline definition |
-| `.Codex/commands/story.md` | `/story` pipeline definition |
+| `agents/commands/feature.md` | `/feature` pipeline definition (Codex skill: `.codex/skills/feature/SKILL.md` symlinks here) |
+| `agents/commands/story.md` | `/story` pipeline definition (Codex skill: `.codex/skills/story/SKILL.md` symlinks here) |
+| `agents/commands/frill.md` | `/frill` customer-feedback intake pipeline definition (Codex skill: `.codex/skills/frill/SKILL.md` symlinks here) |
+| `agents/scripts/frill-sync.sh` | Frill API sync/triage script — all Frill I/O goes through it |
+| `docs/frill/ledger.json` | Committed provenance ledger: Frill idea → decision + deliverable |
 | `docs/story-guidelines.md` | **Mandatory** 20-section rulebook — read before writing any story |
 | `docs/ui-components.md` | **Mandatory** catalog of available UI components — read before writing FE stories. Update when `@contentstudio/ui` changes. |
 | `docs/PRD Feature Template.md` | 12-section PRD template used by `/feature` Step 3 |
@@ -81,7 +96,7 @@ The pipeline analyzes and writes stories for these codebases (mounted but gitign
 
 - **`contentstudio-backend/`** — Laravel 10 API (PHP 8.3, MongoDB, Redis, Kafka). Has its own `AGENTS.md` with project-specific rules.
 - **`contentstudio-frontend/`** — Vue 3 SPA (Composition API, Vuex → Pinia). Has docs in `contentstudio-frontend/docs/`.
-- **`contentstudio-flutter/`** — **the mobile app, and the single source of truth for all mobile work** (Flutter/Dart, one codebase for iOS + Android). Has its own `AGENTS.md`, `AGENTS.md`, `WORKFLOW.md`, `REWRITE_PLAN.md`, and feature docs in `docs/features/`. Code lives in `lib/` split into `app/`, `core/`, `shared/`, and `features/<feature>/` (composer, planner, inbox, ai_assistant, approval_workflows, billing, entitlements, media_library, social_channels, workspaces, auth, settings, notifications, and more). Analyzed only when the feature/story involves mobile.
+- **`contentstudio-flutter/`** — **the mobile app, and the single source of truth for all mobile work** (Flutter/Dart, one codebase for iOS + Android). Has its own `CLAUDE.md`, `AGENTS.md`, `WORKFLOW.md`, `REWRITE_PLAN.md`, and feature docs in `docs/features/`. Code lives in `lib/` split into `app/`, `core/`, `shared/`, and `features/<feature>/` (composer, planner, inbox, ai_assistant, approval_workflows, billing, entitlements, media_library, social_channels, workspaces, auth, settings, notifications, and more). Analyzed only when the feature/story involves mobile.
 - **`contentstudio-ai-agents/`** — Python 3.13 multi-agent platform (Agno framework, FastAPI, Dramatiq + Redis, Kafka, PostgreSQL). Handles AI content generation (captions, images, videos, analytics). Has its own `AGENTS.md`. Analyzed only when the feature/story involves AI generation or the AI agent pipeline.
 - **`contentstudio-social-analytics-go/`** — Go microservices analytics pipeline (Kafka, ClickHouse, MongoDB). 5-stage pipeline: Scheduler → Fetcher → Parser → Processor → Sink. Analyzed only when the feature/story involves social media analytics data processing.
 - **`social-inbox-manager/`** — Python social inbox service (FastAPI, Kafka, MongoDB, Redis, Pusher). Orchestrates ingestion, sync, and management of social media inbox data across platforms (Facebook, Instagram, LinkedIn, YouTube, GMB). Per-platform workers and strategies, webhook handling with Kafka fan-out, real-time UI updates via Pusher. Analyzed only when the feature/story involves social inbox, conversations, messages, comments, or reviews.

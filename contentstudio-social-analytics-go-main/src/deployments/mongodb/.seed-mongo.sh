@@ -1,2 +1,0 @@
-#!/usr/bin/env bash
-mongorestore --host mongodb --port 27017 --archive=/dump/qacontentstudiobackend.archive --gzip --nsFrom='qacontentstudiobackend.' --nsTo='contentstudiobackend.' --authenticationDatabase admin -u admin -p password

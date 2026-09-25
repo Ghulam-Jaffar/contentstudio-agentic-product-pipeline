@@ -7,6 +7,7 @@ This repo stores custom Codex skills so they can be versioned in git and reused 
 - Repo path:
   - `.codex/skills/feature`
   - `.codex/skills/story`
+  - `.codex/skills/frill`
 
 ## Important runtime detail
 
@@ -22,6 +23,7 @@ Run from the repo root:
 mkdir -p ~/.codex/skills
 ln -sfn "$(pwd)/.codex/skills/feature" ~/.codex/skills/feature
 ln -sfn "$(pwd)/.codex/skills/story" ~/.codex/skills/story
+ln -sfn "$(pwd)/.codex/skills/frill" ~/.codex/skills/frill
 ```
 
 Why this is recommended:
@@ -37,6 +39,7 @@ If symlinks are not desired:
 mkdir -p ~/.codex/skills
 cp -r .codex/skills/feature ~/.codex/skills/
 cp -r .codex/skills/story ~/.codex/skills/
+cp -r .codex/skills/frill ~/.codex/skills/
 ```
 
 Note: with copy mode, re-run copy commands whenever skills change.
@@ -46,6 +49,7 @@ Note: with copy mode, re-run copy commands whenever skills change.
 ```bash
 ls -la ~/.codex/skills/feature
 ls -la ~/.codex/skills/story
+ls -la ~/.codex/skills/frill
 ```
 
 ## After setup
@@ -54,6 +58,7 @@ ls -la ~/.codex/skills/story
 - Use skills explicitly via:
   - `$feature ...`
   - `$story ...`
+  - `$frill ...`
 
 ## Team workflow
 

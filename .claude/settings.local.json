@@ -28,7 +28,7 @@
       "Bash(__NEW_LINE_29fde0181a411542__ cat)",
       "Bash(D:/code/CS/tmp-epic-payload.json:*)",
       "Bash(git log:*)",
-      "Bash(__NEW_LINE_d08b0fbfa4df733a__ node -e \"\nconst fs = require\\(''fs''\\);\nconst payload = {\n  name: ''Publishing API v1.7 \u2014 Labels & Campaigns Support'',\n  description: ''Extend the Publishing API v1 to support labels and campaigns \\(folders\\) across the full lifecycle: listing available labels and campaigns, and passing them when creating posts. Once the core API endpoints are ready, update all integration apps \\(Zapier, Make.com, n8n, GPT app, Claude extension, MCP\\) and the Smart Scheduling via AI feature to leverage the new fields.\\\\n\\\\nThe fetch posts endpoint \\(GET\\) already returns labels and campaigns in the response \\(shipped in the previous release\\). This epic covers the remaining pieces: list endpoints + create post support + integration rollout.'',\n  epic_state_id: 500000002\n};\nfs.writeFileSync\\(''D:/code/CS/tmp-epic-payload.json'', JSON.stringify\\(payload\\)\\);\nconsole.log\\(''Epic payload written''\\);\n\")",
+      "Bash(__NEW_LINE_d08b0fbfa4df733a__ node -e \"\nconst fs = require\\(''fs''\\);\nconst payload = {\n  name: ''Publishing API v1.7 — Labels & Campaigns Support'',\n  description: ''Extend the Publishing API v1 to support labels and campaigns \\(folders\\) across the full lifecycle: listing available labels and campaigns, and passing them when creating posts. Once the core API endpoints are ready, update all integration apps \\(Zapier, Make.com, n8n, GPT app, Claude extension, MCP\\) and the Smart Scheduling via AI feature to leverage the new fields.\\\\n\\\\nThe fetch posts endpoint \\(GET\\) already returns labels and campaigns in the response \\(shipped in the previous release\\). This epic covers the remaining pieces: list endpoints + create post support + integration rollout.'',\n  epic_state_id: 500000002\n};\nfs.writeFileSync\\(''D:/code/CS/tmp-epic-payload.json'', JSON.stringify\\(payload\\)\\);\nconsole.log\\(''Epic payload written''\\);\n\")",
       "Bash(__NEW_LINE_d08b0fbfa4df733a__ node -e \"const d=JSON.parse\\(require\\(''fs''\\).readFileSync\\(''D:/code/CS/tmp-epic-response.json'',''utf8''\\)\\); console.log\\(''EPIC_ID='' + d.id\\);\")",
       "Bash(echo EXISTS: $\\(basename $dir\\):*)",
       "WebFetch(domain:contentstudio.io)",
@@ -201,7 +201,7 @@
       "Bash(cd /home/casper/code/contentstudio-agentic-product-pipeline && mkdir -p docs/stories/desktop-nav-rail-pin-unpin && echo ok)",
       "Bash(exit 0)",
       "Bash(mkdir -p /home/casper/code/contentstudio-agentic-product-pipeline/docs/stories/content-category-new-slot-fill && echo ok)",
-      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('.claude/settings.local.json','utf8'\\)\\); console.log\\('JSON valid \u2713'\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('.claude/settings.local.json','utf8'\\)\\); console.log\\('JSON valid ✓'\\)\")",
       "Bash(git add *)",
       "Bash(GIT_EDITOR=true git rebase --continue)",
       "Bash(mkdir -p /home/casper/code/contentstudio-agentic-product-pipeline/docs/stories/start-trial-route-guard && echo ok)",
@@ -264,5 +264,8 @@
       "/home/casper/code/contentstudio-agentic-product-pipeline/docs/stories",
       "/home/tehreem"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "helpin"
+  ]
 }

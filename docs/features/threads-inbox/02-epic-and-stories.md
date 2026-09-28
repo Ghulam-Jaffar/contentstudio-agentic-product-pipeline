@@ -72,6 +72,7 @@ Related, and worth surfacing rather than treating as an error: private Threads p
 3. `[FE] Add Threads as a network in the unified inbox`
 4. `[Flutter] Verify and complete Threads inbox support in the mobile app`
 5. `[Full Stack] Expose Threads inbox through the public API, MCP, CLI and the AI assistant`
+6. `[Full Stack] Handle Threads in inbox auto-replies`
 
 Build order: design starts immediately and runs alongside the backend. Backend first, then the frontend and full-stack stories in parallel, then Flutter.
 
@@ -682,4 +683,111 @@ The asynchronous reply pattern introduced here is the first of its kind in these
 - [ ] Multilingual support (frontend + backend, translations available or fallback handled)
 - [ ] UI theming support (default + white-label, design library components are being used)
 - [ ] White-label domains impact review
+- [ ] Cross-product impact assessment (web, mobile apps, Chrome extension)
+
+---
+
+## [Full Stack] Handle Threads in inbox auto-replies
+
+### Description
+
+As someone managing a Threads presence, I want my auto-reply rules to fire on Threads comments the same way they already do on Facebook, Instagram, YouTube and LinkedIn, so that the network I just gained an inbox for is not the one network my automation quietly skips.
+
+Auto-reply rules do not target a network directly. A rule targets a conversation type and a set of accounts, and the network is whatever the account that received the item happens to be. That means a user can already pick a Threads account when building a rule, and the rule will look like it is set up correctly. It will match, it will pass every check, and then it will fail at the last step with a generic error, because the part of the system that actually sends the reply only knows how to talk to five networks and Threads is not one of them.
+
+So the visible problem is not a missing option. It is a rule that appears to work and does not. This story closes that gap end to end: Threads comments reach the auto-reply engine, the engine can send a Threads reply, the same safety rules that stop the other networks from replying to themselves or replying twice apply to Threads too, and the wording in the product finally names Threads alongside the other networks.
+
+Threads has no private messaging, so auto-replies on Threads cover comments only. That is a permanent limit of the network, not a v1 cut.
+
+### Workflow
+
+```mermaid
+sequenceDiagram
+    actor Person as Someone on Threads
+    participant Threads
+    participant CS as ContentStudio inbox
+    participant Rules as Auto-reply rules
+    Person->>Threads: Leaves a comment on our post
+    Threads->>CS: The comment arrives in the inbox
+    CS->>CS: Skip if it is our own comment,<br/>already answered, or too old
+    CS->>Rules: Check the workspace rules for this account
+    Rules-->>CS: A rule matches on its keywords
+    alt Reply is written by AI
+        CS->>CS: Generate the reply using the rule guidance
+    end
+    CS->>CS: Check the reply fits Threads' length limit
+    CS->>Threads: Post the reply
+    Threads-->>CS: Posted
+    CS->>CS: Record it against the rule and the conversation
+```
+
+1. The user opens auto-replies and creates or edits a rule.
+2. They choose Comments as the conversation type, and their Threads account appears in the account list alongside their other accounts.
+3. They cannot choose a Threads account for private messages, because Threads has no private messaging. The wording in the form makes that clear rather than leaving the user to work it out.
+4. They set their keywords and their reply, either written by hand or generated with AI guidance, and save.
+5. Someone comments on one of the workspace's Threads posts.
+6. The comment arrives in the inbox and the rule is checked, using the same matching the other networks use.
+7. If the rule matches, the reply is posted to Threads as a reply to that comment, and it appears in the conversation in the inbox like any other reply.
+8. If the rule is set to draft rather than send, the reply is saved as a draft for a person to review, the same as on the other networks.
+9. The reply is recorded against the rule, so it counts toward the rule's activity and the workspace's usage the same way every other network does.
+10. If the reply cannot be posted, the failure is recorded with a reason the user can act on, and nothing is retried in a loop.
+
+### Acceptance criteria
+
+- [ ] A Threads account can be selected when building an auto-reply rule for comments, and a rule saved with a Threads account is accepted and stored.
+- [ ] A Threads account is not offered for private messages, because Threads has no private messaging.
+- [ ] A comment on a Threads post owned by the workspace is evaluated against the workspace's auto-reply rules.
+- [ ] A mention of the workspace's Threads account is evaluated against the workspace's auto-reply rules.
+- [ ] When a rule matches a Threads comment, the reply is posted to Threads as a reply to that comment.
+- [ ] A reply written by hand and a reply generated with AI both send successfully on Threads.
+- [ ] When the rule is set to save a draft rather than send, a draft is created for review on Threads exactly as it is on the other networks.
+- [ ] A sent auto-reply appears in the Threads conversation in the inbox, attributed the same way as on the other networks.
+- [ ] A reply that exceeds the length Threads allows is prevented from being sent as-is, and the outcome is recorded with a reason naming the limit rather than failing with a generic error.
+- [ ] The system never auto-replies to a comment written by the workspace's own Threads account.
+- [ ] The system never auto-replies twice to the same Threads comment.
+- [ ] The existing per-account hourly reply limit applies to Threads on the same terms as every other network.
+- [ ] The existing rule for ignoring items that are too old applies to Threads, so a first sync of historical comments does not trigger a burst of replies.
+- [ ] A Threads auto-reply counts toward the rule's activity count and toward the workspace's auto-reply usage and AI credits, on the same terms as every other network.
+- [ ] A failed Threads auto-reply is recorded with a reason, and the reason distinguishes a Threads refusal from an expired connection so support can act on it.
+- [ ] When the workspace's Threads connection has expired, an auto-reply failure says so rather than reporting a generic sending error.
+- [ ] Rules that combine a Threads account with accounts on other networks behave correctly: the reply is sent on whichever network the item came from.
+- [ ] Turning a rule off stops Threads replies immediately, on the same terms as every other network.
+- [ ] Existing rules on other networks are unaffected. Their matching, sending, drafts, counts and failures behave exactly as they did before.
+- [ ] The conversation type wording in the auto-reply form names Threads alongside the other comment networks: **"Facebook, Instagram, YouTube, LinkedIn, Threads"**.
+- [ ] The conversation type tooltip names Threads alongside the other comment networks: **"Comments on Facebook, Instagram, YouTube, LinkedIn and Threads posts"**.
+- [ ] The private messages wording continues to exclude Threads and is not changed to imply otherwise.
+- [ ] Where the form explains that a selected account does not support a chosen conversation type, the explanation is written plainly for a non-technical reader, for example **"Threads does not support private messages, so it can only be used for comment rules."**
+- [ ] All wording added or changed in this story is added to every locale, with the English text as the fallback where a translation is not yet available.
+
+### Mock-ups
+
+None. This story adds no new screen or component. The auto-reply form, the account selector and the rules list are unchanged apart from the wording specified in the acceptance criteria.
+
+### Impact on existing data
+
+No schema change and no migration. Auto-reply rules do not store a network, so existing rules are untouched. Rules saved with a Threads account before this story shipped will begin working rather than failing, which is the intended outcome, so any such rule should be checked with the customer before release in case it was created by mistake.
+
+Auto-reply activity records gain Threads as a value in the network they already record. Nothing else changes.
+
+### Impact on other products
+
+The unified inbox gains automated replies on Threads, so a workspace that had auto-replies configured and a Threads account connected will start seeing replies sent on its behalf where previously nothing happened. This is worth calling out in release notes, because it is a behaviour change for anyone who built a Threads rule that silently did nothing.
+
+The mobile app shows Threads conversations, so an auto-reply sent on Threads appears there in the conversation like any other reply. No mobile change is required.
+
+Auto-reply usage and AI credits are shared across networks, so adding Threads increases consumption for workspaces that use it.
+
+### Dependencies
+
+- Depends on `[BE] Ingest, sync and action Threads replies, mentions, media and approvals in the unified inbox`. Auto-replies cannot fire on items that are not being ingested, and the sending path for a Threads reply is built there.
+- Depends on `[FE] Add Threads as a network in the unified inbox` for the conversation display an auto-reply appears in.
+- Blocked in practice by the separate Threads token refresh bug noted in this epic. An expired connection makes every Threads auto-reply fail, and it fails quietly, which is the worst possible failure mode for an automation the user is not watching.
+- The same gap exists today for WhatsApp, which is offered in the auto-reply account selector without a working send path. Worth confirming whether that is fixed alongside this or tracked separately, so the fix is designed once rather than twice.
+
+### Global quality & compliance (wherever applicable)
+
+- [ ] Mobile responsiveness (the auto-reply form is unchanged, but verify the added wording does not break the layout at small widths)
+- [ ] Multilingual support (the added and changed wording is available in every locale, with English as the fallback)
+- [ ] UI theming support (default + white-label, design library components are being used)
+- [ ] White-label domains impact review (white-label customers use the same auto-replies)
 - [ ] Cross-product impact assessment (web, mobile apps, Chrome extension)

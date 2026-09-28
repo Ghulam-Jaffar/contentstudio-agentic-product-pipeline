@@ -13,6 +13,8 @@
 #   frill-sync.sh comments <idea>    Fetch comments for one idea (idx, slug or URL)
 #   frill-sync.sh show <idea>        Print one idea as JSON (idx, slug or URL)
 #   frill-sync.sh stats              Snapshot summary
+#   frill-sync.sh announcements [N]  Fetch the N latest published announcements (default 5)
+#   frill-sync.sh announcement-categories   List announcement categories
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -291,6 +293,20 @@ cmd_comments() {
   cat "$out"; rm -f "$out"
 }
 
+# Read the published changelog. Used to learn the house announcement structure
+# before drafting a new one. Read-only, like everything else here — creating an
+# announcement is a separate, deliberate path and does NOT belong in this script.
+cmd_announcements() {
+  load_key
+  local n="${1:-5}"
+  api_get "announcements?limit=$n"
+}
+
+cmd_announcement_categories() {
+  load_key
+  api_get "announcement-categories?limit=50"
+}
+
 cmd_stats() {
   [[ -s "$IDEAS" ]] || die "no snapshot yet — run: frill-sync.sh sync --full"
   echo "=== snapshot ==="; jq . "$STATE" 2>/dev/null || echo "(no sync state)"
@@ -319,5 +335,7 @@ case "${1:-}" in
   comments)   shift; cmd_comments "${1:-}" ;;
   show)       shift; cmd_show "${1:-}" ;;
   stats)      cmd_stats ;;
+  announcements) shift; cmd_announcements "${1:-5}" ;;
+  announcement-categories) cmd_announcement_categories ;;
   *) sed -n '2,20p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 1 ;;
 esac

@@ -1,4 +1,37 @@
 {
-  "_comment": "Provenance ledger for the /frill pipeline. Maps a Frill idea idx to what the pipeline decided and produced, so re-runs never reprocess the same idea and every deliverable is traceable back to customer demand. Committed to git; contains no customer PII and no private-idea content. Decisions: routed-feature | routed-story | bug | rejected | deferred.",
-  "processed": {}
+  "_comment": "Provenance ledger for the /frill pipeline. Maps a Frill idea idx to what the pipeline decided and produced, so re-runs never reprocess the same idea and every deliverable is traceable back to customer demand. Committed to git; contains no customer PII and no private-idea content. Decisions: routed-feature | routed-story | bug | rejected | deferred. Optional 'shipped' block records release/release_date/helpin_task/commit once the work ships. Optional 'announced' block records announcement_idx/date/status once it reaches the Frill changelog. Optional 'frill_status' block records a board status change once the PO approves it. Together these close the loop: customer asked -> we built -> we told them -> the board says so.",
+  "processed": {
+    "idea_10wp3prg": {
+      "name": "Workspace Deletion Permission for Admins",
+      "decision": "routed-story",
+      "deliverable": "docs/stories/workspace-delete-permission-for-admins/",
+      "date": "2026-09-17",
+      "note": "Per-admin canDeleteWorkspace permission, default off, super-admin-managed, mirroring hasBillingAccess. Research found a latent bug in the workspace policy that must be fixed in the same change."
+    },
+    "idea_g6n0n08e": {
+      "name": "Make links in the copy clickable directly from the text editor so they open in a new tab.",
+      "decision": "routed-story",
+      "deliverable": "docs/stories/composer-clickable-links-in-editor/",
+      "date": "2026-09-23",
+      "shipped": {
+        "release": "3.5.43",
+        "release_date": "2026-09-22",
+        "helpin_task": "CONT-3432",
+        "commit": "88bd1d4403"
+      },
+      "announced": {
+        "announcement_idx": "announcement_eq8z49xq",
+        "date": "2026-09-23",
+        "status": "published",
+        "published_date": "2026-09-23"
+      },
+      "note": "Requested by Camilo, 1 vote. Shipped in the shared CstSocialEditor via EditorLinkAffordance.vue, so it applies anywhere that editor is used, not only the composer. Announced in the 3.5.43 changelog under Other Improvements and Fixes.",
+      "frill_status": {
+        "status": "Shipped 🚀",
+        "status_idx": "status_e1w8301y",
+        "changed": "2026-09-23",
+        "approved_by": "PO"
+      }
+    }
+  }
 }

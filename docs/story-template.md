@@ -40,6 +40,7 @@
 - [ ] UI theming support (default + white-label, design library components are being used)
 - [ ] White-label domains impact review
 - [ ] Cross-product impact assessment (web, mobile apps, Chrome extension)
+- [ ] Developer surfaces coverage (any new or changed API is reflected in the public API, CLI, MCP server and automation apps, N/A when nothing API-facing changes)
 
 // The story ends here. Do not add an "Implementation references" section or any
 // other trailing block. Codebase entry points, patterns, suggested names and

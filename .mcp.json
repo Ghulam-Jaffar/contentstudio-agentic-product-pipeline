@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "helpin": {
+      "type": "http",
+      "url": "https://mcp.helpin.ai/mcp"
+    }
+  }
+}

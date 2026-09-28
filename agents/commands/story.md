@@ -1,10 +1,14 @@
-# Quick Story Pipeline: Research → Story → [Implement FE]
+# Quick Story Pipeline: Research → Story → Push to Helpin → [Implement FE]
 
 You are a story creation pipeline for **ContentStudio** (https://contentstudio.io). This is the **lightweight** pipeline for small features, improvements, and enhancements that don't need a full PRD or epic.
 
 Use this when the change is small enough to be a single story (or a small handful of BE/FE/mobile stories for the same change).
 
-> **This pipeline pushes to nothing.** It has no project-tracker integration and no credentials. It produces a local markdown story deliverable that the Product Owner reviews and then recreates in the team's tracker by hand.
+> **This pipeline authors markdown first, then pushes to Helpin.** Stories are authored and reviewed locally; once the Product Owner approves them, the final step creates them in Helpin over the Helpin MCP server. The PO supplies sprint, state, labels, assignee and priority at push time.
+>
+> **The push is never automatic.** It creates work in the team's live tracker, so it runs only on the PO's explicit approval in the moment — approving the markdown is not consent to push. Only newly authored work is pushed; the existing backlog is not being backfilled.
+>
+> **The push step is built and tested** (Step 3, spec in `docs/stories/HELPIN-PUSH-PLAN.md`). If Helpin reports `Needs authentication` in a session, ask the PO to sign in with `/mcp`. The push step itself is not missing.
 
 ## Input
 
@@ -53,7 +57,7 @@ Present a short summary to the user.
 
 ### STEP 2: Story Creation
 
-Based on approved research, author the stories as the pipeline's final deliverable. This is documentation for the Product Owner to recreate in the tracker by hand — **nothing is pushed anywhere.**
+Based on approved research, author the stories. This is the reviewable deliverable — **nothing is pushed until the PO approves it** in the gate below.
 
 **Read `docs/story-guidelines.md` now** and follow every rule. Key reminders:
 - **Structure each story body using the standard sections** (Description, Workflow, AC, Mock-ups, Impact, Dependencies, Global quality checklist) and end there — no trailing metadata block (guidelines section 1)
@@ -94,7 +98,7 @@ If the story introduces a **new trackable user action** — addon purchase/unloc
 - Before naming a new event, search `contentstudio-frontend/src/` for `userMaven.track(` to check if the action already has an event — reuse it.
 - Skip for pure refactors, copy-only changes, UI gating changes, or stories that fully reuse existing tracked actions.
 
-**No metadata block.** The story ends at the global quality checklist. Do not append story type, project, group, epic, priority, product area, skill set, estimate, labels, or iteration — the pipeline pushes nothing, and the PO sets all of that when creating the story in the tracker. (guidelines sections 1, 11, 12)
+**No metadata block.** The story ends at the global quality checklist. Do not append story type, project, group, epic, priority, product area, skill set, estimate, labels, or iteration — the PO supplies that metadata at push time and it goes in as Helpin fields, so a copy in the body would only drift. (guidelines sections 1, 11, 12)
 
 **Save to:** `docs/stories/<slug>/02-stories.md`
 
@@ -103,19 +107,37 @@ Present the stories to the user.
 **🔒 REVIEW GATE:** Ask the user:
 - "Here are the stories. Any changes needed? Reply 'approved' to finalize."
 
-Once approved, the markdown deliverable is complete — the Product Owner recreates the stories in the tracker by hand from `02-stories.md`.
-
-After approval, ask: **"Would you like me to implement the [FE] stories now? Reply 'implement' to start, or 'done' to finish the pipeline here."**
-
-If the user replies 'done' or skips, the pipeline ends here. If they reply 'implement', proceed to Step 3.
+Once approved, the markdown deliverable is complete. Proceed to Step 3, which has its own approval gate.
 
 ---
 
-### STEP 3: Implement FE Stories (Optional)
+### STEP 3: Push to Helpin
+
+This step runs only after the PO has approved the markdown. It creates the work in Helpin over the Helpin MCP server. The execution spec is `docs/stories/HELPIN-PUSH-PLAN.md`: resolved IDs, doc routing, URL patterns and test-run findings. Read it before pushing.
+
+1. **Check the connection.** Run `claude mcp get helpin`. If it reports `Needs authentication`, or no Helpin tools are loaded, ask the PO to run `/mcp` and sign in. Stop there. Never work around it.
+2. **Collect the fields from the PO:** sprint (current or next), workflow state, priority, labels and assignee. Ask for any the PO hasn't given. Never default one, and never read an unclear answer as a value.
+3. **Resolve every identifier.** Use the push plan's reference data or the live workspace, for example `search_workspace` with `entity_types: ["workspace_member"]` for assignees. If one can't be resolved, stop and ask. Never invent one.
+4. **🔒 PUSH GATE.** Show exactly what will be created: each title, the epic, the team, state, sprint, assignee, priority, labels, and each Doc with its collection. Wait for a clear yes. Approving the markdown is not a yes to this, and a yes covers only this batch.
+5. **Create, in this order:**
+   1. **Stories**, with `epic_id` only if the PO names an existing epic. Use `create_task` one at a time whenever the PO gives a sprint or assignee, because `create_task_batch` can't set either. If a new epic is ever created here, its description must be HTML (`agents/scripts/md-to-helpin-html.py`), because `create_epic` stores it verbatim.
+   2. **Docs**: `01-research.md` to the **Research** collection, linked to the epic when there is one. Always set `collection_id`.
+   Give every mutation an `idempotency_key`. Story bodies go in exactly as authored, in markdown. The quality checklist stays as body content, never as native checklist items.
+6. **Check what came back.** Helpin sometimes auto-adds labels (for example `frontend` on `[Flutter]` stories). Compare each task's `labels` with what the PO asked for, and correct them with `update_task` (`label_ids: []` clears). Open the epic Overview once to confirm the description renders.
+7. **On partial failure,** record what was created and stop. Never retry blindly. Nothing in Helpin can be deleted, only archived by hand in the UI.
+8. **Write the returned URLs** to `docs/stories/<slug>/03-helpin-links.md`, using the web URL patterns from the push plan (`https://app.helpin.ai/w/contentstudio/pm/epics/<epic_id>?task=<TASK_KEY>`).
+
+After the push (or if the PO declines it), ask: **"Would you like me to implement the [FE] stories now? Reply 'implement' to start, or 'done' to finish the pipeline here."**
+
+If the user replies 'done' or skips, the pipeline ends here. If they reply 'implement', proceed to Step 4.
+
+---
+
+### STEP 4: Implement FE Stories (Optional)
 
 **This step only runs if the user explicitly opts in.** It implements **only `[FE]` stories** — all other story types (`[BE]`, `[Design]`, `[Flutter]`) are skipped.
 
-#### 3a. Setup
+#### 4a. Setup
 
 **Read the frontend coding standards:** Read `contentstudio-frontend/CLAUDE.md` — **MANDATORY.** Follow every rule: `<script setup lang="ts">`, Composition API, `@contentstudio/ui` component props (no Tailwind overrides), CSS variable theming, i18n for all user-facing strings, API URLs in `api-utils.js`, `proxy` for HTTP, etc.
 
@@ -142,7 +164,7 @@ Ask the user: **"Which branch should I create the PR against? (default: `develop
 
 Wait for user approval before writing any code.
 
-#### 3b. Implement Each FE Story
+#### 4b. Implement Each FE Story
 
 For each `[FE]` story (in dependency order):
 
@@ -165,7 +187,7 @@ For each `[FE]` story (in dependency order):
 **After implementing all FE stories**, if any `[BE]` stories exist for this task, add a note at the top of their entries in `02-stories.md` so the PO carries it into the tracker:
 > **Note:** Frontend implementation is complete (see PR: [link]). This story covers backend integration and testing with the implemented frontend.
 
-#### 3c. Create PR
+#### 4c. Create PR
 
 **🔒 REVIEW GATE:** Before creating the PR, present a summary:
 - Branch name and target branch
@@ -206,7 +228,7 @@ EOF
 )"
 ```
 
-Save the PR URL to `docs/stories/<slug>/03-implementation.md` along with the branch name, commits, and files changed.
+Save the PR URL to `docs/stories/<slug>/04-implementation.md` along with the branch name, commits, and files changed.
 
 Present the PR link to the user.
 
@@ -214,7 +236,7 @@ Present the PR link to the user.
 
 ## Important Rules
 
-1. **This pipeline never pushes to a project tracker.** It has no tracker API integration and no credentials. The only deliverable is the local markdown in `docs/stories/<slug>/`, which the PO uses to create the work by hand.
+1. **Markdown first, push only on approval.** Everything is authored and approved in `docs/stories/<slug>/` first. The Helpin push (Step 3) runs only on the PO's explicit yes at the push gate, and only for newly authored work.
 2. **Never skip a review gate.** Wait for explicit approval.
 3. **Read `docs/story-guidelines.md` before writing stories.** Every rule applies.
 4. **Keep research lean.** Use Grep/Read directly, not Explore agents. Read only the lines you need, not whole files. Aim for the minimum research needed to write accurate stories.
@@ -225,7 +247,7 @@ Present the PR link to the user.
 9. **No estimates, no labels** anywhere in the story.
 10. **No trailing metadata block.** A story ends at the global quality checklist — no project, group, epic, priority, product area, skill set, story type, or template fields.
 11. **Create one `[Flutter]` story** when the change impacts the mobile app — `contentstudio-flutter/` is the only mobile codebase, so no separate iOS/Android stories.
-12. **Implementation is optional and FE-only.** Step 3 only runs if the user explicitly opts in. Only `[FE]` stories are implemented — `[BE]`, `[Design]`, `[Flutter]` are left for their respective teams.
+12. **Implementation is optional and FE-only.** Step 4 only runs if the user explicitly opts in. Only `[FE]` stories are implemented — `[BE]`, `[Design]`, `[Flutter]` are left for their respective teams.
 13. **Follow `contentstudio-frontend/CLAUDE.md` during implementation.** All coding standards (TypeScript, Composition API, i18n, theming, `@contentstudio/ui` usage) must be followed exactly.
 14. **One branch, one commit per story.** All FE stories share a single branch. Each story gets its own descriptive commit.
 15. **Always ask PR target branch.** Don't assume `develop` — confirm with the user.

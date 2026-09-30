@@ -1,0 +1,237 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=block" rel="stylesheet">
+<style>
+:root{--p:#1f6bff;--p50:#eef4ff;--p100:#dbe7ff;--ink:#0f172a;--mute:#64748b;--line:#e2e8f0;--bg:#f6f8fc;--pur:#7c3aed;--pur50:#f3edff}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1080px;overflow:hidden;background:var(--bg);font-family:Inter,"Noto Sans",Ubuntu,sans-serif;color:var(--ink)}
+.stage{position:absolute;inset:0}
+.scene{position:absolute;inset:0;opacity:0}
+.center{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.mono{font-family:"JetBrains Mono","Ubuntu Mono",monospace}
+.blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:.55}
+h1{font-size:96px;font-weight:800;letter-spacing:-3px;line-height:1.05}
+h2{font-size:64px;font-weight:800;letter-spacing:-2px;line-height:1.1}
+.accent{color:var(--p)}
+.card{background:#fff;border:1px solid var(--line);border-radius:28px;box-shadow:0 30px 80px -20px rgba(15,23,42,.18)}
+.chip{display:inline-flex;align-items:center;gap:10px;padding:10px 20px;border-radius:999px;background:var(--p50);color:var(--p);font-weight:700;font-size:26px}
+/* scene 1 */
+.prompt{position:absolute;left:50%;width:1100px;margin-left:-550px;padding:28px 36px;font-size:30px;color:#334155;text-align:left;line-height:1.45}
+.prompt b{color:var(--ink)}
+.caret{display:inline-block;width:3px;height:1em;background:var(--p);vertical-align:-4px;margin-left:2px}
+/* editor */
+.editor{position:absolute;left:50%;top:50%;width:1180px;margin-left:-590px;margin-top:-370px;padding:48px 56px}
+.field-label{font-size:20px;font-weight:600;color:var(--mute);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px}
+.field{border:1.5px solid var(--line);border-radius:16px;padding:18px 24px;font-size:30px;margin-bottom:26px;background:#fcfdff}
+.instr{font-size:28px;line-height:1.7}
+.instr div{opacity:0}
+.instr .k{font-weight:700;color:var(--p);display:inline-block;min-width:170px}
+/* chat */
+.chat{position:absolute;left:50%;top:50%;width:1240px;height:860px;margin-left:-620px;margin-top:-430px;padding:0;overflow:hidden}
+.chat-head{height:84px;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 36px;gap:16px;font-size:26px;font-weight:700}
+.dot{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--p),#6aa0ff)}
+.chat-body{position:absolute;top:84px;left:0;right:0;bottom:130px;padding:36px}
+.input{position:absolute;left:36px;right:36px;bottom:32px;height:76px;border:2px solid var(--line);border-radius:20px;display:flex;align-items:center;padding:0 26px;font-size:30px;gap:12px;background:#fff}
+.tok{background:var(--p50);color:var(--p);border-radius:10px;padding:4px 14px;font-weight:700}
+.menu{position:absolute;left:36px;bottom:122px;width:640px;padding:18px;opacity:0;transform-origin:bottom left}
+.mgrp{font-size:17px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:1.2px;padding:10px 14px 6px}
+.mrow{display:flex;align-items:center;gap:16px;padding:12px 14px;border-radius:14px;font-size:24px}
+.mrow .ic{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px}
+.mrow small{display:block;color:var(--mute);font-size:18px;font-weight:400}
+.mrow.sel{background:var(--p50)}
+.umsg{position:absolute;right:36px;top:36px;background:var(--p);color:#fff;border-radius:22px 22px 6px 22px;padding:18px 26px;font-size:28px;display:flex;gap:12px;align-items:center;opacity:0}
+.umsg .tok{background:rgba(255,255,255,.2);color:#fff}
+.amsg{position:absolute;left:36px;top:140px;right:200px;opacity:0}
+.post{display:flex;gap:28px;padding:24px;border-radius:22px;border:1px solid var(--line);background:#fff}
+.post .img{width:250px;height:250px;border-radius:16px;flex:none;background:radial-gradient(circle at 40% 35%,#fff6e6,#f3dcb4 60%,#e8c690);position:relative;overflow:hidden}
+.post .cap{font-size:25px;line-height:1.5;color:#1e293b}
+.post .tags{color:var(--p);font-weight:600}
+.logo{position:absolute;right:10px;bottom:10px;width:34px;height:34px;border-radius:9px;background:var(--p);opacity:.9}
+/* use cases */
+.uc{position:absolute;top:50%;width:540px;height:520px;margin-top:-230px;padding:40px 40px;opacity:0}
+.uc .who{font-size:22px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:1.5px}
+.uc .cmd{font-size:40px;font-weight:600;color:var(--p);margin:12px 0 22px}
+.uc .inside{font-size:18px;font-weight:700;color:var(--mute);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px}
+.uc li{list-style:none;font-size:25px;line-height:1.45;padding:8px 0 8px 34px;position:relative;color:#1e293b}
+.uc li:before{content:"";position:absolute;left:0;top:18px;width:14px;height:14px;border-radius:4px;background:var(--p)}
+.uc .res{position:absolute;left:40px;right:40px;bottom:36px;font-size:22px;color:var(--mute);border-top:1px dashed var(--line);padding-top:18px}
+.uc .res b{color:var(--ink)}
+.pill{display:inline-flex;align-items:center;gap:14px;padding:22px 36px;border-radius:24px;background:#fff;border:1px solid var(--line);font-size:36px;font-weight:700;box-shadow:0 20px 50px -20px rgba(15,23,42,.2);opacity:0}
+.pill i{width:18px;height:18px;border-radius:50%;background:var(--p);display:inline-block}
+</style></head>
+<body><div class="stage">
+<div class="blob" style="width:700px;height:700px;left:-200px;top:-250px;background:#bcd3ff"></div>
+<div class="blob" style="width:600px;height:600px;right:-150px;bottom:-200px;background:#e2d4ff"></div>
+
+<!-- S1: pain -->
+<div class="scene" id="s1">
+  <div class="card prompt" id="p1" style="top:170px"><span id="p1t"></span></div>
+  <div class="card prompt" id="p2" style="top:420px"></div>
+  <div class="card prompt" id="p3" style="top:670px"></div>
+  <div id="againWrap" style="position:absolute;left:0;right:0;top:40px;text-align:center"><h2 id="again"></h2></div>
+</div>
+
+<!-- S2: intro -->
+<div class="scene center" id="s2">
+  <h1 id="s2a">What if you only had to<br>explain it <span class="accent">once</span>?</h1>
+  <div id="s2b" style="margin-top:50px;opacity:0"><span class="chip"><span class="mono">/</span> Skills in ContentStudio AI Chat</span></div>
+</div>
+
+<!-- S3: editor -->
+<div class="scene" id="s3">
+  <div style="position:absolute;left:0;right:0;top:60px;text-align:center"><h2 style="font-size:52px">Write it down once.</h2></div>
+  <div class="card editor" id="ed" style="margin-top:-330px">
+    <div class="field-label">Slash command</div>
+    <div class="field mono" style="color:var(--p);font-weight:600"><span id="edcmd"></span></div>
+    <div class="field-label">Instructions</div>
+    <div class="field instr" id="instr" style="margin-bottom:0">
+      <div><span class="k">Tone</span>Warm, short, sounds like us</div>
+      <div><span class="k">Always</span>Dish name, price, #EatLocal #DailySpecial</div>
+      <div><span class="k">Never</span>Discount talk or emojis</div>
+      <div><span class="k">Image</span>Close-up of the dish, natural light, logo bottom right</div>
+    </div>
+  </div>
+</div>
+
+<!-- S4: chat -->
+<div class="scene" id="s4">
+  <div style="position:absolute;left:0;right:0;top:34px;text-align:center"><h2 style="font-size:46px" id="s4h">Then just type <span class="accent mono">/</span></h2></div>
+  <div class="card chat" id="chat" style="margin-top:-400px">
+    <div class="chat-head"><div class="dot"></div>AI Chat</div>
+    <div class="chat-body">
+      <div class="umsg" id="umsg"><span class="tok mono">/daily-special</span> Pretzel, $10</div>
+      <div class="amsg" id="amsg">
+        <div style="font-size:22px;color:var(--mute);margin-bottom:14px;font-weight:600">Here's today's post, ready for your review:</div>
+        <div class="post">
+          <div class="img">
+            <svg viewBox="0 0 200 200" width="250" height="250" style="position:absolute;left:0;top:0">
+              <path d="M100 150 C60 150 38 120 45 90 C52 60 85 55 100 85 C115 55 148 60 155 90 C162 120 140 150 100 150 Z M70 150 L100 100 L130 150" fill="none" stroke="#9a5a1f" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+              <g fill="#fff"><circle cx="62" cy="95" r="3"/><circle cx="84" cy="80" r="2.5"/><circle cx="140" cy="100" r="3"/><circle cx="118" cy="78" r="2.5"/><circle cx="100" cy="140" r="3"/></g>
+            </svg>
+            <div class="logo"></div>
+          </div>
+          <div class="cap"><span id="capt"></span></div>
+        </div>
+      </div>
+      <div class="card menu" id="menu">
+        <div class="mgrp">My Skills</div>
+        <div class="mrow sel" id="mr1"><div class="ic" style="background:var(--p50);color:var(--p)">D</div><div><span class="mono">/daily-special</span><small>Today's special, in our style</small></div></div>
+        <div class="mgrp">Workspace Skills</div>
+        <div class="mrow"><div class="ic" style="background:var(--pur50);color:var(--pur)">P</div><div><span class="mono">/product-launch</span><small>5-post launch sequence</small></div></div>
+        <div class="mgrp">Built by ContentStudio</div>
+        <div class="mrow"><div class="ic" style="background:#e5e7eb;color:#6b7280">W</div><div><span class="mono">/weekly-performance</span><small>This week vs last week</small></div></div>
+        <div class="mrow"><div class="ic" style="background:#e5e7eb;color:#6b7280">H</div><div><span class="mono">/hook-maker</span><small>Scroll-stopping first lines</small></div></div>
+      </div>
+    </div>
+    <div class="input" id="inp"><span id="inpt"></span><span class="caret" id="caret"></span></div>
+  </div>
+</div>
+
+<!-- S5: use cases -->
+<div class="scene" id="s5">
+  <div style="position:absolute;left:0;right:0;top:90px;text-align:center"><h2 style="font-size:56px">One skill for every job you repeat.</h2></div>
+  <div class="card uc" id="u1" style="left:120px">
+    <div class="who">Real estate</div><div class="cmd mono">/new-listing</div>
+    <div class="inside">Inside the skill</div>
+    <ul><li>Price and location up top</li><li>One standout feature first</li><li>Always end with "Book a viewing"</li><li>Photos: exterior, then kitchen</li></ul>
+    <div class="res">You paste: <b>the property details</b></div>
+  </div>
+  <div class="card uc" id="u2" style="left:690px">
+    <div class="who">E-commerce</div><div class="cmd mono">/product-launch</div>
+    <div class="inside">Inside the skill</div>
+    <ul><li>Teaser, reveal, features, last call</li><li>What to highlight</li><li>Claims we never make</li><li>How each visual should look</li></ul>
+    <div class="res">You type: <b>the product name</b></div>
+  </div>
+  <div class="card uc" id="u3" style="left:1260px">
+    <div class="who">Any brand</div><div class="cmd mono">/linkedin-format</div>
+    <div class="inside">Inside the skill</div>
+    <ul><li>A strong first line</li><li>Short paragraphs</li><li>A question at the end</li><li>Max 3 hashtags</li></ul>
+    <div class="res">You get: <b>the same format, every post</b></div>
+  </div>
+</div>
+
+<!-- S6: share -->
+<div class="scene center" id="s6">
+  <div style="display:flex;gap:36px">
+    <div class="pill" id="q1"><i></i>Share with your team</div>
+    <div class="pill" id="q2"><i style="background:var(--pur)"></i>Edit ours to fit you</div>
+    <div class="pill" id="q3"><i style="background:#94a3b8"></i>Switch off the rest</div>
+  </div>
+</div>
+
+<!-- S7: end -->
+<div class="scene center" id="s7">
+  <h1 id="e1">Explain it once.<br><span class="accent">Use it every day.</span></h1>
+  <div id="e2" style="margin-top:56px;opacity:0;font-size:34px;font-weight:600;color:#334155">Skills, now in <b style="color:var(--ink)">ContentStudio AI Chat</b></div>
+  <div id="e3" style="margin-top:22px;opacity:0;font-size:26px;color:var(--mute)">AI Studio <span class="accent" style="font-weight:700">→</span> Skills</div>
+</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const cl=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const ease=x=>{x=cl(x);return x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2};
+const out=x=>{x=cl(x);return 1-Math.pow(1-x,3)};
+const p=(t,s,d)=>cl((t-s)/d);
+const type=(str,t,s,cps)=>str.slice(0,Math.max(0,Math.floor((t-s)*cps)));
+function scene(el,t,s,e,fade=.45){const o=Math.min(p(t,s,fade),1-p(t,e-fade,fade));el.style.opacity=o;return o}
+function rise(el,t,s,d=.6,dist=40){const k=out(p(t,s,d));el.style.opacity=k;el.style.transform=`translateY(${(1-k)*dist}px)`}
+
+const PROMPT='Write a post for our daily special. <b>Keep it warm and short.</b> Always add the price and #EatLocal. No emojis. <b>Image should be a close-up</b>, natural light, logo bottom right...';
+const plain=PROMPT.replace(/<[^>]+>/g,'');
+function typedHTML(n){let out='',c=0,i=0;while(i<PROMPT.length&&c<n){if(PROMPT[i]==='<'){const j=PROMPT.indexOf('>',i);out+=PROMPT.slice(i,j+1);i=j+1}else{out+=PROMPT[i];i++;c++}}if(out.split('<b>').length>out.split('</b>').length)out+='</b>';return out}
+const CAP='Warm, flaky and salted just right. Today\'s special is our hand-rolled pretzel, $10, until we sell out. <span class="tags">#EatLocal #DailySpecial</span>';
+const capPlain='Warm, flaky and salted just right. Today\'s special is our hand-rolled pretzel, $10, until we sell out. #EatLocal #DailySpecial';
+function capHTML(n){const pre=capPlain.indexOf('#');if(n<=pre)return capPlain.slice(0,n);return capPlain.slice(0,pre)+'<span class="tags">'+capPlain.slice(pre,n)+'</span>'}
+
+window.render=function(t){
+  // S1 0 - 4.6
+  scene($('s1'),t,0,4.6,.3);
+  const n1=Math.floor(t*70);
+  $('p1t').innerHTML=typedHTML(n1)+(n1<plain.length?'<span class="caret"></span>':'');
+  rise($('p1'),t,0,.4,20);
+  $('p2').innerHTML=PROMPT; rise($('p2'),t,2.0,.35,30);
+  $('p3').innerHTML=PROMPT; rise($('p3'),t,2.7,.35,30);
+  const ag=t<2.0?'':t<2.7?'Again.':t<3.4?'And again.':'Every. Single. Time.';
+  $('again').textContent=ag; $('again').style.color=t>3.4?'#1f6bff':'#0f172a';
+  // S2 4.6 - 8.2
+  scene($('s2'),t,4.6,8.2);
+  rise($('s2a'),t,4.7,.7);
+  rise($('s2b'),t,5.8,.6,20);
+  // S3 8.2 - 13.6
+  scene($('s3'),t,8.2,13.6);
+  rise($('ed'),t,8.2,.6,40);
+  $('edcmd').textContent=type('/daily-special',t,8.8,18);
+  [...$('instr').children].forEach((d,i)=>rise(d,t,9.8+i*.7,.45,14));
+  // S4 13.6 - 21.4
+  scene($('s4'),t,13.6,21.4);
+  rise($('chat'),t,13.6,.6,40);
+  let inp='';
+  if(t<14.4) inp='';
+  else if(t<15.9) inp='/';
+  else if(t<17.3) inp='<span class="tok mono">/daily-special</span> '+type('Pretzel, $10',t,16.1,12);
+  else inp='';
+  $('inpt').innerHTML=inp;
+  $('caret').style.opacity=(Math.floor(t*2.5)%2||t>17.3)?1:.15;
+  const mk=out(p(t,14.55,.3))*(1-p(t,15.8,.15));
+  $('menu').style.opacity=mk; $('menu').style.transform=`scale(${.94+.06*mk})`;
+  $('mr1').style.boxShadow=t>15.4?'inset 0 0 0 2px #1f6bff':'none';
+  rise($('umsg'),t,17.35,.4,20);
+  rise($('amsg'),t,18.0,.5,20);
+  $('capt').innerHTML=capHTML(Math.max(0,Math.floor((t-18.4)*60)));
+  // S5 21.4 - 28.4
+  scene($('s5'),t,21.4,28.4);
+  ['u1','u2','u3'].forEach((id,i)=>rise($(id),t,21.7+i*.45,.6,50));
+  // S6 28.4 - 31.4
+  scene($('s6'),t,28.4,31.4);
+  ['q1','q2','q3'].forEach((id,i)=>rise($(id),t,28.5+i*.45,.5,30));
+  // S7 31.4 - 36
+  const o7=cl(p(t,31.4,.45)); $('s7').style.opacity=o7;
+  rise($('e1'),t,31.5,.7);
+  rise($('e2'),t,32.6,.6,20);
+  rise($('e3'),t,33.2,.6,20);
+};
+window.DURATION=36;
+if(!navigator.webdriver){let s=performance.now();(function loop(){render(((performance.now()-s)/1000)%DURATION);requestAnimationFrame(loop)})()}
+</script>
+</body></html>

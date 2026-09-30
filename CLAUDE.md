@@ -61,6 +61,7 @@ Front-end to the other two pipelines. Pulls feature requests off the public Fril
 | `docs/ui-components.md` | **Mandatory** catalog of available UI components — read before writing FE stories. Update when `@contentstudio/ui` changes. |
 | `docs/PRD Feature Template.md` | 12-section PRD template used by `/feature` Step 3 |
 | `docs/story-template.md` | Story body structure (Description, Workflow, AC, Mock-ups, Impact, Dependencies, Quality checklist) |
+| `videos/README.md` | Where generated videos live, how they are built and rendered, naming rules |
 
 ## Story Rules (Summary)
 
@@ -156,6 +157,18 @@ The native **iOS** and **Android** apps have been replaced by the single Flutter
 If a deliberate parity check is ever needed on native behavior that hasn't been ported yet, the archives are still on GitHub (`d4interactive/contentstudio-ios-v2`, `d4interactive/contentstudio-android-v2`) — ask the user before cloning either back, and even then the resulting story still describes Flutter work.
 
 Older deliverables under `docs/features/` and `docs/stories/` still contain `[iOS]` / `[Android]` stories. Those are historical records of work already created — leave them as-is, and don't use them as a pattern for new stories.
+
+## Generated Videos
+
+**Every video the pipeline generates goes in `videos/<slug>/`, never under `docs/`.** One folder per video keeps every video in one place, whatever feature it belongs to.
+
+- **Folder:** `videos/<feature-or-story-slug>-<kind>/` (kind is `promo`, `demo`, `teaser` or `explainer`), holding `README.md`, `source.html` and `<slug>-<ratio>.mp4` (for example `-16x9`, `-9x16`)
+- **Docs keep only a pointer:** add `promo-video.md` (or `demo-video.md`) to the feature or story folder, linking to the video folder. No MP4, HTML or render script inside `docs/`
+- **Shared tooling:** `videos/_tooling/render.js` renders any `source.html` to MP4 with headless Chrome and ffmpeg. Don't copy a render script into a video folder
+- **Add each new video to the index** in `videos/README.md`
+- **Only claim what ships.** Check the feature's research and PRD before putting a capability on screen. No em dashes in on-screen copy
+
+Full contract (the deterministic `window.render(t)` page, render commands, aspect ratios): `videos/README.md`.
 
 ## Branch & PR Conventions (for code implementation)
 

@@ -12,3 +12,8 @@ cs-prototypes/
 .env.local
 .env.*.local
 docs/frill/cache/
+
+# Video tooling deps, preview frames and generated media working files (the rendered videos are committed)
+videos/_tooling/node_modules/
+videos/*/stills/
+videos/*/media/

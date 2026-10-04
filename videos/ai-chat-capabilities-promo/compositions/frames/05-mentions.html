@@ -1,0 +1,448 @@
+<template id="05-mentions-template">
+  <div id="root" data-composition-id="05-mentions" data-start="0" data-duration="5.535" data-width="1920" data-height="1080">
+    <style>
+      @font-face {
+        font-family: "Inter Tight";
+        src: url("assets/fonts/InterTight-Variable.woff2") format("woff2");
+        font-weight: 100 900;
+        font-display: block;
+      }
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        font-family: "Inter Tight", sans-serif;
+        container-type: size;
+      }
+      .mentions05-bg {
+        position: absolute;
+        inset: 0;
+        background: #ffffff;
+      }
+      .mentions05-glow {
+        position: absolute;
+        width: 900px;
+        height: 900px;
+        top: 40px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(31, 107, 255, 0.07) 0%, rgba(31, 107, 255, 0) 65%);
+      }
+      .mentions05-glow-a { left: 126px; }
+      .mentions05-glow-b { left: 894px; }
+      .mentions05-glow-c {
+        left: 510px;
+        top: 40px;
+        background: radial-gradient(circle, rgba(31, 107, 255, 0.12) 0%, rgba(31, 107, 255, 0) 62%);
+      }
+      .mentions05-content {
+        position: absolute;
+        inset: 0;
+      }
+
+      /* ---- header ---- */
+      .mentions05-header {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 64px;
+        text-align: center;
+      }
+      .mentions05-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        font-size: 18px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #1f6bff;
+      }
+      .mentions05-eyebrow-line {
+        width: 40px;
+        height: 4px;
+        border-radius: 2px;
+        background: #1f6bff;
+      }
+      .mentions05-headline {
+        margin-top: 14px;
+        font-size: 56px;
+        font-weight: 600;
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+        color: #111827;
+      }
+
+      /* ---- split stage (perspective REQUIRED) ---- */
+      .mentions05-stage {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        perspective: 1600px;
+        transform-style: preserve-3d;
+        z-index: 1;
+      }
+      .mentions05-wing {
+        position: absolute;
+        top: 262px;
+        width: 440px;
+        height: 440px;
+        transform-style: preserve-3d;
+        will-change: transform;
+      }
+      .mentions05-wing-left { left: 410px; }
+      .mentions05-wing-right { left: 1070px; }
+      .mentions05-float {
+        position: absolute;
+        inset: 0;
+        transform-style: preserve-3d;
+      }
+      .mentions05-card {
+        position: absolute;
+        inset: 0;
+        box-sizing: border-box;
+        padding: 18px;
+        background: #f6f9ff;
+        border: 1.5px solid rgba(31, 107, 255, 0.2);
+        border-radius: 14px;
+        transform-style: preserve-3d;
+        will-change: transform;
+      }
+      .mentions05-card img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 10px;
+      }
+      /* badges live on the wing (parent), never inside the tilted card */
+      .mentions05-badge {
+        position: absolute;
+        top: 34px;
+        padding: 12px 24px;
+        border-radius: 100px;
+        background: #1f6bff;
+        color: #ffffff;
+        font-size: 26px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        white-space: nowrap;
+        transform-origin: 50% 50%;
+      }
+      .mentions05-badge-left { right: -72px; }
+      .mentions05-badge-right { left: -72px; }
+
+      .mentions05-plus {
+        position: absolute;
+        left: 932px;
+        top: 454px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: rgba(31, 107, 255, 0.08);
+        border: 1.5px solid rgba(31, 107, 255, 0.2);
+        box-sizing: border-box;
+        color: #1f6bff;
+        font-size: 34px;
+        font-weight: 600;
+        line-height: 52px;
+        text-align: center;
+        z-index: 2;
+      }
+
+      /* ---- result hero (above the stage) ---- */
+      .mentions05-result {
+        position: absolute;
+        left: 690px;
+        top: 222px;
+        width: 540px;
+        height: 540px;
+        box-sizing: border-box;
+        padding: 20px;
+        background: #ffffff;
+        border: 1.5px solid rgba(31, 107, 255, 0.35);
+        border-radius: 14px;
+        z-index: 5;
+        transform-origin: 50% 70%;
+      }
+      .mentions05-result img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 10px;
+      }
+      .mentions05-result-tag {
+        position: absolute;
+        left: 50%;
+        top: -24px;
+        margin-left: -78px;
+        width: 156px;
+        height: 48px;
+        border-radius: 100px;
+        background: #1f6bff;
+        color: #ffffff;
+        font-size: 24px;
+        font-weight: 600;
+        line-height: 48px;
+        text-align: center;
+        z-index: 6;
+      }
+      .mentions05-spark {
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #1f6bff;
+        z-index: 6;
+      }
+
+      /* ---- composer strip ---- */
+      .mentions05-composer {
+        position: absolute;
+        left: 370px;
+        top: 784px;
+        width: 1180px;
+        height: 96px;
+        box-sizing: border-box;
+        padding: 0 18px 0 36px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        background: #f6f9ff;
+        border: 1.5px solid rgba(31, 107, 255, 0.2);
+        border-radius: 100px;
+        z-index: 4;
+      }
+      .mentions05-attach {
+        flex: 0 0 auto;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: 1.5px solid rgba(31, 107, 255, 0.2);
+        box-sizing: border-box;
+        color: #1f6bff;
+        font-size: 28px;
+        font-weight: 500;
+        line-height: 40px;
+        text-align: center;
+      }
+      .mentions05-text {
+        flex: 1 1 auto;
+        min-width: 900px;
+        font-size: 32px;
+        font-weight: 500;
+        color: #111827;
+        white-space: pre;
+        display: flex;
+        align-items: center;
+        height: 60px;
+      }
+      .mentions05-chip {
+        display: none;
+        padding: 4px 14px;
+        margin: 0 2px;
+        border-radius: 100px;
+        background: rgba(31, 107, 255, 0.15);
+        color: #1f6bff;
+        font-weight: 600;
+        transform-origin: 50% 50%;
+      }
+      .mentions05-cursor {
+        display: inline-block;
+        width: 3px;
+        height: 38px;
+        margin-left: 3px;
+        background: #1f6bff;
+        border-radius: 2px;
+      }
+      .mentions05-send {
+        flex: 0 0 auto;
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: #1f6bff;
+        position: relative;
+        transform-origin: 50% 50%;
+      }
+      .mentions05-send::after {
+        content: "";
+        position: absolute;
+        left: 22px;
+        top: 20px;
+        width: 0;
+        height: 0;
+        border-left: 22px solid #ffffff;
+        border-top: 12px solid transparent;
+        border-bottom: 12px solid transparent;
+      }
+    </style>
+
+    <div class="mentions05-bg clip" data-start="0" data-duration="5.535" data-track-index="0">
+      <div class="mentions05-glow mentions05-glow-a" id="mentions05-glow-a"></div>
+      <div class="mentions05-glow mentions05-glow-b" id="mentions05-glow-b"></div>
+      <div class="mentions05-glow mentions05-glow-c" id="mentions05-glow-c"></div>
+    </div>
+
+    <div class="mentions05-content clip" data-start="0" data-duration="5.535" data-track-index="1">
+      <div class="mentions05-header" id="mentions05-header">
+        <div class="mentions05-eyebrow"><span class="mentions05-eyebrow-line"></span>@ Mentions<span class="mentions05-eyebrow-line"></span></div>
+        <div class="mentions05-headline">Use your own images.</div>
+      </div>
+
+      <div class="mentions05-stage">
+        <div class="mentions05-wing mentions05-wing-left" id="mentions05-wing-left">
+          <div class="mentions05-float" id="mentions05-float-left">
+            <div class="mentions05-card" id="mentions05-card-left">
+              <img src="assets/bottle.png" alt="" />
+            </div>
+          </div>
+          <div class="mentions05-badge mentions05-badge-left" id="mentions05-badge-left">@Image1</div>
+        </div>
+        <div class="mentions05-wing mentions05-wing-right" id="mentions05-wing-right">
+          <div class="mentions05-float" id="mentions05-float-right">
+            <div class="mentions05-card" id="mentions05-card-right">
+              <img src="assets/brand-logo.png" alt="" />
+            </div>
+          </div>
+          <div class="mentions05-badge mentions05-badge-right" id="mentions05-badge-right">@Image2</div>
+        </div>
+      </div>
+
+      <div class="mentions05-plus" id="mentions05-plus">+</div>
+
+      <div class="mentions05-result" id="mentions05-result">
+        <img src="assets/bottle-with-logo.png" alt="" />
+        <div class="mentions05-result-tag" id="mentions05-result-tag">Done</div>
+      </div>
+      <div class="mentions05-spark" id="mentions05-spark-0" style="left: 664px; top: 300px;"></div>
+      <div class="mentions05-spark" id="mentions05-spark-1" style="left: 1240px; top: 268px;"></div>
+      <div class="mentions05-spark" id="mentions05-spark-2" style="left: 1252px; top: 640px;"></div>
+      <div class="mentions05-spark" id="mentions05-spark-3" style="left: 652px; top: 690px;"></div>
+
+      <div class="mentions05-composer" id="mentions05-composer">
+        <div class="mentions05-attach">+</div>
+        <div class="mentions05-text" id="mentions05-text"><span id="mentions05-seg-0"></span><span class="mentions05-chip" id="mentions05-chip-0">@Image2</span><span id="mentions05-seg-1"></span><span class="mentions05-chip" id="mentions05-chip-1">@Image1</span><span class="mentions05-cursor" id="mentions05-cursor"></span></div>
+        <div class="mentions05-send" id="mentions05-send"></div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script>
+      (function () {
+        window.__timelines = window.__timelines || {};
+        var D = 5.035;
+        var tl = gsap.timeline({ paused: true });
+
+        // ---- ambient side glows (un-triggered soft bloom) ----
+        tl.fromTo("#mentions05-glow-a", { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 1.2, ease: "power2.out" }, 0);
+        tl.fromTo("#mentions05-glow-b", { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 1.2, ease: "power2.out" }, 0.15);
+        tl.fromTo("#mentions05-glow-c", { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 1.0, ease: "power2.out" }, 3.05);
+
+        // ---- Scene 1 (0–1.41s): title slides down, split-tilt entry, inner-edge badges ----
+        tl.fromTo("#mentions05-header", { y: -40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: "power3.out" }, 0);
+
+        var TILT = 14, OVER = 9, SLIDE = 380;
+        tl.fromTo("#mentions05-card-left",
+          { x: -SLIDE, rotateY: TILT + OVER, scale: 0.85, opacity: 0 },
+          { x: 0, rotateY: TILT, scale: 1, opacity: 1, duration: 0.85, ease: "power3.out" }, 0.15);
+        tl.fromTo("#mentions05-card-right",
+          { x: SLIDE, rotateY: -TILT - OVER, scale: 0.85, opacity: 0 },
+          { x: 0, rotateY: -TILT, scale: 1, opacity: 1, duration: 0.85, ease: "power3.out" }, 0.35);
+
+        tl.fromTo("#mentions05-plus", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.45, ease: "power3.out" }, 0.8);
+
+        // the one overshoot: inner-edge badges
+        tl.fromTo("#mentions05-badge-left", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.8)" }, 0.9);
+        tl.fromTo("#mentions05-badge-right", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.8)" }, 1.15);
+
+        // phase-opposed idle float (separate layer, no yoyo/repeat)
+        tl.fromTo("#mentions05-float-left", { y: 0 }, { y: -6, duration: 0.85, ease: "sine.inOut", immediateRender: false }, 1.05);
+        tl.to("#mentions05-float-left", { y: 4, duration: 1.1, ease: "sine.inOut" }, 1.9);
+        tl.fromTo("#mentions05-float-right", { y: 0 }, { y: 6, duration: 0.85, ease: "sine.inOut", immediateRender: false }, 1.05);
+        tl.to("#mentions05-float-right", { y: -4, duration: 1.1, ease: "sine.inOut" }, 1.9);
+
+        // ---- Scene 2 (1.41–3.02s): composer types the prompt, mentions as blue chips ----
+        tl.fromTo("#mentions05-composer", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "power3.out" }, 1.3);
+
+        var seg0 = document.getElementById("mentions05-seg-0");
+        var seg1 = document.getElementById("mentions05-seg-1");
+        var chip0 = document.getElementById("mentions05-chip-0");
+        var chip1 = document.getElementById("mentions05-chip-1");
+        var cursor = document.getElementById("mentions05-cursor");
+        var S0 = "Put the logo from ";
+        var S1 = " on the label of ";
+        var TOTAL = S0.length + 1 + S1.length + 1; // chips count as one atomic unit
+        var T_TYPE0 = 1.5, T_TYPE1 = 2.8;
+        var CHIP0_U = S0.length + 1, CHIP1_U = TOTAL;
+        var CHIP0_T = T_TYPE0 + (CHIP0_U / TOTAL) * (T_TYPE1 - T_TYPE0);
+        var CHIP1_T = T_TYPE0 + (CHIP1_U / TOTAL) * (T_TYPE1 - T_TYPE0);
+
+        function chipScale(t, t0) {
+          var p = Math.min(1, Math.max(0, (t - t0) / 0.22));
+          var e = 1 - Math.pow(1 - p, 3);
+          return 0.6 + 0.4 * e;
+        }
+
+        function render(t) {
+          var u = 0;
+          if (t >= T_TYPE0) u = Math.min(TOTAL, Math.floor(((t - T_TYPE0) / (T_TYPE1 - T_TYPE0)) * TOTAL));
+          seg0.textContent = S0.substring(0, Math.min(u, S0.length));
+          var c0 = u >= CHIP0_U;
+          chip0.style.display = c0 ? "inline-block" : "none";
+          chip0.style.transform = "scale(" + chipScale(t, CHIP0_T).toFixed(4) + ")";
+          var s1n = Math.max(0, Math.min(S1.length, u - CHIP0_U));
+          seg1.textContent = S1.substring(0, s1n);
+          var c1 = u >= CHIP1_U;
+          chip1.style.display = c1 ? "inline-block" : "none";
+          chip1.style.transform = "scale(" + chipScale(t, CHIP1_T).toFixed(4) + ")";
+          // deterministic blink: solid while typing, square-wave otherwise
+          var typing = t >= T_TYPE0 && t <= T_TYPE1 + 0.05;
+          cursor.style.opacity = (typing || Math.sin(t * Math.PI * 2 / 0.7) > 0) ? "1" : "0";
+        }
+
+        var driver = { t: 0 };
+        tl.fromTo(driver, { t: 0 }, {
+          t: D, duration: D, ease: "none",
+          onUpdate: function () { render(driver.t); }
+        }, 0);
+        render(0);
+
+        // mentioned card's badge acknowledges its chip
+        tl.fromTo("#mentions05-badge-right", { scale: 1 }, { scale: 1.14, duration: 0.15, ease: "power2.out", immediateRender: false }, CHIP0_T);
+        tl.to("#mentions05-badge-right", { scale: 1, duration: 0.3, ease: "power2.inOut" }, CHIP0_T + 0.15);
+        tl.fromTo("#mentions05-badge-left", { scale: 1 }, { scale: 1.14, duration: 0.15, ease: "power2.out", immediateRender: false }, CHIP1_T);
+        tl.to("#mentions05-badge-left", { scale: 1, duration: 0.3, ease: "power2.inOut" }, CHIP1_T + 0.15);
+
+        // send press
+        tl.fromTo("#mentions05-send", { scale: 1 }, { scale: 0.88, duration: 0.1, ease: "power2.out" }, 2.9);
+        tl.to("#mentions05-send", { scale: 1, duration: 0.3, ease: "power3.out" }, 3.0);
+
+        // ---- Scene 3 (3.02–5.04s): cards converge + tuck behind, result springs up ----
+        tl.to("#mentions05-wing-left", { x: 210, scale: 0.8, opacity: 0.55, duration: 0.65, ease: "power3.inOut" }, 3.02);
+        tl.to("#mentions05-wing-right", { x: -210, scale: 0.8, opacity: 0.55, duration: 0.65, ease: "power3.inOut" }, 3.02);
+        tl.to("#mentions05-plus", { scale: 0.4, opacity: 0, duration: 0.3, ease: "power2.in" }, 3.02);
+
+        tl.fromTo("#mentions05-result",
+          { y: 70, scale: 0.55, opacity: 0 },
+          { y: 0, scale: 1, opacity: 1, duration: 0.75, ease: "back.out(1.3)" }, 3.18);
+        tl.fromTo("#mentions05-result-tag", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.45, ease: "power3.out" }, 3.65);
+
+        // sparkle accents around the result
+        var sparkAt = [3.45, 3.55, 3.62, 3.7];
+        for (var i = 0; i < 4; i++) {
+          tl.fromTo("#mentions05-spark-" + i, { scale: 0, opacity: 0 }, { scale: 1, opacity: 0.9, duration: 0.3, ease: "power3.out" }, sparkAt[i]);
+          tl.to("#mentions05-spark-" + i, { scale: 0.5, opacity: 0.35, duration: 0.8, ease: "power2.out" }, sparkAt[i] + 0.3);
+        }
+
+        // quiet hold drift on the hero
+        tl.to("#mentions05-result", { y: -8, duration: 1.0, ease: "sine.inOut" }, 3.95);
+
+        tl.set({}, {}, D);
+        window.__timelines["05-mentions"] = tl;
+      })();
+    </script>
+  </div>
+</template>

@@ -1,0 +1,205 @@
+<template>
+<div id="root" data-composition-id="09-analytics" data-width="1920" data-height="1080" data-duration="5.492">
+  <style>
+    @font-face { font-family: "Inter Tight"; src: url("assets/fonts/InterTight-Variable.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+    #root { position: relative; width: 1920px; height: 1080px; overflow: hidden; font-family: "Inter Tight", sans-serif; color: #111827; }
+    #root * { box-sizing: border-box; }
+    .\30 9-analytics-bg { position: absolute; inset: 0; background: #ffffff; }
+    .\30 9-analytics-stage { position: absolute; inset: 0; container-type: size; }
+
+    .\30 9-analytics-eyebrow { position: absolute; left: 120px; top: 74px; font-size: 18px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #1f6bff; display: flex; align-items: center; gap: 14px; }
+    .\30 9-analytics-rule { width: 60px; height: 4px; border-radius: 2px; background: #1f6bff; }
+    .\30 9-analytics-headline { position: absolute; left: 120px; top: 108px; font-size: 76px; font-weight: 700; line-height: 1.08; letter-spacing: -0.02em; color: #111827; white-space: nowrap; }
+
+    .\30 9-analytics-bubble { position: absolute; right: 120px; top: 122px; padding: 20px 30px; border-radius: 26px 26px 6px 26px; background: rgba(31,107,255,0.15); color: #111827; font-size: 30px; font-weight: 500; letter-spacing: -0.01em; transform-origin: right bottom; white-space: nowrap; }
+
+    .\30 9-analytics-metrics { position: absolute; left: 120px; top: 238px; width: 1680px; height: 196px; display: flex; gap: 27px; }
+    .\30 9-analytics-card { position: relative; background: rgba(31,107,255,0.04); border: 1.5px solid rgba(31,107,255,0.2); border-radius: 14px; }
+    .\30 9-analytics-metric { flex: 1 1 0; height: 196px; padding: 30px 36px; }
+    .\30 9-analytics-mlabel { font-size: 28px; font-weight: 500; color: #6b7280; }
+    .\30 9-analytics-mrow { position: absolute; left: 36px; right: 36px; bottom: 28px; display: flex; align-items: baseline; justify-content: space-between; }
+    .\30 9-analytics-mval { font-size: 88px; font-weight: 700; line-height: 1; color: #1f6bff; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; transform-origin: left bottom; }
+    .\30 9-analytics-chip { font-size: 28px; font-weight: 600; color: #059669; white-space: nowrap; }
+    .\30 9-analytics-chip span { color: #9A9A9A; font-weight: 500; font-size: 22px; margin-left: 8px; }
+
+    .\30 9-analytics-chartcard { position: absolute; left: 120px; top: 462px; width: 1060px; height: 318px; padding: 26px 36px 22px; }
+    .\30 9-analytics-charthead { display: flex; justify-content: space-between; align-items: center; }
+    .\30 9-analytics-charttitle { font-size: 28px; font-weight: 600; color: #111827; letter-spacing: -0.01em; }
+    .\30 9-analytics-legend { display: flex; gap: 28px; font-size: 20px; font-weight: 500; color: #6b7280; }
+    .\30 9-analytics-legend i { display: inline-block; width: 26px; height: 4px; border-radius: 2px; vertical-align: middle; margin-right: 10px; }
+    .\30 9-analytics-svg { position: absolute; left: 36px; top: 84px; width: 988px; height: 210px; overflow: visible; }
+    .\30 9-analytics-xl { font-family: "Inter Tight", sans-serif; font-size: 18px; font-weight: 500; fill: #9A9A9A; }
+
+    .\30 9-analytics-insight { position: absolute; left: 1207px; top: 462px; width: 593px; height: 318px; padding: 34px 40px 34px 48px; background: rgba(31,107,255,0.08); border-radius: 12px; overflow: hidden; }
+    .\30 9-analytics-ibar { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: #1f6bff; transform-origin: center top; }
+    .\30 9-analytics-ilabel { font-size: 18px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #1f6bff; display: flex; align-items: center; gap: 10px; }
+    .\30 9-analytics-itext { margin-top: 22px; font-size: 38px; font-weight: 500; line-height: 1.3; letter-spacing: -0.015em; color: #111827; }
+    .\30 9-analytics-itext b { color: #1f6bff; font-weight: 700; }
+    .\30 9-analytics-w { display: inline-block; }
+
+    .\30 9-analytics-composer { position: absolute; left: 120px; top: 806px; width: 1680px; height: 78px; border-radius: 100px; background: #ffffff; border: 1.5px solid rgba(31,107,255,0.2); display: flex; align-items: center; padding: 0 14px 0 36px; }
+    .\30 9-analytics-ctext { flex: 1; position: relative; height: 40px; font-size: 28px; line-height: 40px; }
+    .\30 9-analytics-ph { position: absolute; left: 0; top: 0; color: #9A9A9A; font-weight: 400; white-space: nowrap; }
+    .\30 9-analytics-typed { position: absolute; left: 0; top: 0; color: #111827; font-weight: 500; white-space: nowrap; display: flex; align-items: center; }
+    .\30 9-analytics-caret { display: inline-block; width: 3px; height: 32px; background: #1f6bff; margin-left: 3px; border-radius: 2px; }
+    .\30 9-analytics-send { width: 54px; height: 54px; border-radius: 50%; background: #1f6bff; display: flex; align-items: center; justify-content: center; }
+  </style>
+
+  <div class="09-analytics-bg clip" data-start="0" data-duration="5.492" data-track-index="0"></div>
+
+  <div class="09-analytics-stage clip" data-start="0" data-duration="5.492" data-track-index="1">
+    <div class="09-analytics-eyebrow" id="09-analytics-eyebrow"><div class="09-analytics-rule"></div>Analytics</div>
+    <div class="09-analytics-headline" id="09-analytics-headline">Know what worked.</div>
+
+    <div class="09-analytics-bubble" id="09-analytics-bubble">How did we do last month?</div>
+
+    <div class="09-analytics-metrics">
+      <div class="09-analytics-card 09-analytics-metric" id="09-analytics-card-reach">
+        <div class="09-analytics-mlabel">Reach</div>
+        <div class="09-analytics-mrow">
+          <div class="09-analytics-mval" id="09-analytics-val-reach">0K</div>
+          <div class="09-analytics-chip" id="09-analytics-chip-reach">&#8593; 12%<span>vs prev</span></div>
+        </div>
+      </div>
+      <div class="09-analytics-card 09-analytics-metric" id="09-analytics-card-eng">
+        <div class="09-analytics-mlabel">Engagement</div>
+        <div class="09-analytics-mrow">
+          <div class="09-analytics-mval" id="09-analytics-val-eng">0K</div>
+          <div class="09-analytics-chip" id="09-analytics-chip-eng">&#8593; 8%<span>vs prev</span></div>
+        </div>
+      </div>
+      <div class="09-analytics-card 09-analytics-metric" id="09-analytics-card-fol">
+        <div class="09-analytics-mlabel">Followers</div>
+        <div class="09-analytics-mrow">
+          <div class="09-analytics-mval" id="09-analytics-val-fol">+0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="09-analytics-card 09-analytics-chartcard" id="09-analytics-chartcard">
+      <div class="09-analytics-charthead">
+        <div class="09-analytics-charttitle">Reach over time</div>
+        <div class="09-analytics-legend">
+          <div><i style="background:#1f6bff"></i>This month</div>
+          <div><i style="background:#d1d5db"></i>Previous</div>
+        </div>
+      </div>
+      <svg class="09-analytics-svg" viewBox="0 0 988 210" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="09-analytics-areagrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#1f6bff" stop-opacity="0.16"/>
+            <stop offset="1" stop-color="#1f6bff" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <g stroke="rgba(31,107,255,0.10)" stroke-width="1.5">
+          <line x1="0" y1="10" x2="988" y2="10"/>
+          <line x1="0" y1="65" x2="988" y2="65"/>
+          <line x1="0" y1="120" x2="988" y2="120"/>
+          <line x1="0" y1="175" x2="988" y2="175"/>
+        </g>
+        <text class="09-analytics-xl" x="0" y="204">W1</text>
+        <text class="09-analytics-xl" x="318" y="204">W2</text>
+        <text class="09-analytics-xl" x="640" y="204">W3</text>
+        <text class="09-analytics-xl" x="960" y="204">W4</text>
+        <path id="09-analytics-prev" d="M0 160 L99 154 L198 158 L296 140 L395 146 L494 130 L593 134 L692 120 L790 124 L889 110 L988 104" fill="none" stroke="#d1d5db" stroke-width="4" stroke-dasharray="10 9" stroke-linecap="round" stroke-linejoin="round"/>
+        <path id="09-analytics-area" d="M0 158 L99 140 L198 148 L296 112 L395 120 L494 86 L593 95 L692 62 L790 70 L889 38 L988 22 L988 175 L0 175 Z" fill="url(#09-analytics-areagrad)" stroke="none"/>
+        <path id="09-analytics-line" d="M0 158 L99 140 L198 148 L296 112 L395 120 L494 86 L593 95 L692 62 L790 70 L889 38 L988 22" fill="none" stroke="#1f6bff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"/>
+        <circle id="09-analytics-dot" cx="988" cy="22" r="11" fill="#1f6bff" stroke="#ffffff" stroke-width="4"/>
+      </svg>
+    </div>
+
+    <div class="09-analytics-insight" id="09-analytics-insight">
+      <div class="09-analytics-ibar" id="09-analytics-ibar"></div>
+      <div class="09-analytics-ilabel" id="09-analytics-ilabel">
+        <svg width="20" height="20" viewBox="0 0 20 20"><path d="M10 0 L12.4 7.6 L20 10 L12.4 12.4 L10 20 L7.6 12.4 L0 10 L7.6 7.6 Z" fill="#1f6bff"/></svg>
+        Next step
+      </div>
+      <div class="09-analytics-itext" id="09-analytics-itext"><span class="09-analytics-w">Reels</span> <span class="09-analytics-w">drove</span> <span class="09-analytics-w"><b>61%</b></span> <span class="09-analytics-w">of</span> <span class="09-analytics-w">your</span> <span class="09-analytics-w">reach.</span> <span class="09-analytics-w">Post</span> <span class="09-analytics-w">more</span> <span class="09-analytics-w">on</span> <span class="09-analytics-w">weekdays.</span></div>
+    </div>
+
+    <div class="09-analytics-composer" id="09-analytics-composer">
+      <div class="09-analytics-ctext">
+        <div class="09-analytics-ph" id="09-analytics-ph">Type your message here, or / for a skill</div>
+        <div class="09-analytics-typed"><span id="09-analytics-typed"></span><span class="09-analytics-caret" id="09-analytics-caret"></span></div>
+      </div>
+      <div class="09-analytics-send" id="09-analytics-send">
+        <svg width="24" height="24" viewBox="0 0 24 24"><path d="M12 19 V5 M5 12 L12 5 L19 12" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      var root = document.querySelector('[data-composition-id="09-analytics"]');
+      var q = function (id) { return root.querySelector('[id="09-analytics-' + id + '"]'); };
+      var qa = function (cls) { return root.querySelectorAll('[class~="09-analytics-' + cls + '"]'); };
+      window.__timelines = window.__timelines || {};
+      var tl = gsap.timeline({ paused: true });
+
+      // ---- Scene 1 (0-1s): header + typed prompt + send ----
+      tl.fromTo(q('eyebrow'), { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.35, ease: 'power3.out' }, 0);
+      tl.fromTo(q('headline'), { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out' }, 0.05);
+      tl.fromTo(q('composer'), { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35, ease: 'power3.out' }, 0);
+
+      var prompt = 'How did we do last month?';
+      var typedEl = q('typed'), caretEl = q('caret'), phEl = q('ph');
+      var drive = { t: 0 };
+      function composerState(t) {
+        var sent = t >= 0.82;
+        var n = Math.max(0, Math.min(prompt.length, Math.round((t - 0.12) / 0.58 * prompt.length)));
+        if (sent) n = 0;
+        typedEl.textContent = prompt.slice(0, n);
+        phEl.style.opacity = (n === 0) ? 1 : 0;
+        var typing = t >= 0.12 && t < 0.72;
+        var blinkOn = Math.floor(t * 5) % 2 === 0;
+        caretEl.style.opacity = (!sent && n > 0 && (typing || blinkOn)) ? 1 : 0;
+      }
+      composerState(0);
+      tl.fromTo(drive, { t: 0 }, { t: 1, duration: 1, ease: 'none', onUpdate: function () { composerState(drive.t); } }, 0);
+      tl.fromTo(q('send'), { scale: 1 }, { scale: 0.86, duration: 0.07, ease: 'power2.in' }, 0.75);
+      tl.fromTo(q('send'), { scale: 0.86 }, { scale: 1, duration: 0.25, ease: 'back.out(3)', immediateRender: false }, 0.82);
+      tl.fromTo(q('bubble'), { opacity: 0, scale: 0.86, y: 14 }, { opacity: 1, scale: 1, y: 0, duration: 0.4, ease: 'back.out(1.8)' }, 0.84);
+
+      // ---- metric card shells (pre-roll, values held at 0) ----
+      var cards = [q('card-reach'), q('card-eng'), q('card-fol')];
+      cards.forEach(function (c, i) {
+        tl.fromTo(c, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: 'power3.out' }, 0.1 + i * 0.06);
+      });
+
+      // ---- Scene 2 (1-2.83s): count-ups with dynamic scale ----
+      function countUp(id, from, to, fmt, at, dur) {
+        var el = q('val-' + id);
+        var o = { v: from };
+        el.textContent = fmt(from);
+        tl.fromTo(o, { v: from }, { v: to, duration: dur, ease: 'power2.out', onUpdate: function () { el.textContent = fmt(o.v); } }, at);
+        tl.fromTo(el, { scale: 0.78 }, { scale: 1, duration: dur, ease: 'power2.out' }, at);
+      }
+      function withCommas(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+      countUp('reach', 0, 184.2, function (v) { return v.toFixed(1) + 'K'; }, 1.0, 0.75);
+      countUp('eng', 0, 9.6, function (v) { return v.toFixed(1) + 'K'; }, 1.5, 0.7);
+      countUp('fol', 0, 1240, function (v) { return '+' + withCommas(Math.round(v)); }, 2.0, 0.7);
+      tl.fromTo(q('chip-reach'), { opacity: 0, scale: 0.6, y: 8 }, { opacity: 1, scale: 1, y: 0, duration: 0.35, ease: 'back.out(2.6)' }, 1.62);
+      tl.fromTo(q('chip-eng'), { opacity: 0, scale: 0.6, y: 8 }, { opacity: 1, scale: 1, y: 0, duration: 0.35, ease: 'back.out(2.6)' }, 2.1);
+      tl.fromTo(q('card-reach'), { borderColor: 'rgba(31,107,255,0.2)' }, { borderColor: 'rgba(31,107,255,0.45)', duration: 0.4, ease: 'power2.out' }, 1.55);
+
+      // ---- Scene 3 (2.83-3.83s): line chart draws vs previous period ----
+      tl.fromTo(q('chartcard'), { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: 'power3.out' }, 2.62);
+      tl.fromTo(q('prev'), { opacity: 0 }, { opacity: 1, duration: 0.35, ease: 'power1.out' }, 2.8);
+      tl.fromTo(q('line'), { attr: { 'stroke-dashoffset': 1 } }, { attr: { 'stroke-dashoffset': 0 }, duration: 0.85, ease: 'power2.inOut' }, 2.88);
+      tl.fromTo(q('area'), { opacity: 0 }, { opacity: 1, duration: 0.5, ease: 'power1.out' }, 3.25);
+      tl.fromTo(q('dot'), { scale: 0, transformOrigin: '50% 50%' }, { scale: 1, duration: 0.35, ease: 'back.out(3)' }, 3.68);
+
+      // ---- Scene 4 (3.83-4.99s): insight card lands, held read ----
+      tl.fromTo(q('insight'), { opacity: 0, x: 48 }, { opacity: 1, x: 0, duration: 0.45, ease: 'power3.out' }, 3.83);
+      tl.fromTo(q('ibar'), { scaleY: 0 }, { scaleY: 1, duration: 0.45, ease: 'power3.out' }, 3.9);
+      tl.fromTo(q('ilabel'), { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' }, 3.95);
+      tl.fromTo(qa('w'), { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.32, ease: 'power2.out', stagger: 0.035 }, 4.0);
+
+      // quiet settle to the full duration (no exit)
+
+      window.__timelines["09-analytics"] = tl;
+    })();
+  </script>
+</div>
+</template>

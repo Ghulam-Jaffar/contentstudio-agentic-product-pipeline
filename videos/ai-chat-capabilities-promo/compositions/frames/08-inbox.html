@@ -1,0 +1,343 @@
+<template>
+  <div id="root" data-composition-id="08-inbox" data-width="1920" data-height="1080" data-start="0" data-duration="7.22">
+    <style>
+      @font-face {
+        font-family: "Inter Tight";
+        src: url("assets/fonts/InterTight-Variable.woff2") format("woff2");
+        font-weight: 100 900;
+        font-display: block;
+      }
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        container-type: size;
+        font-family: "Inter Tight", sans-serif;
+        color: #111827;
+      }
+      [id="08-inbox-bg"] {
+        position: absolute; inset: 0;
+        background: #ffffff;
+      }
+      [id="08-inbox-header"] {
+        position: absolute; left: 96px; top: 84px; width: 1300px;
+      }
+      [id="08-inbox-eyebrow"] {
+        display: flex; align-items: center; gap: 16px;
+        font-size: 16px; font-weight: 600; letter-spacing: 0.08em;
+        text-transform: uppercase; color: #1f6bff;
+      }
+      [id="08-inbox-eyebrow-line"] {
+        width: 60px; height: 4px; border-radius: 2px; background: #1f6bff;
+      }
+      [id="08-inbox-headline"] {
+        margin-top: 18px;
+        font-size: 58px; font-weight: 600; line-height: 1.1; letter-spacing: -0.02em; color: #111827;
+      }
+      [id="08-inbox-panel"] {
+        position: absolute; left: 96px; top: 250px; width: 1728px; height: 630px;
+        background: rgba(31, 107, 255, 0.04);
+        border: 1.5px solid rgba(31, 107, 255, 0.2);
+        border-radius: 14px;
+        box-sizing: border-box;
+      }
+      /* user prompt bubble */
+      [id="08-inbox-bubble"] {
+        position: absolute; right: 32px; top: 26px;
+        padding: 16px 28px;
+        background: rgba(31, 107, 255, 0.15);
+        border-radius: 100px;
+        font-size: 28px; font-weight: 500; color: #111827;
+      }
+      /* summary tiles */
+      [class~="08-inbox-tile"] {
+        position: absolute; left: 32px; width: 500px; height: 116px;
+        box-sizing: border-box;
+        background: #ffffff;
+        border: 1.5px solid rgba(31, 107, 255, 0.2);
+        border-radius: 12px;
+        display: flex; align-items: center; gap: 22px; padding: 0 30px;
+      }
+      [class~="08-inbox-tile-num"] {
+        font-size: 64px; font-weight: 700; line-height: 1; color: #1f6bff;
+        min-width: 48px; font-variant-numeric: tabular-nums;
+      }
+      [class~="08-inbox-tile-label"] {
+        font-size: 30px; font-weight: 500; color: #111827; letter-spacing: -0.01em;
+      }
+      /* review card */
+      [id="08-inbox-review"] {
+        position: absolute; left: 564px; top: 120px; width: 1132px; height: 150px;
+        box-sizing: border-box;
+        background: #ffffff;
+        border: 1.5px solid rgba(31, 107, 255, 0.2);
+        border-radius: 14px;
+        padding: 24px 30px;
+        display: flex; gap: 24px; align-items: flex-start;
+      }
+      [id="08-inbox-avatar"] {
+        width: 64px; height: 64px; border-radius: 50%; flex: none;
+        background: rgba(31, 107, 255, 0.15); color: #1f6bff;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 28px; font-weight: 700;
+      }
+      [id="08-inbox-review-body"] { flex: 1; }
+      [id="08-inbox-review-top"] { display: flex; align-items: center; gap: 16px; }
+      [id="08-inbox-review-name"] { font-size: 22px; font-weight: 600; color: #111827; }
+      [id="08-inbox-stars"] { display: flex; gap: 4px; }
+      [id="08-inbox-stars"] svg { width: 22px; height: 22px; display: block; }
+      [id="08-inbox-review-tag"] {
+        margin-left: auto;
+        padding: 6px 14px; border-radius: 100px;
+        background: rgba(31, 107, 255, 0.08); color: #1f6bff;
+        font-size: 16px; font-weight: 500;
+      }
+      [id="08-inbox-review-text"] {
+        margin-top: 12px;
+        font-size: 36px; font-weight: 600; letter-spacing: -0.02em; color: #111827;
+      }
+      /* drafted reply */
+      [id="08-inbox-reply"] {
+        position: absolute; left: 564px; top: 286px; width: 1132px; height: 210px;
+        box-sizing: border-box;
+        background: rgba(31, 107, 255, 0.08);
+        border-left: 4px solid #1f6bff;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      [id="08-inbox-reply-content"] {
+        position: absolute; inset: 0; padding: 22px 30px;
+      }
+      [id="08-inbox-reply-label"] {
+        font-size: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #1f6bff;
+      }
+      [id="08-inbox-reply-text"] {
+        margin-top: 12px;
+        font-size: 30px; font-weight: 500; line-height: 1.3; color: #111827;
+      }
+      [id="08-inbox-reply-text"] span { display: inline-block; margin-right: 0.26em; }
+      [id="08-inbox-approve"] {
+        position: absolute; right: 24px; bottom: 22px;
+        width: 170px; height: 56px; border-radius: 100px;
+        background: #1f6bff; color: #ffffff;
+        font-size: 22px; font-weight: 600;
+        display: flex; align-items: center; justify-content: center;
+      }
+      [id="08-inbox-posted"] {
+        position: absolute; left: 30px; top: 0; height: 84px;
+        display: flex; align-items: center; gap: 16px;
+        font-size: 30px; font-weight: 600; color: #059669;
+      }
+      [id="08-inbox-posted"] svg { width: 40px; height: 40px; display: block; }
+      /* composer */
+      [id="08-inbox-composer"] {
+        position: absolute; left: 32px; right: 32px; bottom: 28px; height: 76px;
+        box-sizing: border-box;
+        background: #ffffff;
+        border: 1.5px solid rgba(31, 107, 255, 0.2);
+        border-radius: 100px;
+      }
+      [id="08-inbox-placeholder"], [id="08-inbox-typed"] {
+        position: absolute; left: 34px; top: 0; height: 73px;
+        display: flex; align-items: center;
+        font-size: 24px;
+      }
+      [id="08-inbox-placeholder"] { color: #9A9A9A; font-weight: 400; }
+      [id="08-inbox-typed"] { color: #111827; font-weight: 500; white-space: pre; }
+      [id="08-inbox-caret"] {
+        display: inline-block; width: 2px; height: 30px; margin-left: 2px; background: #1f6bff;
+      }
+      [id="08-inbox-send"] {
+        position: absolute; right: 12px; top: 10px;
+        width: 52px; height: 52px; border-radius: 50%;
+        background: #1f6bff;
+        display: flex; align-items: center; justify-content: center;
+      }
+      [id="08-inbox-send"] svg { width: 24px; height: 24px; display: block; }
+      /* cursor + ripples */
+      [class~="08-inbox-ripple"] {
+        position: absolute; width: 64px; height: 64px; margin: -32px 0 0 -32px;
+        border-radius: 50%; border: 3px solid #1f6bff; box-sizing: border-box;
+      }
+      [id="08-inbox-cursor"] {
+        position: absolute; left: 0; top: 0; width: 40px; height: 40px;
+      }
+      [id="08-inbox-cursor"] svg { width: 40px; height: 40px; display: block; }
+    </style>
+
+    <div id="08-inbox-bg" class="clip" data-start="0" data-duration="7.22" data-track-index="0"></div>
+
+    <div id="08-inbox-header">
+      <div id="08-inbox-eyebrow"><span id="08-inbox-eyebrow-line"></span>Inbox</div>
+      <div id="08-inbox-headline">Reply without switching tabs.</div>
+    </div>
+
+    <div id="08-inbox-panel">
+      <div id="08-inbox-bubble">Summarize my inbox</div>
+
+      <div class="08-inbox-tile" id="08-inbox-tile-1" style="top:120px">
+        <div class="08-inbox-tile-num" id="08-inbox-num-1">0</div>
+        <div class="08-inbox-tile-label">reviews</div>
+      </div>
+      <div class="08-inbox-tile" id="08-inbox-tile-2" style="top:250px">
+        <div class="08-inbox-tile-num" id="08-inbox-num-2">0</div>
+        <div class="08-inbox-tile-label">DMs</div>
+      </div>
+      <div class="08-inbox-tile" id="08-inbox-tile-3" style="top:380px">
+        <div class="08-inbox-tile-num" id="08-inbox-num-3">0</div>
+        <div class="08-inbox-tile-label">comments</div>
+      </div>
+
+      <div id="08-inbox-review">
+        <div id="08-inbox-avatar">M</div>
+        <div id="08-inbox-review-body">
+          <div id="08-inbox-review-top">
+            <div id="08-inbox-review-name">Maya R.</div>
+            <div id="08-inbox-stars">
+              <svg viewBox="0 0 24 24"><path fill="#1f6bff" d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z"/></svg>
+              <svg viewBox="0 0 24 24"><path fill="#1f6bff" d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z"/></svg>
+              <svg viewBox="0 0 24 24"><path fill="#1f6bff" d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z"/></svg>
+              <svg viewBox="0 0 24 24"><path fill="#1f6bff" d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z"/></svg>
+              <svg viewBox="0 0 24 24"><path fill="#1f6bff" d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z"/></svg>
+            </div>
+            <div id="08-inbox-review-tag">Google review</div>
+          </div>
+          <div id="08-inbox-review-text">Best oat latte in town!</div>
+        </div>
+      </div>
+
+      <div id="08-inbox-reply">
+        <div id="08-inbox-reply-content">
+          <div id="08-inbox-reply-label">Drafted reply</div>
+          <div id="08-inbox-reply-text"><span>Thank</span><span>you,</span><span>Maya!</span><span>See</span><span>you</span><span>for</span><span>the</span><span>autumn</span><span>menu.</span></div>
+          <div id="08-inbox-approve">Approve</div>
+        </div>
+        <div id="08-inbox-posted">
+          <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="none" stroke="#059669" stroke-width="3"/><path id="08-inbox-check" d="M12 20.5l5.5 5.5L28.5 14.5" fill="none" stroke="#059669" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="26" stroke-dashoffset="26"/></svg>
+          <span>Reply posted</span>
+        </div>
+      </div>
+
+      <div id="08-inbox-composer">
+        <div id="08-inbox-placeholder">Type your message here, or / for a skill</div>
+        <div id="08-inbox-typed"><span id="08-inbox-typed-chars"></span><span id="08-inbox-caret"></span></div>
+        <div id="08-inbox-send">
+          <svg viewBox="0 0 24 24"><path d="M12 19V5M5.5 11.5L12 5l6.5 6.5" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="08-inbox-ripple" id="08-inbox-ripple-1" style="left:1754px; top:814px"></div>
+    <div class="08-inbox-ripple" id="08-inbox-ripple-2" style="left:1683px; top:696px"></div>
+
+    <div id="08-inbox-cursor">
+      <svg viewBox="0 0 40 40"><path d="M6 3 L6 33 L13.5 26 L18.5 37 L23.5 34.8 L18.5 24 L29 24 Z" fill="#111827" stroke="#ffffff" stroke-width="2.4" stroke-linejoin="round"/></svg>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script>
+      (function () {
+        var R = document.querySelector('[data-composition-id="08-inbox"]');
+        function q(id) { return R.querySelector('[id="08-inbox-' + id + '"]'); }
+        window.__timelines = window.__timelines || {};
+        var tl = gsap.timeline({ paused: true });
+
+        // build typed-character spans synchronously
+        var PROMPT = "Summarize my inbox";
+        var typedHost = q("typed-chars");
+        var chars = [];
+        for (var i = 0; i < PROMPT.length; i++) {
+          var s = document.createElement("span");
+          s.textContent = PROMPT[i];
+          typedHost.appendChild(s);
+          chars.push(s);
+        }
+
+        var cursor = q("cursor");
+        // tip of arrow sits at (6,3) inside the 40px svg
+        function cx(x) { return x - 6; }
+        function cy(y) { return y - 3; }
+
+        // initial states (set at t=0, seek-safe)
+        tl.set(chars, { opacity: 0 }, 0);
+        tl.set(q("typed"), { opacity: 1 }, 0);
+        tl.set(q("caret"), { opacity: 0 }, 0);
+        tl.set(q("posted"), { opacity: 0 }, 0);
+        tl.set([q("ripple-1"), q("ripple-2")], { opacity: 0, scale: 0.2 }, 0);
+
+        // ---- Scene 1 (0–1.57): header + panel, prompt types and sends ----
+        tl.fromTo(q("eyebrow"), { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.4, ease: "power3.out" }, 0.05);
+        tl.fromTo(q("headline"), { opacity: 0, y: 28 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 0.1);
+        tl.fromTo(q("panel"), { opacity: 0, y: 36, scale: 0.985 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "power3.out" }, 0.0);
+        tl.fromTo(cursor, { x: cx(1180), y: cy(890), opacity: 0 }, { x: cx(1060), y: cy(820), opacity: 1, duration: 0.4, ease: "power2.out" }, 0.1);
+
+        // focus composer: placeholder out, caret on
+        tl.to(q("placeholder"), { opacity: 0, duration: 0.12, ease: "none" }, 0.42);
+        tl.set(q("caret"), { opacity: 1 }, 0.44);
+        var t0 = 0.48, step = 0.038;
+        chars.forEach(function (c, k) { tl.set(c, { opacity: 1 }, t0 + k * step); });
+        var typedEnd = t0 + chars.length * step; // ~1.16
+
+        // cursor glides to send, presses
+        tl.to(cursor, { x: cx(1754), y: cy(814), duration: 0.32, ease: "power3.inOut" }, typedEnd - 0.12);
+        tl.to(q("send"), { scale: 0.86, duration: 0.08, ease: "power2.in" }, typedEnd + 0.2);
+        tl.to(q("send"), { scale: 1, duration: 0.3, ease: "back.out(3)" }, typedEnd + 0.28);
+        tl.to(cursor, { scale: 0.88, duration: 0.08, ease: "power2.in", transformOrigin: "6px 3px" }, typedEnd + 0.2);
+        tl.to(cursor, { scale: 1, duration: 0.2, ease: "power2.out" }, typedEnd + 0.28);
+        tl.fromTo(q("ripple-1"), { opacity: 0.6, scale: 0.2 }, { opacity: 0, scale: 1.6, duration: 0.45, ease: "power2.out" }, typedEnd + 0.24);
+
+        // composer clears, bubble pops into the thread
+        var sendT = typedEnd + 0.28; // ~1.44
+        tl.set(q("typed"), { opacity: 0 }, sendT);
+        tl.to(q("placeholder"), { opacity: 1, duration: 0.2, ease: "none" }, sendT + 0.04);
+        tl.fromTo(q("bubble"), { opacity: 0, y: 40, scale: 0.9, transformOrigin: "100% 100%" }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(1.8)" }, sendT);
+        // cursor eases off to a resting spot
+        tl.to(cursor, { x: cx(1560), y: cy(560), duration: 0.6, ease: "power2.inOut" }, sendT + 0.2);
+
+        // ---- Scene 2 (1.57–3.36): tiles count up left-to-right (top-to-bottom stack) ----
+        var tiles = [
+          { tile: q("tile-1"), num: q("num-1"), to: 3, at: 1.6 },
+          { tile: q("tile-2"), num: q("num-2"), to: 5, at: 2.15 },
+          { tile: q("tile-3"), num: q("num-3"), to: 4, at: 2.7 }
+        ];
+        tiles.forEach(function (d) {
+          tl.fromTo(d.tile, { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.45, ease: "power3.out" }, d.at);
+          var proxy = { v: 0 };
+          tl.fromTo(proxy, { v: 0 }, {
+            v: d.to, duration: 0.5, ease: "power2.out",
+            onUpdate: function () { d.num.textContent = String(Math.round(proxy.v)); }
+          }, d.at + 0.08);
+          tl.fromTo(d.num, { scale: 0.7 }, { scale: 1, duration: 0.5, ease: "back.out(2.4)", transformOrigin: "0% 60%" }, d.at + 0.08);
+        });
+
+        // ---- Scene 3 (3.36–5.15): review card slides in, drafted reply builds ----
+        tl.fromTo(q("review"), { opacity: 0, x: 90 }, { opacity: 1, x: 0, duration: 0.55, ease: "power3.out" }, 3.38);
+        tl.fromTo(q("stars").children, { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2.6)", stagger: 0.05 }, 3.6);
+        tl.fromTo(q("reply"), { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 3.95);
+        tl.fromTo(q("reply-text").children, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out", stagger: 0.06 }, 4.15);
+        tl.fromTo(q("approve"), { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2.2)" }, 4.75);
+
+        // ---- Scene 4 (5.15–6.72): cursor presses Approve, reply collapses to posted ----
+        var pressT = 5.6;
+        tl.to(cursor, { x: cx(1683), y: cy(696), duration: 0.45, ease: "power3.inOut" }, pressT - 0.47);
+        tl.to(q("approve"), { scale: 0.9, duration: 0.08, ease: "power2.in" }, pressT);
+        tl.to(cursor, { scale: 0.88, duration: 0.08, ease: "power2.in", transformOrigin: "6px 3px" }, pressT);
+        tl.to(q("approve"), { scale: 1, duration: 0.22, ease: "back.out(3)" }, pressT + 0.08);
+        tl.to(cursor, { scale: 1, duration: 0.2, ease: "power2.out" }, pressT + 0.08);
+        tl.fromTo(q("ripple-2"), { opacity: 0.6, scale: 0.2 }, { opacity: 0, scale: 1.8, duration: 0.5, ease: "power2.out" }, pressT + 0.04);
+
+        tl.to(q("reply-content"), { opacity: 0, duration: 0.18, ease: "power1.in" }, pressT + 0.16);
+        tl.to(q("reply"), { height: 84, duration: 0.42, ease: "power3.inOut" }, pressT + 0.18);
+        tl.fromTo(q("posted"), { opacity: 0, x: -16 }, { opacity: 1, x: 0, duration: 0.3, ease: "power2.out" }, pressT + 0.4);
+        tl.to(q("check"), { strokeDashoffset: 0, duration: 0.3, ease: "power2.out" }, pressT + 0.46);
+        tl.to(cursor, { x: cx(1640), y: cy(560), duration: 0.5, ease: "power2.out" }, pressT + 0.35);
+
+        // pad to full duration (hold)
+        tl.set({}, {}, 6.72);
+
+        window.__timelines["08-inbox"] = tl;
+      })();
+    </script>
+  </div>
+</template>

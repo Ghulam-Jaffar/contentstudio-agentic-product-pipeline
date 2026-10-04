@@ -1,0 +1,347 @@
+<template>
+<div id="root" data-composition-id="04-images" data-start="0" data-duration="6.068" data-width="1920" data-height="1080">
+  <style>
+    @font-face {
+      font-family: "Inter Tight";
+      src: url("assets/fonts/InterTight-Variable.woff2") format("woff2");
+      font-weight: 100 900;
+      font-display: block;
+    }
+    #root {
+      position: absolute;
+      left: 0; top: 0;
+      width: 1920px; height: 1080px;
+      overflow: hidden;
+      font-family: "Inter Tight", sans-serif;
+      color: #111827;
+    }
+    .\30 4-images-bg {
+      position: absolute; left: 0; top: 0; width: 1920px; height: 1080px;
+      background: #ffffff;
+    }
+    .\30 4-images-stage {
+      position: absolute; left: 0; top: 0; width: 1920px; height: 1080px;
+      container-type: size;
+    }
+    /* ---------- left column ---------- */
+    .\30 4-images-copy { position: absolute; left: 96px; top: 300px; width: 580px; }
+    .\30 4-images-rule { width: 60px; height: 4px; border-radius: 2px; background: #1f6bff; }
+    .\30 4-images-eyebrow {
+      margin-top: 22px;
+      font-size: 22px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+      color: #1f6bff;
+    }
+    .\30 4-images-headline {
+      margin-top: 14px;
+      font-size: 84px; font-weight: 700; line-height: 1.04; letter-spacing: -0.02em;
+      color: #111827;
+    }
+    .\30 4-images-stat {
+      position: absolute; left: 96px; top: 600px;
+      display: flex; align-items: center; gap: 14px;
+      padding: 16px 30px 16px 26px;
+      border-radius: 100px;
+      background: rgba(31, 107, 255, 0.08);
+      border: 1.5px solid rgba(31, 107, 255, 0.2);
+      white-space: nowrap;
+    }
+    .\30 4-images-stat-num { font-size: 44px; font-weight: 700; line-height: 1; color: #1f6bff; }
+    .\30 4-images-stat-lbl { font-size: 26px; font-weight: 500; color: #111827; letter-spacing: -0.01em; }
+    .\30 4-images-stat-dot { font-size: 30px; font-weight: 700; color: #1f6bff; margin: 0 4px; }
+
+    /* ---------- chat window ---------- */
+    .\30 4-images-win {
+      position: absolute; left: 720px; top: 70px; width: 1104px; height: 820px;
+      background: #ffffff;
+      border: 1.5px solid rgba(31, 107, 255, 0.2);
+      border-radius: 14px;
+      overflow: hidden;
+      transform-origin: 50% 40%;
+    }
+    .\30 4-images-head {
+      position: absolute; left: 0; top: 0; right: 0; height: 56px;
+      background: rgba(31, 107, 255, 0.04);
+      border-bottom: 1.5px solid rgba(31, 107, 255, 0.12);
+      display: flex; align-items: center; gap: 12px; padding: 0 24px;
+    }
+    .\30 4-images-head-dot { width: 26px; height: 26px; border-radius: 50%; background: #1f6bff; }
+    .\30 4-images-head-bar { width: 150px; height: 10px; border-radius: 6px; background: rgba(31, 107, 255, 0.15); }
+    .\30 4-images-head-bar2 { width: 70px; height: 10px; border-radius: 6px; background: rgba(31, 107, 255, 0.08); margin-left: auto; }
+
+    .\30 4-images-bubble {
+      position: absolute; right: 32px; top: 84px;
+      padding: 14px 22px;
+      border-radius: 14px 14px 4px 14px;
+      background: rgba(31, 107, 255, 0.08);
+      border: 1.5px solid rgba(31, 107, 255, 0.2);
+      font-size: 22px; font-weight: 500; color: #111827;
+      white-space: nowrap;
+    }
+    .\30 4-images-avatar {
+      position: absolute; left: 32px; top: 164px;
+      width: 38px; height: 38px; border-radius: 50%;
+      background: #1f6bff;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .\30 4-images-status {
+      position: absolute; left: 86px; top: 168px;
+      font-size: 22px; font-weight: 600;
+      background-image: linear-gradient(90deg, #9A9A9A 0%, #9A9A9A 38%, #1f6bff 50%, #9A9A9A 62%, #9A9A9A 100%);
+      background-size: 300% 100%;
+      background-position: 100% 0;
+      -webkit-background-clip: text; background-clip: text;
+      color: transparent;
+    }
+    .\30 4-images-grid {
+      position: absolute; left: 86px; top: 164px;
+      width: 516px; height: 516px;
+    }
+    .\30 4-images-tile {
+      position: absolute; width: 251px; height: 251px;
+      border-radius: 12px;
+    }
+    .\30 4-images-skel {
+      position: absolute; inset: 0; border-radius: 12px;
+      background: rgba(31, 107, 255, 0.06);
+      border: 1.5px solid rgba(31, 107, 255, 0.15);
+    }
+    .\30 4-images-img {
+      position: absolute; inset: 0; width: 251px; height: 251px;
+      border-radius: 12px; object-fit: cover; display: block;
+    }
+    .\30 4-images-ring {
+      position: absolute; inset: -5px; border-radius: 16px;
+      border: 3px solid #1f6bff;
+    }
+    .\30 4-images-shade {
+      position: absolute; left: 0; right: 0; bottom: 0; height: 130px;
+      border-radius: 0 0 12px 12px;
+      background: linear-gradient(180deg, rgba(17, 24, 39, 0) 0%, rgba(17, 24, 39, 0.62) 100%);
+    }
+    .\30 4-images-actions {
+      position: absolute; left: 12px; right: 12px; bottom: 12px;
+      display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+    }
+    .\30 4-images-act {
+      padding: 9px 16px; border-radius: 100px;
+      font-size: 15px; font-weight: 600; white-space: nowrap;
+    }
+    .\30 4-images-act-a { background: #ffffff; color: #1f6bff; }
+    .\30 4-images-act-b { background: #1f6bff; color: #ffffff; }
+
+    /* ---------- composer ---------- */
+    .\30 4-images-composer {
+      position: absolute; left: 24px; right: 24px; bottom: 22px; height: 108px;
+      border-radius: 14px;
+      background: rgba(31, 107, 255, 0.04);
+      border: 1.5px solid rgba(31, 107, 255, 0.2);
+    }
+    .\30 4-images-line {
+      position: absolute; left: 22px; top: 14px; right: 80px; height: 30px;
+      font-size: 21px; font-weight: 500; line-height: 30px; white-space: nowrap;
+      color: #111827;
+    }
+    .\30 4-images-ph { color: #9A9A9A; font-weight: 400; }
+    .\30 4-images-caret {
+      display: inline-block; width: 2px; height: 24px; margin: 0 2px -4px 1px;
+      background: #1f6bff;
+    }
+    .\30 4-images-chips {
+      position: absolute; left: 18px; bottom: 12px;
+      display: flex; gap: 10px;
+    }
+    .\30 4-images-chip {
+      padding: 7px 16px; border-radius: 100px;
+      font-size: 16px; font-weight: 600; white-space: nowrap;
+      background: #ffffff; color: #6b7280;
+      border: 1.5px solid rgba(107, 114, 128, 0.3);
+    }
+    .\30 4-images-send {
+      position: absolute; right: 16px; bottom: 14px;
+      width: 44px; height: 44px; border-radius: 50%;
+      background: rgba(31, 107, 255, 0.15);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .\30 4-images-cursor { position: absolute; left: 0; top: 0; width: 34px; height: 40px; }
+  </style>
+
+  <div class="04-images-bg clip" data-start="0" data-duration="6.068" data-track-index="0"></div>
+
+  <div class="04-images-stage clip" data-start="0" data-duration="6.068" data-track-index="1">
+    <div class="04-images-copy">
+      <div class="04-images-rule"></div>
+      <div class="04-images-eyebrow">Images</div>
+      <div class="04-images-headline">Make the<br>visual.</div>
+    </div>
+
+    <div class="04-images-stat">
+      <span class="04-images-stat-num">22</span>
+      <span class="04-images-stat-lbl">image models</span>
+      <span class="04-images-stat-dot">·</span>
+      <span class="04-images-stat-num">31</span>
+      <span class="04-images-stat-lbl">styles</span>
+    </div>
+
+    <div class="04-images-win">
+      <div class="04-images-head">
+        <div class="04-images-head-dot"></div>
+        <div class="04-images-head-bar"></div>
+        <div class="04-images-head-bar2"></div>
+      </div>
+
+      <div class="04-images-bubble">Autumn latte flat lay for Bean &amp; Co.</div>
+
+      <div class="04-images-avatar">
+        <svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 2 L14.2 9.8 L22 12 L14.2 14.2 L12 22 L9.8 14.2 L2 12 L9.8 9.8 Z" fill="#ffffff"/></svg>
+      </div>
+      <div class="04-images-status">Working…</div>
+
+      <div class="04-images-grid">
+        <div class="04-images-tile 04-images-t2" style="left:265px; top:0;">
+          <div class="04-images-skel"></div>
+          <img class="04-images-img" src="assets/flatlay-2.png" alt="">
+        </div>
+        <div class="04-images-tile 04-images-t3" style="left:0; top:265px;">
+          <div class="04-images-skel"></div>
+          <img class="04-images-img" src="assets/flatlay-3.png" alt="">
+        </div>
+        <div class="04-images-tile 04-images-t4" style="left:265px; top:265px;">
+          <div class="04-images-skel"></div>
+          <img class="04-images-img" src="assets/flatlay-4.png" alt="">
+        </div>
+        <div class="04-images-tile 04-images-t1" style="left:0; top:0;">
+          <div class="04-images-ring"></div>
+          <div class="04-images-skel"></div>
+          <img class="04-images-img" src="assets/flatlay-1.png" alt="">
+          <div class="04-images-shade"></div>
+          <div class="04-images-actions">
+            <div class="04-images-act 04-images-act-a">Add to Composer</div>
+            <div class="04-images-act 04-images-act-b">Schedule with this image</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="04-images-composer">
+        <div class="04-images-line"><span class="04-images-typed"></span><span class="04-images-caret"></span><span class="04-images-ph">Type your message here, or / for a skill</span></div>
+        <div class="04-images-chips">
+          <div class="04-images-chip">Nano Banana Pro</div>
+          <div class="04-images-chip">1:1</div>
+          <div class="04-images-chip">Cinematic</div>
+        </div>
+        <div class="04-images-send">
+          <svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 19 V5 M5 12 L12 5 L19 12" stroke="#ffffff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+
+      <svg class="04-images-cursor" viewBox="0 0 34 40"><path d="M3 2 L3 32 L11 25 L16.5 37 L22 34.5 L16.5 23 L27 23 Z" fill="#111827" stroke="#ffffff" stroke-width="2.4" stroke-linejoin="round"/></svg>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      var ID = "04-images";
+      var root = document.querySelector('[data-composition-id="' + ID + '"]');
+      function q(n) { return root.getElementsByClassName(ID + "-" + n)[0]; }
+      function qa(n) { return Array.prototype.slice.call(root.getElementsByClassName(ID + "-" + n)); }
+
+      var PROMPT = "Autumn latte flat lay for Bean & Co.";
+      var typed = q("typed");
+      var chars = [];
+      for (var i = 0; i < PROMPT.length; i++) {
+        var s = document.createElement("span");
+        s.textContent = PROMPT[i];
+        s.style.display = "none";
+        typed.appendChild(s);
+        chars.push(s);
+      }
+
+      var D = 5.568;
+      var tl = gsap.timeline({ paused: true });
+
+      /* Scene 1 — header copy + window (hero visible by 0.5s) */
+      tl.fromTo(q("rule"), { scaleX: 0, transformOrigin: "0% 50%" }, { scaleX: 1, duration: 0.4, ease: "power3.out" }, 0.0);
+      tl.fromTo(q("eyebrow"), { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 0.04);
+      tl.fromTo(q("headline"), { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.1);
+      tl.fromTo(q("win"), { opacity: 0, y: 40, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "power3.out" }, 0.0);
+
+      /* mode chips light up blue one by one */
+      qa("chip").forEach(function (c, k) {
+        var t = 0.3 + k * 0.12;
+        tl.fromTo(c, { scale: 0.9 }, { scale: 1, duration: 0.3, ease: "back.out(2.5)" }, t);
+        tl.fromTo(c, { backgroundColor: "#ffffff", color: "#6b7280", borderColor: "rgba(107, 114, 128, 0.3)" },
+                     { backgroundColor: "#1f6bff", color: "#ffffff", borderColor: "#1f6bff", duration: 0.16, ease: "power1.out" }, t);
+      });
+
+      /* prompt types character by character */
+      var tType0 = 0.62, tType1 = 1.4;
+      tl.set(q("ph"), { display: "none" }, tType0);
+      tl.fromTo(q("send"), { backgroundColor: "rgba(31, 107, 255, 0.15)" }, { backgroundColor: "#1f6bff", duration: 0.12 }, tType0);
+      chars.forEach(function (c, k) {
+        tl.set(c, { display: "inline" }, tType0 + (tType1 - tType0) * (k / (chars.length - 1)));
+      });
+
+      /* caret blink (explicit sets, solid while typing) */
+      for (var b = 0.5; b < D; b += 0.5) {
+        if (b > 0.55 && b < 1.7) continue;
+        tl.set(q("caret"), { opacity: (Math.round(b / 0.5) % 2) ? 0 : 1 }, b);
+      }
+      tl.set(q("caret"), { opacity: 1 }, tType0);
+
+      /* send: press dip, composer clears, bubble posts */
+      var tSend = 1.5;
+      tl.fromTo(q("send"), { scale: 1 }, { scale: 0.84, duration: 0.07, ease: "power2.in" }, tSend);
+      tl.to(q("send"), { scale: 1, duration: 0.22, ease: "back.out(3)" }, tSend + 0.07);
+      tl.set(typed, { display: "none" }, 1.6);
+      tl.set(q("ph"), { display: "inline" }, 1.6);
+      tl.to(q("send"), { backgroundColor: "rgba(31, 107, 255, 0.15)", duration: 0.15 }, 1.6);
+      tl.fromTo(q("bubble"), { opacity: 0, y: 40, scale: 0.96, transformOrigin: "100% 100%" },
+                             { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "power3.out" }, 1.58);
+
+      /* Scene 2 — Working shimmer, then tiles resolve */
+      tl.fromTo(q("avatar"), { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2.2)" }, 1.72);
+      tl.fromTo(q("status"), { opacity: 0, x: -10 }, { opacity: 1, x: 0, duration: 0.2, ease: "power2.out" }, 1.76);
+      tl.fromTo(q("status"), { backgroundPosition: "100% 0" }, { backgroundPosition: "0% 0", duration: 0.42, ease: "none" }, 1.78);
+      tl.to(q("status"), { opacity: 0, duration: 0.14, ease: "power1.in" }, 2.16);
+
+      var order = ["t1", "t2", "t3", "t4"];
+      order.forEach(function (n, k) {
+        var tile = q(n);
+        var skel = tile.getElementsByClassName(ID + "-skel")[0];
+        var img = tile.getElementsByClassName(ID + "-img")[0];
+        tl.fromTo(skel, { opacity: 0, scale: 0.94 }, { opacity: 1, scale: 1, duration: 0.25, ease: "power2.out" }, 2.12 + k * 0.05);
+        var t = 2.22 + k * 0.24;
+        tl.fromTo(img, { opacity: 0, scale: 1.08, filter: "blur(22px)" },
+                       { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.55, ease: "power2.out" }, t);
+      });
+
+      /* slow continuous push-in on the window, under the build */
+      tl.fromTo(q("win"), { scale: 1 }, { scale: 1.015, duration: D - 1.7, ease: "sine.inOut", immediateRender: false }, 1.7);
+
+      /* Scene 3 — stat pill springs beside the window */
+      tl.fromTo(q("stat"), { opacity: 0, scale: 0.6, y: 20, transformOrigin: "0% 50%" },
+                           { opacity: 1, scale: 1, y: 0, duration: 0.55, ease: "back.out(2)" }, 3.34);
+      qa("stat-num").forEach(function (n, k) {
+        tl.fromTo(n, { scale: 0.5 }, { scale: 1, duration: 0.45, ease: "back.out(3)" }, 3.42 + k * 0.12);
+      });
+
+      /* cursor glides onto the hero tile, tile lifts, action row appears */
+      tl.fromTo(q("cursor"), { opacity: 0, x: 760, y: 560 }, { opacity: 1, x: 760, y: 560, duration: 0.12 }, 3.6);
+      tl.to(q("cursor"), { x: 250, y: 330, duration: 0.5, ease: "power3.inOut" }, 3.66);
+      tl.fromTo(q("t1"), { scale: 1, y: 0 }, { scale: 1.05, y: -6, duration: 0.4, ease: "back.out(1.8)" }, 4.08);
+      tl.fromTo(q("ring"), { opacity: 0 }, { opacity: 1, duration: 0.2 }, 4.08);
+      tl.fromTo(q("shade"), { opacity: 0 }, { opacity: 1, duration: 0.25 }, 4.12);
+      qa("act").forEach(function (a, k) {
+        tl.fromTo(a, { opacity: 0, y: 14, scale: 0.9, transformOrigin: "0% 50%" },
+                     { opacity: 1, y: 0, scale: 1, duration: 0.35, ease: "back.out(2.2)" }, 4.2 + k * 0.12);
+      });
+
+      /* hold to the end (no exit) */
+      tl.set({}, {}, D);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines[ID] = tl;
+    })();
+  </script>
+</div>
+</template>

@@ -47,6 +47,7 @@ node render.js <slug>                                # 1920x1080 MP4
 node render.js <slug> --size 1080x1920               # vertical cut, needs a layout that fits
 node render.js <slug> --variant light                # opens source.html#light, writes <slug>-light-<ratio>.mp4
 node render.js <slug> --range 22.6,30.2              # renders only that span to <slug>-<ratio>-range.mp4, to splice a fix into an existing render
+node render.js <slug> --fps 30 --shutter 4          # true motion blur: 4 captures per frame across a 180° shutter, averaged (4x render time)
 ```
 
 **Splicing a `--range` render:** splice only into a clean full render, write to a new file (never over the input), and check the frame count before replacing anything (`ffmpeg -i out.mp4 -map 0:v -c copy -f null -`, which should equal duration x fps). Splicing into an already-spliced file broke its frame timing once, and the result silently came out half-length.
@@ -67,4 +68,6 @@ Chrome is expected at `/usr/bin/google-chrome`. Set `CHROME_PATH` to override. A
 |---|---|---|---|
 | [ai-chat-skills-promo](ai-chat-skills-promo/) | AI Chat Skills | 36s | 16x9 |
 | [ai-chat-promo](ai-chat-promo/) | AI Chat, full capability overview | 113s | 16x9 |
-| [ai-chat-teaser](ai-chat-teaser/) | AI Chat, short cut of the promo (current and all-light themes) | 65s | 16x9, 16x9 light |
+| [ai-chat-teaser](ai-chat-teaser/) | AI Chat, short cut of the promo (current and all-light themes) | 66s | 16x9, 16x9 light |
+| [ai-chat-capabilities-promo](ai-chat-capabilities-promo/) | AI Chat, capability tour rebuilt with HyperFrames (voiceover, music, captions) | 59s | 16x9 |
+| [ai-chat-premium-promo-v2](ai-chat-premium-promo-v2/) | AI Chat premium film, v2 rebuilt from the reference library (beat grid, shutter blur, per-word type, string score) | 68s | 16x9 |

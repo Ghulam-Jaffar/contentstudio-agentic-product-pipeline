@@ -17,3 +17,14 @@ docs/frill/cache/
 videos/_tooling/node_modules/
 videos/*/stills/
 videos/*/media/
+videos/*/assets/
+videos/*/capture/
+videos/*/snapshots/
+# HyperFrames run byproducts (intermediate renders, logs, audio/caption metadata)
+videos/*/renders/
+videos/*/*.log
+videos/*/.media/
+videos/*/audio_*.json
+videos/*/caption_groups.json
+videos/*/caption-overrides.json
+videos/*/meta.json

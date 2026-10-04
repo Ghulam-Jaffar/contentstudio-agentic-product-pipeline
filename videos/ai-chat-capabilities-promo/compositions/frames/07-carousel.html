@@ -1,0 +1,291 @@
+<template>
+  <div id="root" data-composition-id="07-carousel" data-start="0" data-duration="5.364" data-width="1920" data-height="1080">
+    <style>
+      @font-face {
+        font-family: "Inter Tight";
+        src: url("assets/fonts/InterTight-Variable.woff2") format("woff2");
+        font-weight: 100 900;
+        font-display: block;
+      }
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        container-type: size;
+        font-family: "Inter Tight", sans-serif;
+        color: #111827;
+      }
+      #root * { box-sizing: border-box; }
+      .\30 7-carousel-bg {
+        position: absolute; inset: 0;
+        background: #ffffff;
+      }
+      .\30 7-carousel-content { position: absolute; inset: 0; }
+      .\30 7-carousel-cam {
+        position: absolute; inset: 0;
+        transform-origin: 62% 44%;
+      }
+
+      /* ---------- left column: header + chat ---------- */
+      .\30 7-carousel-eyebrow {
+        position: absolute; left: 96px; top: 196px;
+        display: flex; align-items: center; gap: 16px;
+        font-size: 1.15cqw; font-weight: 600; letter-spacing: 0.08em;
+        text-transform: uppercase; color: #1f6bff;
+      }
+      .\30 7-carousel-eyebrow i {
+        display: block; width: 60px; height: 4px; border-radius: 2px; background: #1f6bff;
+      }
+      .\30 7-carousel-h1 {
+        position: absolute; left: 96px; top: 244px; width: 780px;
+        font-size: 4.2cqw; font-weight: 700; line-height: 1.08; letter-spacing: -0.02em;
+        color: #111827; margin: 0;
+      }
+      .\30 7-carousel-h1 span { display: block; }
+
+      .\30 7-carousel-bubble {
+        position: absolute; right: calc(1920px - 856px); top: 478px;
+        max-width: 600px;
+        padding: 18px 24px;
+        background: rgba(31, 107, 255, 0.08);
+        border: 1.5px solid rgba(31, 107, 255, 0.2);
+        border-radius: 14px;
+        font-size: 1.2cqw; font-weight: 500; line-height: 1.45; color: #111827;
+      }
+      .\30 7-carousel-composer {
+        position: absolute; left: 96px; top: 636px; width: 760px; height: 132px;
+        padding: 20px 96px 20px 26px;
+        background: rgba(31, 107, 255, 0.04);
+        border: 1.5px solid rgba(31, 107, 255, 0.2);
+        border-radius: 14px;
+        font-size: 1.2cqw; line-height: 1.45;
+      }
+      .\30 7-carousel-placeholder { color: #9A9A9A; font-weight: 400; }
+      .\30 7-carousel-typed { color: #111827; font-weight: 500; }
+      .\30 7-carousel-typed b { font-weight: 500; display: none; }
+      .\30 7-carousel-caret {
+        display: inline-block; width: 2px; height: 1.15em; margin-left: 2px;
+        vertical-align: -0.18em; background: #1f6bff;
+      }
+      .\30 7-carousel-send {
+        position: absolute; right: 18px; bottom: 18px;
+        width: 56px; height: 56px; border-radius: 50%;
+        background: #1f6bff;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .\30 7-carousel-send svg { width: 26px; height: 26px; }
+
+      /* ---------- right: slide viewer + fan ---------- */
+      .\30 7-carousel-fan {
+        position: absolute; left: 1210px; top: 230px;
+        width: 300px; height: 300px;
+        border-radius: 12px; overflow: hidden;
+        background: #ffffff;
+        border: 1.5px solid rgba(31, 107, 255, 0.2);
+        transform-origin: 50% 260%;
+        z-index: 1;
+      }
+      .\30 7-carousel-fan img {
+        position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
+      }
+      .\30 7-carousel-num {
+        position: absolute; left: 14px; top: 14px;
+        width: 44px; height: 44px; border-radius: 50%;
+        background: #1f6bff; color: #ffffff;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.05cqw; font-weight: 700;
+      }
+
+      .\30 7-carousel-viewer {
+        position: absolute; left: 1080px; top: 190px; width: 560px; height: 640px;
+        transform-origin: 280px 280px;
+        z-index: 5;
+      }
+      .\30 7-carousel-card {
+        position: absolute; left: 0; top: 0; width: 560px; height: 560px;
+        padding: 14px;
+        background: #f7f9ff;
+        border: 1.5px solid rgba(31, 107, 255, 0.2);
+        border-radius: 14px;
+      }
+      .\30 7-carousel-window {
+        position: relative; width: 529px; height: 529px;
+        border-radius: 10px; overflow: hidden;
+      }
+      .\30 7-carousel-track {
+        position: absolute; left: 0; top: 0; height: 529px; width: 1587px;
+        display: flex;
+      }
+      .\30 7-carousel-slide {
+        position: relative; width: 529px; height: 529px; flex: 0 0 529px; overflow: hidden;
+      }
+      .\30 7-carousel-slide img {
+        position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
+      }
+      .\30 7-carousel-scrim {
+        position: absolute; inset: 0;
+        background: linear-gradient(180deg, rgba(17, 24, 39, 0) 38%, rgba(17, 24, 39, 0.72) 100%);
+      }
+      .\30 7-carousel-overlay {
+        position: absolute; left: 34px; right: 34px; bottom: 34px;
+        font-size: 2.6cqw; font-weight: 700; line-height: 1.08; letter-spacing: -0.02em;
+        color: #ffffff;
+      }
+      .\30 7-carousel-counter {
+        position: absolute; left: 50%; margin-left: -140px; top: 578px;
+        width: 280px; height: 48px; border-radius: 100px;
+        background: rgba(31, 107, 255, 0.08);
+        overflow: hidden;
+      }
+      .\30 7-carousel-counter span {
+        position: absolute; inset: 0;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.1cqw; font-weight: 500; letter-spacing: 0.05em; color: #1f6bff;
+      }
+    </style>
+
+    <!-- full-bleed ground -->
+    <div class="clip 07-carousel-bg" data-start="0" data-duration="5.364" data-track-index="0"></div>
+
+    <div class="clip 07-carousel-content" data-start="0" data-duration="5.364" data-track-index="1">
+      <div class="07-carousel-cam">
+
+        <!-- header -->
+        <div class="07-carousel-eyebrow"><i></i>Carousels</div>
+        <h1 class="07-carousel-h1">
+          <span class="07-carousel-line">Six slides.</span>
+          <span class="07-carousel-line">Zero design time.</span>
+        </h1>
+
+        <!-- chat -->
+        <div class="07-carousel-bubble">Make a 6 slide LinkedIn carousel about our autumn menu</div>
+        <div class="07-carousel-composer">
+          <span class="07-carousel-placeholder">Type your message here, or / for a skill</span>
+          <span class="07-carousel-typed"></span><span class="07-carousel-caret"></span>
+          <div class="07-carousel-send">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 19V5"/><path d="M5 12l7-7 7 7"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- six-slide fan (behind viewer) -->
+        <div class="07-carousel-fan"><img src="assets/flatlay-2.png" alt=""><div class="07-carousel-num">1</div></div>
+        <div class="07-carousel-fan"><img src="assets/flatlay-3.png" alt=""><div class="07-carousel-num">2</div></div>
+        <div class="07-carousel-fan"><img src="assets/flatlay-4.png" alt=""><div class="07-carousel-num">3</div></div>
+        <div class="07-carousel-fan"><img src="assets/flatlay-2.png" alt="" style="object-position: 20% 80%;"><div class="07-carousel-num">4</div></div>
+        <div class="07-carousel-fan"><img src="assets/flatlay-3.png" alt="" style="object-position: 80% 20%;"><div class="07-carousel-num">5</div></div>
+        <div class="07-carousel-fan"><img src="assets/flatlay-4.png" alt="" style="object-position: 15% 15%;"><div class="07-carousel-num">6</div></div>
+
+        <!-- slide viewer -->
+        <div class="07-carousel-viewer">
+          <div class="07-carousel-card">
+            <div class="07-carousel-window">
+              <div class="07-carousel-track" data-layout-allow-overflow>
+                <div class="07-carousel-slide">
+                  <img src="assets/flatlay-2.png" alt="">
+                  <div class="07-carousel-scrim"></div>
+                  <div class="07-carousel-overlay">Autumn at Bean &amp; Co.</div>
+                </div>
+                <div class="07-carousel-slide">
+                  <img src="assets/flatlay-3.png" alt="">
+                  <div class="07-carousel-scrim"></div>
+                  <div class="07-carousel-overlay">Pumpkin spice is back</div>
+                </div>
+                <div class="07-carousel-slide">
+                  <img src="assets/flatlay-4.png" alt="">
+                  <div class="07-carousel-scrim"></div>
+                  <div class="07-carousel-overlay">Cinnamon oat latte</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="07-carousel-counter">
+            <span class="07-carousel-count">Slide 1 · Template</span>
+            <span class="07-carousel-count">Slide 2 · Template</span>
+            <span class="07-carousel-count">Slide 3 · Template</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script>
+      (function () {
+        var FID = "07-carousel";
+        var root = document.querySelector('[data-composition-id="' + FID + '"]');
+        function q(name) { return root.querySelector("." + CSS.escape(FID + "-" + name)); }
+        function qa(name) { return Array.prototype.slice.call(root.querySelectorAll("." + CSS.escape(FID + "-" + name))); }
+
+        // build per-character spans for the typed prompt (synchronous, deterministic)
+        var PROMPT = "Make a 6 slide LinkedIn carousel about our autumn menu";
+        var typed = q("typed");
+        var chars = [];
+        for (var i = 0; i < PROMPT.length; i++) {
+          var b = document.createElement("b");
+          b.textContent = PROMPT[i];
+          typed.appendChild(b);
+          chars.push(b);
+        }
+
+        var tl = gsap.timeline({ paused: true });
+
+        // macro camera: slow steady push underneath the whole shot
+        tl.fromTo(q("cam"), { scale: 1 }, { scale: 1.03, duration: 4.864, ease: "none" }, 0);
+
+        // ---- Scene 1 (0 - 1.36): header + prompt types and sends ----
+        tl.fromTo(q("eyebrow"), { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power3.out" }, 0);
+        tl.fromTo(qa("line"), { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, ease: "power3.out", stagger: 0.08 }, 0.05);
+        tl.fromTo(q("composer"), { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power3.out" }, 0.12);
+
+        tl.set(q("placeholder"), { display: "none" }, 0.32);
+        var typeStart = 0.34, typeEnd = 0.98;
+        var step = (typeEnd - typeStart) / chars.length;
+        chars.forEach(function (c, k) { tl.set(c, { display: "inline" }, typeStart + k * step); });
+
+        // send: press-compress then spring back
+        tl.fromTo(q("send"), { scale: 1 }, { scale: 0.86, duration: 0.08, ease: "power2.in" }, 1.0);
+        tl.to(q("send"), { scale: 1, duration: 0.3, ease: "back.out(3)" }, 1.08);
+        tl.set(q("typed"), { display: "none" }, 1.08);
+        tl.set(q("placeholder"), { display: "inline" }, 1.08);
+        tl.fromTo(q("bubble"), { y: 24, scale: 0.96, opacity: 0, transformOrigin: "100% 100%" },
+          { y: 0, scale: 1, opacity: 1, duration: 0.36, ease: "power3.out" }, 1.08);
+
+        // ---- Scene 2 (1.36 - 3.31): viewer arrives, swipes 1 -> 2 -> 3 ----
+        var counts = qa("count");
+        var overlays = qa("overlay");
+        tl.fromTo(q("viewer"), { y: 60, scale: 0.9, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.5, ease: "power3.out" }, 1.36);
+        tl.set([counts[1], counts[2]], { opacity: 0, y: 14 }, 0);
+        tl.fromTo(overlays[0], { y: 22, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power3.out" }, 1.62);
+
+        // swipe to slide 2
+        tl.fromTo(q("track"), { x: 0 }, { x: -529, duration: 0.45, ease: "power3.inOut" }, 2.02);
+        tl.to(counts[0], { y: -14, opacity: 0, duration: 0.18, ease: "power2.in" }, 2.16);
+        tl.fromTo(counts[1], { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.24, ease: "power3.out" }, 2.3);
+        tl.fromTo(overlays[1], { y: 22, opacity: 0 }, { y: 0, opacity: 1, duration: 0.36, ease: "power3.out" }, 2.36);
+
+        // swipe to slide 3
+        tl.to(q("track"), { x: -1058, duration: 0.45, ease: "power3.inOut" }, 2.66);
+        tl.to(counts[1], { y: -14, opacity: 0, duration: 0.18, ease: "power2.in" }, 2.8);
+        tl.fromTo(counts[2], { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.24, ease: "power3.out" }, 2.94);
+        tl.fromTo(overlays[2], { y: 22, opacity: 0 }, { y: 0, opacity: 1, duration: 0.36, ease: "power3.out" }, 3.0);
+
+        // ---- Scene 3 (3.31 - 4.864): six slides fan out in an arc behind the viewer; hold ----
+        tl.to(q("viewer"), { y: 50, scale: 0.8, duration: 0.6, ease: "power2.inOut" }, 3.31);
+        var angles = [-20, -12, -4, 4, 12, 20];
+        qa("fan").forEach(function (card, k) {
+          tl.fromTo(card, { rotation: 0, scale: 0.85, opacity: 0 },
+            { rotation: angles[k], scale: 1, opacity: 1, duration: 0.62, ease: "power3.out" }, 3.36 + k * 0.05);
+        });
+        // quiet settle on the hold: number badges pop in sequence
+        tl.fromTo(qa("num"), { scale: 0.4, opacity: 0 },
+          { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(2.2)", stagger: 0.06 }, 3.7);
+
+        window.__timelines = window.__timelines || {};
+        window.__timelines[FID] = tl;
+      })();
+    </script>
+  </div>
+</template>

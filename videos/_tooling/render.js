@@ -10,6 +10,7 @@
 //   node render.js <slug> --fps 60
 //   node render.js <slug> --variant light   opens source.html#light, writes <slug>-light-<ratio>.mp4
 //   node render.js <slug> --range 22.6,30.2  renders only that span to <slug>-<ratio>-range.mp4, for splicing a fix into an existing render
+//   node render.js <slug> --fps 30 --shutter 4   true motion blur: 4 sub-frames per frame across a 180 degree shutter, averaged
 
 const puppeteer = require('puppeteer-core');
 const ffmpeg = require('ffmpeg-static');
@@ -43,6 +44,7 @@ const stills = opt('stills');
 const variant = opt('variant');
 const tag = variant ? `${variant}-${ratio}` : ratio;
 const range = opt('range') ? opt('range').split(',').map(Number) : null;
+const shutter = Math.max(1, Number(opt('shutter') || 1));
 
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CHROME, headless: 'new', args: ['--no-sandbox'] });
@@ -67,15 +69,20 @@ const range = opt('range') ? opt('range').split(',').map(Number) : null;
     console.log(`stills written to ${out}`);
   } else {
     const file = path.join(dir, `${slug}-${tag}${range ? '-range' : ''}.mp4`);
-    const ff = spawn(ffmpeg, ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(fps), '-i', '-',
+    // with --shutter N the page is captured N times per frame and ffmpeg averages each group (tmix), keeping every Nth
+    const blur = shutter > 1 ? ['-vf', `tmix=frames=${shutter}:weights='${Array(shutter).fill(1).join(' ')}',select='not(mod(n+1\\,${shutter}))',setpts=N/(${fps}*TB)`, '-r', String(fps)] : [];
+    const ff = spawn(ffmpeg, ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(fps * shutter), '-i', '-', ...blur,
       '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18', '-preset', 'medium', '-movflags', '+faststart', file],
       { stdio: ['pipe', 'inherit', 'inherit'] });
     const frames = Math.round(duration * fps);
     const [f0, f1] = range ? [Math.round(range[0] * fps), Math.min(frames, Math.round(range[1] * fps))] : [0, frames];
     for (let i = f0; i < f1; i++) {
-      await page.evaluate(t => window.render(t), i / fps);
-      const buf = await page.screenshot({ type: 'jpeg', quality: 92 });
-      if (!ff.stdin.write(buf)) await new Promise(r => ff.stdin.once('drain', r));
+      for (let k = 0; k < shutter; k++) {
+        const t = shutter > 1 ? (i + ((k + .5) / shutter - .5) * .5) / fps : i / fps;   // 180 degree shutter centred on the frame
+        await page.evaluate(t => window.render(t), Math.max(0, t));
+        const buf = await page.screenshot({ type: 'jpeg', quality: 92 });
+        if (!ff.stdin.write(buf)) await new Promise(r => ff.stdin.once('drain', r));
+      }
       if (i % (fps * 5) === 0) console.log(`frame ${i}/${frames}`);
     }
     ff.stdin.end();

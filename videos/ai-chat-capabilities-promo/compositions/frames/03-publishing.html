@@ -1,0 +1,245 @@
+<template>
+<div id="root" data-composition-id="03-publishing" data-start="0" data-duration="6.196" data-width="1920" data-height="1080">
+  <style>
+    @font-face { font-family: "Inter Tight"; src: url("assets/fonts/InterTight-Variable.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+    #root { position: relative; width: 1920px; height: 1080px; overflow: hidden; font-family: "Inter Tight", sans-serif; color: #111827; container-type: size; }
+    #root * { box-sizing: border-box; }
+    .\30 3-publishing-bg { position: absolute; inset: 0; background: #ffffff; }
+    .\30 3-publishing-stage { position: absolute; inset: 0; transform-origin: 1280px 480px; }
+
+    /* left column */
+    .\30 3-publishing-left { position: absolute; left: 96px; top: 330px; width: 560px; }
+    .\30 3-publishing-rule { width: 60px; height: 4px; border-radius: 2px; background: #1f6bff; margin-bottom: 22px; }
+    .\30 3-publishing-eyebrow { font-size: 22px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #1f6bff; margin-bottom: 18px; }
+    .\30 3-publishing-h1 { font-size: 92px; font-weight: 700; line-height: 1.04; letter-spacing: -0.02em; color: #111827; margin: 0; }
+    .\30 3-publishing-done { position: absolute; left: 0; top: 330px; display: flex; align-items: center; gap: 14px; font-size: 30px; font-weight: 600; color: #059669; white-space: nowrap; }
+    .\30 3-publishing-done-ic { width: 40px; height: 40px; border-radius: 50%; background: rgba(5,150,105,0.12); display: flex; align-items: center; justify-content: center; }
+
+    /* chat window */
+    .\30 3-publishing-win { position: absolute; left: 720px; top: 70px; width: 1120px; height: 820px; background: #ffffff; border: 1.5px solid rgba(31,107,255,0.2); border-radius: 14px; overflow: hidden; }
+    .\30 3-publishing-head { position: absolute; left: 0; top: 0; right: 0; height: 56px; border-bottom: 1.5px solid rgba(31,107,255,0.12); display: flex; align-items: center; gap: 12px; padding: 0 24px; font-size: 19px; font-weight: 600; color: #111827; }
+    .\30 3-publishing-head-ic { width: 30px; height: 30px; border-radius: 50%; background: rgba(31,107,255,0.08); display: flex; align-items: center; justify-content: center; }
+
+    .\30 3-publishing-bubble { position: absolute; right: 28px; height: 54px; padding: 0 22px; border-radius: 14px 14px 4px 14px; background: rgba(31,107,255,0.15); color: #111827; font-size: 24px; font-weight: 500; display: flex; align-items: center; white-space: nowrap; transform-origin: 100% 100%; }
+
+    .\30 3-publishing-week { position: absolute; left: 28px; top: 146px; width: 1064px; height: 124px; padding: 16px; border-radius: 14px; background: rgba(31,107,255,0.04); border: 1.5px solid rgba(31,107,255,0.2); display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; transform-origin: 0% 0%; }
+    .\30 3-publishing-day { position: relative; border-radius: 10px; background: #ffffff; border: 1.5px solid rgba(31,107,255,0.2); padding: 10px 12px; }
+    .\30 3-publishing-day.\30 3-publishing-empty { background: transparent; border: 1.5px dashed rgba(31,107,255,0.35); }
+    .\30 3-publishing-day-lbl { font-size: 17px; font-weight: 600; color: #6b7280; }
+    .\30 3-publishing-solid { position: absolute; inset: -1.5px; border-radius: 10px; border: 1.5px solid rgba(31,107,255,0.45); background: #ffffff; }
+    .\30 3-publishing-chip { position: absolute; left: 10px; right: 10px; bottom: 10px; height: 32px; border-radius: 100px; background: rgba(31,107,255,0.15); color: #1f6bff; font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 7px; padding: 0 10px; }
+    .\30 3-publishing-chip-dot { width: 9px; height: 9px; border-radius: 50%; background: #1f6bff; }
+    .\30 3-publishing-chip.\30 3-publishing-new { background: #1f6bff; color: #ffffff; padding-left: 4px; }
+    .\30 3-publishing-chip-img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
+    .\30 3-publishing-day .\30 3-publishing-lbl-top { position: relative; }
+
+    .\30 3-publishing-status { position: absolute; left: 30px; top: 352px; height: 28px; width: 400px; }
+    .\30 3-publishing-st { position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 500; color: #6b7280; white-space: nowrap; }
+    .\30 3-publishing-spin { width: 22px; height: 22px; }
+    .\30 3-publishing-wtext { position: relative; display: inline-block; }
+    .\30 3-publishing-sheen { position: absolute; left: 0; top: 0; width: 46px; height: 100%; overflow: hidden; }
+    .\30 3-publishing-sheen span { position: absolute; left: 0; top: 0; color: #1f6bff; white-space: nowrap; }
+
+    .\30 3-publishing-plan { position: absolute; left: 28px; top: 392px; width: 1064px; height: 316px; border-radius: 14px; background: rgba(31,107,255,0.04); border: 1.5px solid rgba(31,107,255,0.2); }
+    .\30 3-publishing-plan-head { position: absolute; left: 20px; right: 20px; top: 12px; height: 34px; display: flex; align-items: center; justify-content: space-between; }
+    .\30 3-publishing-plan-title { font-size: 22px; font-weight: 600; color: #111827; }
+    .\30 3-publishing-tag { font-size: 15px; font-weight: 500; color: #1f6bff; background: rgba(31,107,255,0.08); border-radius: 100px; padding: 5px 14px; }
+    .\30 3-publishing-row { position: absolute; left: 20px; right: 20px; height: 58px; display: flex; align-items: center; gap: 18px; border-radius: 10px; background: #ffffff; border: 1.5px solid rgba(31,107,255,0.12); padding: 0 6px; }
+    .\30 3-publishing-thumb { width: 46px; height: 46px; border-radius: 8px; object-fit: cover; }
+    .\30 3-publishing-when { width: 200px; font-size: 20px; font-weight: 600; color: #111827; white-space: nowrap; }
+    .\30 3-publishing-cap { font-size: 20px; font-weight: 400; color: #6b7280; white-space: nowrap; }
+    .\30 3-publishing-btns { position: absolute; left: 20px; top: 250px; display: flex; gap: 12px; }
+    .\30 3-publishing-btn { position: relative; height: 46px; padding: 0 28px; border-radius: 100px; font-size: 20px; font-weight: 600; display: flex; align-items: center; justify-content: center; border: 1.5px solid rgba(31,107,255,0.2); color: #1f6bff; background: #ffffff; }
+    .\30 3-publishing-approve { width: 150px; background: #1f6bff; color: #ffffff; border-color: #1f6bff; }
+    .\30 3-publishing-ripple { position: absolute; left: 50%; top: 50%; width: 80px; height: 80px; margin: -40px 0 0 -40px; border-radius: 50%; border: 3px solid #1f6bff; pointer-events: none; }
+
+    .\30 3-publishing-composer { position: absolute; left: 28px; right: 28px; top: 726px; height: 70px; border-radius: 100px; border: 1.5px solid rgba(31,107,255,0.2); background: #ffffff; }
+    .\30 3-publishing-ph, .\30 3-publishing-typed { position: absolute; left: 28px; top: 0; height: 100%; display: flex; align-items: center; font-size: 22px; white-space: nowrap; }
+    .\30 3-publishing-ph { color: #9A9A9A; }
+    .\30 3-publishing-typed { color: #111827; font-weight: 500; }
+    .\30 3-publishing-send { position: absolute; right: 12px; top: 11px; width: 46px; height: 46px; border-radius: 50%; background: #1f6bff; display: flex; align-items: center; justify-content: center; }
+
+    .\30 3-publishing-cursor { position: absolute; left: 0; top: 0; width: 38px; height: 46px; }
+  </style>
+
+  <div class="clip 03-publishing-bg" data-start="0" data-duration="6.196" data-track-index="0"></div>
+
+  <div class="clip 03-publishing-stage" data-start="0" data-duration="6.196" data-track-index="1">
+    <div class="03-publishing-left">
+      <div class="03-publishing-rule"></div>
+      <div class="03-publishing-eyebrow">Publishing</div>
+      <h1 class="03-publishing-h1">Fill the week.</h1>
+      <div class="03-publishing-done">
+        <div class="03-publishing-done-ic">
+          <svg width="22" height="22" viewBox="0 0 22 22"><path d="M5 11.5l4 4 8-9" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <span>3 posts scheduled</span>
+      </div>
+    </div>
+
+    <div class="03-publishing-win">
+      <div class="03-publishing-head">
+        <div class="03-publishing-head-ic">
+          <svg width="18" height="18" viewBox="0 0 18 18"><path d="M9 1.5l1.9 5.6 5.6 1.9-5.6 1.9L9 16.5l-1.9-5.6L1.5 9l5.6-1.9z" fill="#1f6bff"/></svg>
+        </div>
+        <span>AI Chat</span>
+      </div>
+
+      <div class="03-publishing-bubble 03-publishing-b1" style="top:76px;">What's scheduled for this week?</div>
+
+      <div class="03-publishing-week">
+        <div class="03-publishing-day 03-publishing-d0"><div class="03-publishing-day-lbl">Mon</div><div class="03-publishing-chip 03-publishing-oc"><div class="03-publishing-chip-dot"></div>Post</div></div>
+        <div class="03-publishing-day 03-publishing-d1"><div class="03-publishing-day-lbl">Tue</div><div class="03-publishing-chip 03-publishing-oc"><div class="03-publishing-chip-dot"></div>Post</div></div>
+        <div class="03-publishing-day 03-publishing-empty 03-publishing-d2"><div class="03-publishing-solid 03-publishing-fill0"></div><div class="03-publishing-day-lbl 03-publishing-lbl-top">Wed</div><div class="03-publishing-chip 03-publishing-new 03-publishing-nc0"><img class="03-publishing-chip-img" src="assets/flatlay-1.png" alt="">Post</div></div>
+        <div class="03-publishing-day 03-publishing-d3"><div class="03-publishing-day-lbl">Thu</div><div class="03-publishing-chip 03-publishing-oc"><div class="03-publishing-chip-dot"></div>Post</div></div>
+        <div class="03-publishing-day 03-publishing-empty 03-publishing-d4"><div class="03-publishing-solid 03-publishing-fill1"></div><div class="03-publishing-day-lbl 03-publishing-lbl-top">Fri</div><div class="03-publishing-chip 03-publishing-new 03-publishing-nc1"><img class="03-publishing-chip-img" src="assets/flatlay-2.png" alt="">Post</div></div>
+        <div class="03-publishing-day 03-publishing-d5"><div class="03-publishing-day-lbl">Sat</div><div class="03-publishing-chip 03-publishing-oc"><div class="03-publishing-chip-dot"></div>Post</div></div>
+        <div class="03-publishing-day 03-publishing-empty 03-publishing-d6"><div class="03-publishing-solid 03-publishing-fill2"></div><div class="03-publishing-day-lbl 03-publishing-lbl-top">Sun</div><div class="03-publishing-chip 03-publishing-new 03-publishing-nc2"><img class="03-publishing-chip-img" src="assets/flatlay-3.png" alt="">Post</div></div>
+      </div>
+
+      <div class="03-publishing-bubble 03-publishing-b2" style="top:286px;">Draft posts to fill my empty slots</div>
+
+      <div class="03-publishing-status">
+        <div class="03-publishing-st 03-publishing-working">
+          <svg class="03-publishing-spin" viewBox="0 0 22 22"><circle cx="11" cy="11" r="8.5" fill="none" stroke="rgba(31,107,255,0.15)" stroke-width="3"/><path d="M11 2.5a8.5 8.5 0 0 1 8.5 8.5" fill="none" stroke="#1f6bff" stroke-width="3" stroke-linecap="round"/></svg>
+          <span class="03-publishing-wtext">Working<span class="03-publishing-sheen"><span>Working</span></span></span>
+        </div>
+        <div class="03-publishing-st 03-publishing-worked">
+          <svg width="22" height="22" viewBox="0 0 22 22"><circle cx="11" cy="11" r="10" fill="rgba(31,107,255,0.08)"/><path d="M6.5 11.5l3 3 6-7" fill="none" stroke="#1f6bff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Worked for 6s</span>
+        </div>
+      </div>
+
+      <div class="03-publishing-plan">
+        <div class="03-publishing-plan-head">
+          <div class="03-publishing-plan-title">Post plan</div>
+          <div class="03-publishing-tag">3 drafts</div>
+        </div>
+        <div class="03-publishing-row 03-publishing-r0" style="top:56px;"><img class="03-publishing-thumb" src="assets/flatlay-1.png" alt=""><div class="03-publishing-when">Wed · 9:00 AM</div><div class="03-publishing-cap">Slow mornings, one latte at a time.</div></div>
+        <div class="03-publishing-row 03-publishing-r1" style="top:120px;"><img class="03-publishing-thumb" src="assets/flatlay-2.png" alt=""><div class="03-publishing-when">Fri · 12:30 PM</div><div class="03-publishing-cap">Rosetta Friday, poured to order.</div></div>
+        <div class="03-publishing-row 03-publishing-r2" style="top:184px;"><img class="03-publishing-thumb" src="assets/flatlay-3.png" alt=""><div class="03-publishing-when">Sun · 10:00 AM</div><div class="03-publishing-cap">Pumpkin season is officially here.</div></div>
+        <div class="03-publishing-btns">
+          <div class="03-publishing-btn 03-publishing-approve"><div class="03-publishing-ripple"></div><span>Approve</span></div>
+          <div class="03-publishing-btn 03-publishing-change">Change</div>
+          <div class="03-publishing-btn 03-publishing-cancel">Cancel</div>
+        </div>
+      </div>
+
+      <div class="03-publishing-composer">
+        <div class="03-publishing-ph">Type your message here, or / for a skill</div>
+        <div class="03-publishing-typed 03-publishing-t1"></div>
+        <div class="03-publishing-typed 03-publishing-t2"></div>
+        <div class="03-publishing-send">
+          <svg width="22" height="22" viewBox="0 0 22 22"><path d="M11 17V5M5.5 10.5L11 5l5.5 5.5" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <svg class="03-publishing-cursor" viewBox="0 0 38 46"><path d="M3 2l30 22-13.5 1.8L27 41l-6 3-7.4-15.4L3 37z" fill="#111827" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round"/></svg>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      var ID = "03-publishing";
+      var scope = document.querySelector('[data-composition-id="' + ID + '"]');
+      function q(n) { return scope.querySelector("." + CSS.escape(ID + "-" + n)); }
+      function qa(n) { return scope.querySelectorAll("." + CSS.escape(ID + "-" + n)); }
+
+      var tl = gsap.timeline({ paused: true });
+      window.__timelines = window.__timelines || {};
+      window.__timelines[ID] = tl;
+
+      function typeInto(el, str, start, dur) {
+        var o = { n: 0 };
+        tl.fromTo(o, { n: 0 }, {
+          n: str.length, duration: dur, ease: "none",
+          onUpdate: function () { el.textContent = str.slice(0, Math.round(o.n)); }
+        }, start);
+      }
+
+      var ph = q("ph"), t1 = q("t1"), t2 = q("t2");
+      t1.textContent = ""; t2.textContent = "";
+
+      /* camera: one slow push on the stage across the shot */
+      tl.fromTo(q("stage"), { scale: 1 }, { scale: 1.025, duration: 5.696, ease: "sine.inOut" }, 0);
+
+      /* Scene 1 (0-1.3): header + window + first prompt */
+      tl.fromTo(q("rule"), { scaleX: 0, transformOrigin: "0% 50%" }, { scaleX: 1, duration: 0.4, ease: "power3.out" }, 0.0);
+      tl.fromTo(q("eyebrow"), { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 0.05);
+      tl.fromTo(q("h1"), { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 0.12);
+      tl.fromTo(q("win"), { opacity: 0, y: 40, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 0.05);
+
+      tl.fromTo(ph, { opacity: 1 }, { opacity: 0, duration: 0.05 }, 0.38);
+      tl.fromTo(t1, { opacity: 0 }, { opacity: 1, duration: 0.01 }, 0.38);
+      typeInto(t1, "What's scheduled for this week?", 0.4, 0.55);
+      tl.fromTo(q("send"), { scale: 1 }, { scale: 0.86, duration: 0.07, ease: "power2.in" }, 1.0);
+      tl.to(q("send"), { scale: 1, duration: 0.25, ease: "back.out(3)" }, 1.07);
+      tl.to(t1, { opacity: 0, duration: 0.06 }, 1.02);
+      tl.to(ph, { opacity: 1, duration: 0.15 }, 1.08);
+      tl.fromTo(q("b1"), { opacity: 0, scale: 0.6, y: 20 }, { opacity: 1, scale: 1, y: 0, duration: 0.4, ease: "back.out(1.8)" }, 1.03);
+
+      /* Scene 2 (1.3-2.44): week strip answer */
+      tl.fromTo(q("week"), { opacity: 0, y: 18, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(1.5)" }, 1.3);
+      tl.fromTo(qa("day"), { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.3, ease: "power3.out", stagger: 0.05 }, 1.4);
+      tl.fromTo(qa("oc"), { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.32, ease: "back.out(2.2)", stagger: 0.09 }, 1.62);
+      tl.fromTo(qa("new"), { opacity: 0, scale: 0.5 }, { opacity: 0, scale: 0.5, duration: 0.01 }, 0);
+      tl.fromTo(qa("solid"), { opacity: 0 }, { opacity: 0, duration: 0.01 }, 0);
+
+      /* Scene 3 (2.44-3.91): second prompt, working theater, plan card cascade */
+      tl.to(ph, { opacity: 0, duration: 0.05 }, 2.3);
+      tl.fromTo(t2, { opacity: 0 }, { opacity: 1, duration: 0.01 }, 2.3);
+      typeInto(t2, "Draft posts to fill my empty slots", 2.32, 0.42);
+      tl.to(q("send"), { scale: 0.86, duration: 0.07, ease: "power2.in" }, 2.8);
+      tl.to(q("send"), { scale: 1, duration: 0.25, ease: "back.out(3)" }, 2.87);
+      tl.to(t2, { opacity: 0, duration: 0.06 }, 2.82);
+      tl.to(ph, { opacity: 1, duration: 0.15 }, 2.88);
+      tl.fromTo(q("b2"), { opacity: 0, scale: 0.6, y: 20 }, { opacity: 1, scale: 1, y: 0, duration: 0.4, ease: "back.out(1.8)" }, 2.83);
+
+      var working = q("working"), worked = q("worked");
+      tl.fromTo(working, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.2, ease: "power2.out" }, 2.95);
+      tl.fromTo(q("spin"), { rotation: 0, transformOrigin: "50% 50%" }, { rotation: 720, duration: 0.85, ease: "none" }, 2.95);
+      /* shimmer: masked window travels left->right, inner text counter-translates (two passes, finite) */
+      var sw = q("sheen"), si = sw.firstElementChild;
+      tl.fromTo(sw, { x: -46 }, { x: 96, duration: 0.4, ease: "none" }, 3.0);
+      tl.fromTo(si, { x: 46 }, { x: -96, duration: 0.4, ease: "none" }, 3.0);
+      tl.to(sw, { x: -46, duration: 0.01 }, 3.42);
+      tl.to(si, { x: 46, duration: 0.01 }, 3.42);
+      tl.to(sw, { x: 96, duration: 0.3, ease: "none" }, 3.44);
+      tl.to(si, { x: -96, duration: 0.3, ease: "none" }, 3.44);
+      tl.to(working, { opacity: 0, duration: 0.08 }, 3.8);
+      tl.fromTo(worked, { opacity: 0, scale: 0.9, transformOrigin: "0% 50%" }, { opacity: 1, scale: 1, duration: 0.25, ease: "back.out(2)" }, 3.82);
+
+      /* plan card: anchored downward expand */
+      tl.fromTo(q("plan"), { opacity: 0, clipPath: "inset(0px 0px 270px 0px round 14px)" },
+        { opacity: 1, clipPath: "inset(0px 0px 0px 0px round 14px)", duration: 0.45, ease: "power3.out" }, 3.05);
+      tl.fromTo(q("plan-head"), { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }, 3.08);
+      ["r0", "r1", "r2"].forEach(function (r, i) {
+        tl.fromTo(q(r), { opacity: 0, y: 22, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.32, ease: "back.out(1.7)" }, 3.2 + i * 0.17);
+      });
+      tl.fromTo(q("btns").children, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.25, ease: "power2.out", stagger: 0.05 }, 3.66);
+
+      /* Scene 4 (3.91-5.7): cursor clicks Approve, slots fill */
+      var cur = q("cursor");
+      /* Approve center ~ (843, 735); cursor tip at path origin (3,2) */
+      tl.fromTo(cur, { x: 1180, y: 900, opacity: 0 }, { x: 1180, y: 900, opacity: 1, duration: 0.15 }, 3.72);
+      tl.to(cur, { x: 838, y: 731, duration: 0.42, ease: "power3.inOut" }, 3.74);
+      tl.to(cur, { scale: 0.85, duration: 0.07, ease: "power2.in", transformOrigin: "8% 5%" }, 4.14);
+      tl.to(cur, { scale: 1, duration: 0.2, ease: "back.out(3)" }, 4.21);
+      var ap = q("approve");
+      tl.to(ap, { scale: 0.92, duration: 0.07, ease: "power2.in" }, 4.14);
+      tl.to(ap, { scale: 1, duration: 0.4, ease: "elastic.out(1.1, 0.45)" }, 4.21);
+      tl.fromTo(q("ripple"), { scale: 0.4, opacity: 0 }, { scale: 0.4, opacity: 0.7, duration: 0.01 }, 4.16);
+      tl.to(q("ripple"), { scale: 2.6, opacity: 0, duration: 0.5, ease: "power2.out" }, 4.17);
+      tl.to([q("change"), q("cancel")], { opacity: 0.45, duration: 0.25 }, 4.25);
+
+      [0, 1, 2].forEach(function (i) {
+        var t = 4.36 + i * 0.15;
+        tl.to(q("fill" + i), { opacity: 1, duration: 0.2, ease: "power2.out" }, t);
+        tl.to(q("nc" + i), { opacity: 1, scale: 1, duration: 0.36, ease: "back.out(2.4)" }, t);
+      });
+      tl.fromTo(q("done"), { opacity: 0, y: 14, scale: 0.92, transformOrigin: "0% 50%" }, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(1.8)" }, 4.85);
+    })();
+  </script>
+</div>
+</template>

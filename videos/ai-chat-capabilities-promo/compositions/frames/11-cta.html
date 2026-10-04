@@ -1,0 +1,286 @@
+<template id="11-cta-template">
+  <div id="root" data-composition-id="11-cta" data-start="0" data-duration="4.117" data-width="1920" data-height="1080">
+    <style>
+      @font-face {
+        font-family: "Inter Tight";
+        src: url("assets/fonts/InterTight-Variable.woff2") format("woff2");
+        font-weight: 100 900;
+        font-display: block;
+      }
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        font-family: "Inter Tight", sans-serif;
+        container-type: size;
+      }
+      .cta11-bg {
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(ellipse 60% 55% at 50% 42%, rgba(31, 107, 255, 0.05) 0%, rgba(31, 107, 255, 0) 70%),
+          #ffffff;
+      }
+      .cta11-stage {
+        position: absolute;
+        inset: 0;
+      }
+      /* closing rings (atmosphere, closing frame only) */
+      .cta11-ring {
+        position: absolute;
+        left: 960px;
+        top: 360px;
+        border-radius: 50%;
+        border: 1.5px solid rgba(31, 107, 255, 0.12);
+        box-sizing: border-box;
+      }
+      .cta11-ring-a { width: 520px; height: 520px; margin: -260px 0 0 -260px; }
+      .cta11-ring-b { width: 860px; height: 860px; margin: -430px 0 0 -430px; border-color: rgba(31, 107, 255, 0.08); }
+      .cta11-ring-c { width: 1220px; height: 1220px; margin: -610px 0 0 -610px; border-color: rgba(31, 107, 255, 0.05); }
+
+      /* Scene 1: verb token cycle */
+      .cta11-verb {
+        position: absolute;
+        left: 0;
+        width: 1920px;
+        top: 330px;
+        text-align: center;
+        font-size: 168px;
+        font-weight: 700;
+        line-height: 1.08;
+        letter-spacing: -0.02em;
+        color: #111827;
+        white-space: nowrap;
+        opacity: 0;
+      }
+      .cta11-verb b { color: #1f6bff; font-weight: 700; }
+
+      /* Scene 2: lockup */
+      .cta11-lockup-wrap {
+        position: absolute;
+        left: 0;
+        width: 1920px;
+        top: 280px;
+        height: 160px;
+        display: flex;
+        justify-content: center;
+        transform-origin: 960px 80px;
+      }
+      .cta11-lockup {
+        position: relative;
+        display: flex;
+        align-items: center;
+        height: 160px;
+      }
+      .cta11-glow {
+        position: absolute;
+        left: 960px;
+        top: 360px;
+        width: 560px;
+        height: 560px;
+        margin: -280px 0 0 -280px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(31, 107, 255, 0.34) 0%, rgba(31, 107, 255, 0.12) 38%, rgba(31, 107, 255, 0) 70%);
+        opacity: 0;
+      }
+      .cta11-logo {
+        position: relative;
+        width: 150px;
+        height: 150px;
+        flex: 0 0 150px;
+        z-index: 2;
+      }
+      .cta11-logo img { width: 150px; height: 150px; display: block; }
+      .cta11-word-mask {
+        position: relative;
+        margin-left: 36px;
+        height: 160px;
+        overflow: hidden;
+        z-index: 1;
+      }
+      .cta11-word {
+        position: relative;
+        display: block;
+        line-height: 160px;
+        font-size: 116px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: #111827;
+        white-space: nowrap;
+      }
+
+      /* Scene 3: "Just ask." + composer */
+      .cta11-ask {
+        position: absolute;
+        left: 0;
+        width: 1920px;
+        top: 486px;
+        text-align: center;
+        font-size: 104px;
+        font-weight: 700;
+        line-height: 1.08;
+        letter-spacing: -0.02em;
+        color: #111827;
+      }
+      .cta11-ask b { color: #1f6bff; font-weight: 700; }
+      .cta11-composer {
+        position: absolute;
+        left: 660px;
+        top: 676px;
+        width: 600px;
+        height: 92px;
+        border-radius: 100px;
+        background: rgba(31, 107, 255, 0.04);
+        border: 1.5px solid rgba(31, 107, 255, 0.2);
+        box-sizing: border-box;
+      }
+      .cta11-typed {
+        position: absolute;
+        left: 40px;
+        top: 0;
+        line-height: 89px;
+        font-size: 34px;
+        font-weight: 500;
+        color: #111827;
+        white-space: nowrap;
+      }
+      .cta11-typed span { opacity: 0; }
+      .cta11-caret {
+        display: inline-block;
+        width: 3px;
+        height: 38px;
+        margin-left: 4px;
+        vertical-align: -7px;
+        background: #1f6bff;
+        border-radius: 2px;
+      }
+      .cta11-send-glow {
+        position: absolute;
+        right: -14px;
+        top: -12px;
+        width: 116px;
+        height: 116px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(31, 107, 255, 0.45) 0%, rgba(31, 107, 255, 0) 68%);
+        opacity: 0;
+      }
+      .cta11-send {
+        position: absolute;
+        right: 12px;
+        top: 12px;
+        width: 66px;
+        height: 66px;
+        border-radius: 50%;
+        background: #1f6bff;
+      }
+      .cta11-send svg {
+        position: absolute;
+        left: 18px;
+        top: 18px;
+        width: 30px;
+        height: 30px;
+      }
+    </style>
+
+    <div class="cta11-bg clip" data-start="0" data-duration="4.117" data-track-index="0"></div>
+
+    <div class="cta11-stage clip" data-start="0" data-duration="4.117" data-track-index="1">
+      <div class="cta11-ring cta11-ring-c" id="cta11-ring-c"></div>
+      <div class="cta11-ring cta11-ring-b" id="cta11-ring-b"></div>
+      <div class="cta11-ring cta11-ring-a" id="cta11-ring-a"></div>
+
+      <div class="cta11-verb" id="cta11-v1"><b>Plan</b> it.</div>
+      <div class="cta11-verb" id="cta11-v2"><b>Make</b> it.</div>
+      <div class="cta11-verb" id="cta11-v3"><b>Post</b> it.</div>
+      <div class="cta11-verb" id="cta11-v4"><b>Measure</b> it.</div>
+
+      <div class="cta11-glow" id="cta11-glow"></div>
+
+      <div class="cta11-lockup-wrap" id="cta11-lockup-wrap">
+        <div class="cta11-lockup">
+          <div class="cta11-logo" id="cta11-logo"><img src="assets/contentstudio-logo.png" alt="ContentStudio logo"></div>
+          <div class="cta11-word-mask">
+            <div class="cta11-word" id="cta11-word">ContentStudio</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cta11-ask" id="cta11-ask">Just <b>ask.</b></div>
+
+      <div class="cta11-composer" id="cta11-composer">
+        <div class="cta11-typed"><span class="cta11-ch">T</span><span class="cta11-ch">r</span><span class="cta11-ch">y</span><span class="cta11-ch">&nbsp;</span><span class="cta11-ch">i</span><span class="cta11-ch">t</span><span class="cta11-ch">&nbsp;</span><span class="cta11-ch">n</span><span class="cta11-ch">o</span><span class="cta11-ch">w</span><i class="cta11-caret" id="cta11-caret"></i></div>
+        <div class="cta11-send-glow" id="cta11-send-glow"></div>
+        <div class="cta11-send" id="cta11-send">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script>
+      (function () {
+        window.__timelines = window.__timelines || {};
+        var tl = gsap.timeline({ paused: true });
+
+        // ---- Scene 1 (0 - 2.2s): in-place verb token cycle, hard cuts on each VO verb ----
+        var verbs = ["#cta11-v1", "#cta11-v2", "#cta11-v3", "#cta11-v4"];
+        var cuts = [0.0, 0.5, 1.0, 1.5];
+        verbs.forEach(function (sel, i) {
+          var t = cuts[i];
+          if (i > 0) tl.set(verbs[i - 1], { opacity: 0 }, t);
+          tl.set(sel, { opacity: 1 }, t);
+          tl.fromTo(sel, { scale: 1.06 }, { scale: 1, duration: 0.3, ease: "power3.out" }, t);
+        });
+        // last verb holds slightly longer, then clears (shrink toward center + fade)
+        tl.to("#cta11-v4", { scale: 0.86, opacity: 0, duration: 0.16, ease: "power2.in" }, 2.08);
+
+        // ---- Scene 2 (2.2 - 3.0s): logo spring-blooms from zero, glow blooms, wordmark slides out ----
+        // logo starts near dead center: shift right by ~half of (gap + wordmark width); final lockup is flex-centered on real width
+        tl.fromTo("#cta11-logo",
+          { scale: 0, rotation: -24, x: 410 },
+          { scale: 1, rotation: 0, duration: 0.5, ease: "back.out(2.2)" }, 2.22);
+        tl.fromTo("#cta11-glow",
+          { scale: 0.3, opacity: 0 },
+          { scale: 1, opacity: 1, duration: 0.7, ease: "power2.out" }, 2.26);
+        tl.fromTo(["#cta11-ring-a", "#cta11-ring-b", "#cta11-ring-c"],
+          { scale: 0.7, opacity: 0 },
+          { scale: 1, opacity: 1, duration: 0.8, ease: "power2.out", stagger: 0.08 }, 2.28);
+        // mark slides left as wordmark reveals to its right
+        tl.to("#cta11-logo", { x: 0, duration: 0.5, ease: "power3.inOut" }, 2.62);
+        tl.fromTo("#cta11-word",
+          { xPercent: -105, opacity: 0 },
+          { xPercent: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 2.68);
+        // glow follows the logo to its lockup position
+        tl.to("#cta11-glow", { x: -410, duration: 0.5, ease: "power3.inOut" }, 2.62);
+
+        // ---- Scene 3 (3.0 - 4.117s): "Just ask." lands, composer types, send glows, hold ----
+        tl.fromTo("#cta11-ask",
+          { y: 40, opacity: 0, scale: 0.96 },
+          { y: 0, opacity: 1, scale: 1, duration: 0.42, ease: "back.out(1.4)" }, 3.0);
+        tl.fromTo("#cta11-composer",
+          { y: 24, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.32, ease: "power2.out" }, 3.18);
+        tl.fromTo("#cta11-caret", { opacity: 0 }, { opacity: 1, duration: 0.01 }, 3.3);
+        var chars = document.querySelectorAll("#root .cta11-ch");
+        for (var i = 0; i < chars.length; i++) {
+          tl.set(chars[i], { opacity: 1 }, 3.38 + i * 0.045);
+        }
+        tl.fromTo("#cta11-send-glow",
+          { scale: 0.5, opacity: 0 },
+          { scale: 1, opacity: 1, duration: 0.35, ease: "power2.out" }, 3.82);
+        tl.fromTo("#cta11-send",
+          { scale: 0.9 },
+          { scale: 1, duration: 0.35, ease: "back.out(2)" }, 3.82);
+
+        // ending settle: near-imperceptible scale on the lockup through the hold
+        tl.fromTo("#cta11-lockup-wrap", { scale: 1 }, { scale: 1.02, duration: 1.0, ease: "none" }, 3.0);
+
+        // pad timeline to full duration (still hold to the last frame)
+        tl.set({}, {}, 4.117);
+
+        window.__timelines["11-cta"] = tl;
+      })();
+    </script>
+  </div>
+</template>

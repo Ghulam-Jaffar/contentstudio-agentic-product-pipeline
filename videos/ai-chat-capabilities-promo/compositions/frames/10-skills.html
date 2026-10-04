@@ -1,0 +1,171 @@
+<template>
+  <div id="root" data-composition-id="10-skills" data-width="1920" data-height="1080" data-start="0" data-duration="5.456">
+    <style>
+      @font-face { font-family: "Inter Tight"; src: url("assets/fonts/InterTight-Variable.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+      #root { position: relative; width: 1920px; height: 1080px; overflow: hidden; font-family: "Inter Tight", sans-serif; color: #111827; container-type: size; }
+      #root * { box-sizing: border-box; }
+      .s10-bg { position: absolute; inset: 0; background: #ffffff; }
+
+      .s10-copy { position: absolute; left: 100px; top: 250px; width: 600px; }
+      .s10-eyebrow { font-size: 15.4px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #1f6bff; }
+      .s10-line { width: 60px; height: 4px; border-radius: 2px; background: #1f6bff; margin: 18px 0 26px; }
+      .s10-h1 { font-size: 84px; font-weight: 700; line-height: 1.08; letter-spacing: -0.02em; color: #111827; margin: 0; }
+      .s10-sub { margin-top: 28px; font-size: 40px; font-weight: 500; line-height: 1.25; letter-spacing: -0.02em; color: #6b7280; }
+
+      .s10-card { position: absolute; left: 760px; top: 110px; width: 1060px; height: 780px; border-radius: 14px; background: rgba(31,107,255,0.04); border: 1.5px solid rgba(31,107,255,0.2); }
+
+      .s10-composer { position: absolute; left: 32px; right: 32px; top: 670px; height: 84px; border-radius: 14px; background: #ffffff; border: 1.5px solid rgba(31,107,255,0.2); display: flex; align-items: center; padding: 0 96px 0 28px; font-size: 28px; font-weight: 500; color: #111827; }
+      .s10-slash { color: #111827; }
+      .s10-chip { display: none; align-items: center; height: 46px; padding: 0 18px; border-radius: 100px; background: rgba(31,107,255,0.15); color: #1f6bff; font-weight: 600; font-size: 25px; margin-right: 10px; }
+      .s10-ch { display: none; white-space: pre; }
+      .s10-caret { display: inline-block; width: 3px; height: 34px; background: #1f6bff; border-radius: 2px; margin-left: 2px; }
+      .s10-ph { display: none; color: #9A9A9A; font-weight: 400; margin-left: 6px; }
+      .s10-send { position: absolute; right: 14px; top: 13px; width: 56px; height: 56px; border-radius: 100px; background: #1f6bff; display: flex; align-items: center; justify-content: center; }
+
+      .s10-menu { position: absolute; left: 32px; top: 212px; width: 560px; height: 446px; border-radius: 14px; background: #ffffff; border: 1.5px solid rgba(31,107,255,0.2); padding: 14px; transform-origin: 0% 100%; }
+      .s10-group + .s10-group { margin-top: 8px; }
+      .s10-glabel { height: 34px; line-height: 34px; padding: 0 14px; font-size: 14px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #6b7280; }
+      .s10-row { height: 50px; border-radius: 10px; display: flex; align-items: center; padding: 0 14px; font-size: 24px; font-weight: 500; color: #111827; }
+      .s10-row i { width: 30px; height: 30px; border-radius: 8px; background: rgba(31,107,255,0.08); color: #1f6bff; font-style: normal; font-weight: 700; font-size: 18px; display: flex; align-items: center; justify-content: center; margin-right: 14px; }
+
+      .s10-bubble { position: absolute; right: 32px; top: 32px; height: 70px; border-radius: 14px; background: rgba(31,107,255,0.08); display: flex; align-items: center; padding: 0 22px 0 14px; font-size: 26px; font-weight: 500; color: #111827; transform-origin: 100% 50%; }
+      .s10-bubble .s10-chip { display: inline-flex; }
+
+      .s10-plan { position: absolute; left: 32px; top: 128px; width: 760px; height: 530px; border-radius: 14px; background: #ffffff; border: 1.5px solid rgba(31,107,255,0.2); padding: 22px 24px; }
+      .s10-phead { display: flex; align-items: center; justify-content: space-between; height: 40px; margin-bottom: 14px; }
+      .s10-phead b { font-size: 15px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #1f6bff; }
+      .s10-pill { height: 30px; line-height: 30px; padding: 0 14px; border-radius: 100px; background: rgba(31,107,255,0.08); color: #1f6bff; font-size: 14px; font-weight: 500; }
+      .s10-prow { height: 76px; border-radius: 10px; background: rgba(31,107,255,0.04); border: 1.5px solid rgba(31,107,255,0.2); display: flex; align-items: center; padding: 0 20px; margin-bottom: 9px; transform-origin: 0% 50%; }
+      .s10-day { width: 64px; font-size: 20px; font-weight: 600; color: #6b7280; }
+      .s10-dot { width: 14px; height: 14px; border-radius: 50%; background: #1f6bff; margin-right: 16px; }
+      .s10-title { flex: 1; font-size: 25px; font-weight: 500; color: #111827; }
+      .s10-net { font-size: 17px; color: #9A9A9A; margin-right: 22px; }
+      .s10-time { font-size: 21px; font-weight: 600; color: #1f6bff; }
+
+      .s10-ripple { position: absolute; left: 0; top: 0; width: 70px; height: 70px; margin: -35px 0 0 -35px; border-radius: 50%; border: 3px solid #1f6bff; opacity: 0; }
+      .s10-cursor { position: absolute; left: 0; top: 0; width: 40px; height: 48px; }
+    </style>
+
+    <div class="s10-bg clip" data-start="0" data-duration="5.456" data-track-index="0"></div>
+
+    <div class="s10-copy" id="10-skills-copy">
+      <div class="s10-eyebrow" id="10-skills-eyebrow">Skills</div>
+      <div class="s10-line" id="10-skills-line"></div>
+      <h1 class="s10-h1" id="10-skills-h1">Explain it once.</h1>
+      <div class="s10-sub" id="10-skills-sub">Run it every time.</div>
+    </div>
+
+    <div class="s10-card" id="10-skills-card">
+      <div class="s10-bubble" id="10-skills-bubble"><span class="s10-chip">/content-plan</span>for October</div>
+
+      <div class="s10-plan" id="10-skills-plan">
+        <div class="s10-phead"><b>Content plan · October</b><span class="s10-pill">Week 1</span></div>
+        <div class="s10-prow"><span class="s10-day">Mon</span><span class="s10-dot" style="opacity:1"></span><span class="s10-title">October kickoff</span><span class="s10-net">LinkedIn</span><span class="s10-time">9:00 AM</span></div>
+        <div class="s10-prow"><span class="s10-day">Tue</span><span class="s10-dot" style="opacity:0.85"></span><span class="s10-title">Behind the scenes</span><span class="s10-net">Instagram</span><span class="s10-time">12:30 PM</span></div>
+        <div class="s10-prow"><span class="s10-day">Wed</span><span class="s10-dot" style="opacity:0.7"></span><span class="s10-title">Customer tip</span><span class="s10-net">Facebook</span><span class="s10-time">10:00 AM</span></div>
+        <div class="s10-prow"><span class="s10-day">Thu</span><span class="s10-dot" style="opacity:0.55"></span><span class="s10-title">Product spotlight</span><span class="s10-net">X</span><span class="s10-time">2:00 PM</span></div>
+        <div class="s10-prow"><span class="s10-day">Fri</span><span class="s10-dot" style="opacity:0.4"></span><span class="s10-title">Weekend recap</span><span class="s10-net">TikTok</span><span class="s10-time">5:00 PM</span></div>
+      </div>
+
+      <div class="s10-menu" id="10-skills-menu">
+        <div class="s10-group"><div class="s10-glabel">My Skills</div>
+          <div class="s10-row" id="10-skills-target"><i>/</i>/content-plan</div>
+          <div class="s10-row"><i>/</i>/weekly-recap</div>
+        </div>
+        <div class="s10-group"><div class="s10-glabel">Workspace Skills</div>
+          <div class="s10-row"><i>/</i>/daily-special</div>
+          <div class="s10-row"><i>/</i>/product-launch</div>
+        </div>
+        <div class="s10-group"><div class="s10-glabel">Built by ContentStudio</div>
+          <div class="s10-row"><i>/</i>/linkedin-format</div>
+          <div class="s10-row"><i>/</i>/new-listing</div>
+        </div>
+      </div>
+
+      <div class="s10-composer" id="10-skills-composer">
+        <span class="s10-slash" id="10-skills-slash" style="display:none">/</span>
+        <span class="s10-chip" id="10-skills-chip">/content-plan</span>
+        <span class="s10-ch">f</span><span class="s10-ch">o</span><span class="s10-ch">r</span><span class="s10-ch"> </span><span class="s10-ch">O</span><span class="s10-ch">c</span><span class="s10-ch">t</span><span class="s10-ch">o</span><span class="s10-ch">b</span><span class="s10-ch">e</span><span class="s10-ch">r</span>
+        <span class="s10-caret" id="10-skills-caret"></span>
+        <span class="s10-ph" id="10-skills-ph">Add your own words, or send it as is</span>
+        <div class="s10-send" id="10-skills-send">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="s10-ripple" id="10-skills-ripple"></div>
+    <svg class="s10-cursor" id="10-skills-cursor" viewBox="0 0 40 48">
+      <path d="M3 2 L3 38 L12.5 29.5 L18.5 44 L25 41.2 L19 27 L32 27 Z" fill="#111827" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round"/>
+    </svg>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script>
+      (function () {
+        var R = document.querySelector('[data-composition-id="10-skills"]');
+        var q = function (s) { return R.querySelector(s); };
+        var qa = function (s) { return Array.prototype.slice.call(R.querySelectorAll(s)); };
+        window.__timelines = window.__timelines || {};
+        var tl = gsap.timeline({ paused: true });
+
+        var card = q('[id="10-skills-card"]'), menu = q('[id="10-skills-menu"]'), target = q('[id="10-skills-target"]');
+        var slash = q('[id="10-skills-slash"]'), chip = q('[id="10-skills-chip"]'), ph = q('[id="10-skills-ph"]');
+        var chars = qa('[id="10-skills-composer"] .s10-ch'), caret = q('[id="10-skills-caret"]');
+        var send = q('[id="10-skills-send"]'), cursor = q('[id="10-skills-cursor"]'), ripple = q('[id="10-skills-ripple"]');
+        var bubble = q('[id="10-skills-bubble"]'), plan = q('[id="10-skills-plan"]'), rows = qa('[id="10-skills-plan"] .s10-prow');
+        var menuRows = qa('[id="10-skills-menu"] .s10-row'), labels = qa('[id="10-skills-menu"] .s10-glabel');
+
+        // Initial states (seek-safe: set at t=0)
+        tl.set([menu, bubble, plan], { opacity: 0 }, 0);
+        tl.set(rows, { opacity: 0 }, 0);
+        tl.set(cursor, { x: 1460, y: 560, opacity: 0 }, 0);
+
+        // Scene 1 (0-1.35): surface + headline, "/" typed, menu springs up
+        tl.fromTo(card, { opacity: 0, y: 36, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: 'power3.out' }, 0);
+        tl.fromTo(q('[id="10-skills-eyebrow"]'), { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: 'power3.out' }, 0.05);
+        tl.fromTo(q('[id="10-skills-line"]'), { scaleX: 0, transformOrigin: '0% 50%' }, { scaleX: 1, duration: 0.4, ease: 'power3.out' }, 0.12);
+        tl.fromTo(q('[id="10-skills-h1"]'), { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 0.15);
+        tl.set(slash, { display: 'inline' }, 0.45);
+        tl.fromTo(menu, { opacity: 0, scale: 0.9, y: 24 }, { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: 'back.out(1.6)' }, 0.55);
+        tl.fromTo(labels, { opacity: 0, x: -10 }, { opacity: 1, x: 0, duration: 0.3, stagger: 0.12, ease: 'power2.out' }, 0.68);
+        tl.fromTo(menuRows, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.3, stagger: 0.05, ease: 'power2.out' }, 0.7);
+
+        // Scene 2 (1.35-2.7): cursor picks /content-plan, chip, "for October", send
+        tl.to(cursor, { opacity: 1, duration: 0.2 }, 0.85);
+        tl.to(cursor, { x: 940, y: 392, duration: 0.5, ease: 'power3.inOut' }, 0.9);
+        tl.fromTo(target, { backgroundColor: 'rgba(31,107,255,0)' }, { backgroundColor: 'rgba(31,107,255,0.15)', duration: 0.2, ease: 'power1.out' }, 1.35);
+        tl.to(cursor, { scale: 0.86, duration: 0.08, ease: 'power2.in' }, 1.55);
+        tl.to(cursor, { scale: 1, duration: 0.18, ease: 'back.out(3)' }, 1.63);
+        tl.set(ripple, { x: 943, y: 395 }, 1.58);
+        tl.fromTo(ripple, { scale: 0.2, opacity: 0.6 }, { scale: 1.5, opacity: 0, duration: 0.45, ease: 'power2.out' }, 1.58);
+        tl.to(menu, { opacity: 0, scale: 0.96, y: 12, duration: 0.18, ease: 'power2.in' }, 1.68);
+        tl.set(slash, { display: 'none' }, 1.78);
+        tl.set(chip, { display: 'inline-flex' }, 1.78);
+        tl.fromTo(chip, { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: 'back.out(2.2)' }, 1.78);
+        tl.set(ph, { display: 'inline' }, 1.86);
+        tl.set(ph, { display: 'none' }, 2.02);
+        chars.forEach(function (c, i) { tl.set(c, { display: 'inline' }, 2.02 + i * 0.038); });
+        tl.to(cursor, { x: 1744, y: 820, duration: 0.42, ease: 'power3.inOut' }, 2.0);
+        tl.to([cursor, send], { scale: 0.88, duration: 0.08, ease: 'power2.in' }, 2.5);
+        tl.to([cursor, send], { scale: 1, duration: 0.2, ease: 'back.out(3)' }, 2.58);
+        tl.set(ripple, { x: 1746, y: 822 }, 2.53);
+        tl.fromTo(ripple, { scale: 0.2, opacity: 0.6 }, { scale: 1.5, opacity: 0, duration: 0.45, ease: 'power2.out' }, 2.53);
+        tl.set(chars.concat([chip]), { display: 'none' }, 2.64);
+
+        // Scene 3 (2.7-5.06): message lands, a week of posts cascades in
+        tl.fromTo(bubble, { opacity: 0, scale: 0.85, y: 16 }, { opacity: 1, scale: 1, y: 0, duration: 0.35, ease: 'back.out(1.8)' }, 2.66);
+        tl.to(cursor, { x: 1560, y: 600, duration: 0.6, ease: 'power2.out' }, 2.75);
+        tl.fromTo(plan, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35, ease: 'power3.out' }, 2.85);
+        tl.fromTo(q('[id="10-skills-sub"]'), { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out' }, 3.0);
+        rows.forEach(function (r, i) {
+          tl.fromTo(r, { opacity: 0, x: -24, scale: 0.94 }, { opacity: 1, x: 0, scale: 1, duration: 0.4, ease: 'back.out(1.9)' }, 3.05 + i * 0.32);
+        });
+        // slow settle push on the surface underneath the cascade, then hold
+        tl.fromTo(card, { scale: 1 }, { scale: 1.015, duration: 2.0, ease: 'sine.inOut', immediateRender: false }, 2.9);
+        tl.set({}, {}, 5.056);
+
+        window.__timelines["10-skills"] = tl;
+      })();
+    </script>
+  </div>
+</template>

@@ -1,0 +1,308 @@
+<template id="02-intro-template">
+  <div id="root" data-composition-id="02-intro" data-start="0" data-duration="7.519" data-width="1920" data-height="1080">
+    <style>
+      @font-face {
+        font-family: "Inter Tight";
+        src: url("assets/fonts/InterTight-Variable.woff2") format("woff2");
+        font-weight: 100 900;
+        font-display: block;
+      }
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        font-family: "Inter Tight", sans-serif;
+        container-type: size;
+      }
+      .intro02-bg {
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(ellipse 70% 60% at 50% 48%, rgba(31, 107, 255, 0.06) 0%, rgba(31, 107, 255, 0) 70%),
+          #ffffff;
+      }
+      .intro02-world {
+        position: absolute;
+        inset: 0;
+        transform-origin: 960px 520px;
+      }
+      /* chat window: final geometry, revealed via clip-path morph from the composer rect */
+      .intro02-window {
+        position: absolute;
+        left: 365px;
+        top: 130px;
+        width: 1190px;
+        height: 640px;
+        background: #ffffff;
+        border: 1.5px solid rgba(31, 107, 255, 0.2);
+        border-radius: 14px;
+        box-sizing: border-box;
+      }
+      .intro02-window-tint {
+        position: absolute;
+        inset: 0;
+        border-radius: 14px;
+        background: rgba(31, 107, 255, 0.04);
+      }
+      .intro02-header {
+        position: absolute;
+        left: 40px;
+        top: 28px;
+        height: 52px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .intro02-logo {
+        width: 48px;
+        height: 48px;
+        display: block;
+      }
+      .intro02-header-title {
+        font-size: 28px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        color: #111827;
+      }
+      .intro02-divider {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 106px;
+        height: 1.5px;
+        background: rgba(31, 107, 255, 0.15);
+        transform-origin: 0 50%;
+      }
+      .intro02-greeting {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 238px;
+        text-align: center;
+        font-size: 72px;
+        font-weight: 700;
+        line-height: 1.08;
+        letter-spacing: -0.02em;
+        color: #111827;
+        white-space: pre;
+      }
+      .intro02-greeting .intro02-ch { opacity: 0; }
+      .intro02-gcaret {
+        display: inline-block;
+        width: 5px;
+        height: 64px;
+        margin-left: 6px;
+        vertical-align: -6px;
+        background: #1f6bff;
+        border-radius: 3px;
+      }
+      /* composer: handoff geometry — 1056x112, center (960,560) */
+      .intro02-composer {
+        position: absolute;
+        left: 432px;
+        top: 504px;
+        width: 1056px;
+        height: 112px;
+        background: #ffffff;
+        border: 1.5px solid rgba(31, 107, 255, 0.2);
+        border-radius: 100px;
+        box-sizing: border-box;
+      }
+      .intro02-placeholder {
+        position: absolute;
+        left: 52px;
+        top: 0;
+        height: 109px;
+        display: flex;
+        align-items: center;
+        font-size: 28px;
+        font-weight: 400;
+        color: #9A9A9A;
+        white-space: nowrap;
+      }
+      .intro02-ccaret {
+        position: absolute;
+        left: 44px;
+        top: 37px;
+        width: 3px;
+        height: 36px;
+        background: #1f6bff;
+        border-radius: 2px;
+        opacity: 0;
+      }
+      .intro02-send {
+        position: absolute;
+        right: 18px;
+        top: 18.5px;
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: #1f6bff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .intro02-send svg { width: 32px; height: 32px; display: block; }
+      .intro02-glow {
+        position: absolute;
+        right: 18px;
+        top: 18.5px;
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: rgba(31, 107, 255, 0.35);
+        opacity: 0;
+      }
+      .intro02-pills {
+        position: absolute;
+        left: 365px;
+        width: 1190px;
+        top: 660px;
+        display: flex;
+        justify-content: center;
+        gap: 18px;
+      }
+      .intro02-pill {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0 28px;
+        height: 60px;
+        border-radius: 100px;
+        background: rgba(31, 107, 255, 0.08);
+        border: 1.5px solid rgba(31, 107, 255, 0.2);
+        color: #1f6bff;
+        font-size: 26px;
+        font-weight: 500;
+        box-sizing: border-box;
+      }
+      .intro02-pill svg { width: 24px; height: 24px; display: block; }
+    </style>
+
+    <div class="intro02-bg clip" data-start="0" data-duration="7.519" data-track-index="0"></div>
+
+    <div class="intro02-world clip" id="intro02-world" data-start="0" data-duration="7.519" data-track-index="1">
+      <div class="intro02-window" id="intro02-window">
+        <div class="intro02-window-tint"></div>
+        <div class="intro02-header" id="intro02-header">
+          <img class="intro02-logo" src="assets/contentstudio-logo.png" alt="ContentStudio" />
+          <div class="intro02-header-title">AI Chat</div>
+        </div>
+        <div class="intro02-divider" id="intro02-divider"></div>
+        <div class="intro02-greeting" id="intro02-greeting"></div>
+      </div>
+
+      <div class="intro02-composer" id="intro02-composer">
+        <div class="intro02-ccaret" id="intro02-ccaret"></div>
+        <div class="intro02-placeholder" id="intro02-placeholder">Type your message here, or / for a skill</div>
+        <div class="intro02-glow" id="intro02-glow"></div>
+        <div class="intro02-send" id="intro02-send">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+        </div>
+      </div>
+
+      <div class="intro02-pills" id="intro02-pills">
+        <div class="intro02-pill" id="intro02-pill-post">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1f6bff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>Post
+        </div>
+        <div class="intro02-pill" id="intro02-pill-image">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1f6bff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg>Image
+        </div>
+        <div class="intro02-pill" id="intro02-pill-video">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1f6bff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="13" height="14" rx="3"/><path d="M16 10l5-3v10l-5-3z"/></svg>Video
+        </div>
+        <div class="intro02-pill" id="intro02-pill-carousel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1f6bff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="4" width="10" height="16" rx="2"/><path d="M3 7v10M21 7v10"/></svg>Carousel
+        </div>
+        <div class="intro02-pill" id="intro02-pill-analytics">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1f6bff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V12M12 20V5M19 20v-6"/></svg>Analytics
+        </div>
+        <div class="intro02-pill" id="intro02-pill-inbox">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1f6bff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l3-8h12l3 8v6H3z"/><path d="M3 13h5l1 3h6l1-3h5"/></svg>Inbox
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script>
+      (function () {
+        window.__timelines = window.__timelines || {};
+        var tl = gsap.timeline({ paused: true });
+
+        // ---- build greeting characters (deterministic) ----
+        var greet = document.getElementById("intro02-greeting");
+        var text = "Good afternoon, Alex!";
+        var chars = [];
+        for (var i = 0; i < text.length; i++) {
+          var s = document.createElement("span");
+          s.className = "intro02-ch";
+          s.textContent = text[i];
+          greet.appendChild(s);
+          chars.push(s);
+        }
+        var gcaret = document.createElement("span");
+        gcaret.className = "intro02-gcaret";
+        greet.appendChild(gcaret);
+
+        // ---- Scene 1 (0–2.11s): composer (handoff, at rest) → window card morph upward ----
+        // window rect: x 365..1555, y 130..770 ; composer rect: x 432..1488, y 504..616
+        tl.fromTo("#intro02-window",
+          { clipPath: "inset(374px 67px 154px 67px round 56px)", opacity: 0 },
+          { clipPath: "inset(374px 67px 154px 67px round 56px)", opacity: 1, duration: 0.12, ease: "none" }, 0.1);
+        tl.to("#intro02-window",
+          { clipPath: "inset(0px 0px 0px 0px round 14px)", duration: 0.75, ease: "power3.inOut" }, 0.2);
+
+        tl.fromTo("#intro02-header", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 0.75);
+        tl.fromTo("#intro02-divider", { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: "power2.out" }, 0.8);
+
+        // greeting caret appears, then types character by character
+        tl.fromTo(gcaret, { opacity: 0 }, { opacity: 1, duration: 0.01 }, 0.85);
+        var typeStart = 0.95, perChar = 0.05;
+        for (var c = 0; c < chars.length; c++) {
+          tl.set(chars[c], { opacity: 1 }, typeStart + c * perChar);
+        }
+        var typeEnd = typeStart + chars.length * perChar; // ~2.0s
+        // brief blink, then caret retires before the pills
+        tl.set(gcaret, { opacity: 0 }, typeEnd + 0.15);
+        tl.set(gcaret, { opacity: 1 }, typeEnd + 0.4);
+        tl.set(gcaret, { opacity: 0 }, typeEnd + 0.65);
+
+        // ---- Scene 2 (2.11–5.38s): starter pills pop in on each spoken verb ----
+        var pills = [
+          ["#intro02-pill-post", 2.25],
+          ["#intro02-pill-image", 2.85],
+          ["#intro02-pill-video", 3.1],
+          ["#intro02-pill-carousel", 3.6],
+          ["#intro02-pill-analytics", 4.25],
+          ["#intro02-pill-inbox", 4.85]
+        ];
+        for (var p = 0; p < pills.length; p++) {
+          tl.fromTo(pills[p][0],
+            { opacity: 0, scale: 0.6, y: 14 },
+            { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: "back.out(2.2)" }, pills[p][1]);
+        }
+
+        // slow continuous push-in under the shot (one camera move)
+        tl.fromTo("#intro02-world", { scale: 1 }, { scale: 1.035, duration: 4.9, ease: "power1.inOut" }, 2.1);
+
+        // ---- Scene 3 (5.38–7.02s): caret blinks in composer, send glows once ----
+        tl.fromTo("#intro02-placeholder", { x: 0 }, { x: 10, duration: 0.25, ease: "power2.out" }, 5.38);
+        var blinkOn = true;
+        for (var t = 5.4; t < 7.0; t += 0.4) {
+          tl.set("#intro02-ccaret", { opacity: blinkOn ? 1 : 0 }, t);
+          blinkOn = !blinkOn;
+        }
+        tl.fromTo("#intro02-glow", { opacity: 0, scale: 1 }, { opacity: 0.9, scale: 1.25, duration: 0.3, ease: "power2.out" }, 5.7);
+        tl.to("#intro02-glow", { opacity: 0, scale: 1.7, duration: 0.6, ease: "power2.out" }, 6.0);
+        tl.fromTo("#intro02-send", { scale: 1 }, { scale: 1.08, duration: 0.3, ease: "power2.out" }, 5.7);
+        tl.to("#intro02-send", { scale: 1, duration: 0.5, ease: "power2.inOut" }, 6.0);
+
+        // pad timeline to full duration
+        tl.set({}, {}, 7.019);
+
+        window.__timelines["02-intro"] = tl;
+      })();
+    </script>
+  </div>
+</template>

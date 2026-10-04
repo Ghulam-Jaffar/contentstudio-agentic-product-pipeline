@@ -6,7 +6,7 @@ When an account's access token expires, ContentStudio tells the user in three di
 
 This epic makes an expired account say the same thing everywhere and fixes it in one click. Every flagged account gets the same **Reconnect required** message, written in plain words, with one sentence that changes per module to say what has stopped working there: posting in Composer, data in Analytics, comments and messages in Inbox. Next to it sits **Reconnect now**, which starts the reconnect for that exact account and brings the user back to the page they were on. A **Why did this happen?** link opens our help article in the in-app help widget.
 
-The same idea applies to connecting new accounts. Every account picker gets the `+` and settings shortcuts the Label and Campaign dropdowns already have: `+` opens the Connect Social Accounts modal right there, and the gear goes to Settings > Social Accounts.
+The same idea applies to connecting new accounts. Every account picker gets a **+ New** button and a settings shortcut: **+ New** opens the Connect Social Accounts modal right there, and the gear goes to Settings > Social Accounts. The modal itself swaps its round `+` icons for the same **+ New** button, and once clicked the button shows that ContentStudio is sending the user to the platform, so nobody clicks twice.
 
 **Design canvas:** https://claude.ai/artifact/APzGjGQbTCJn8rYJ5EHtur
 
@@ -17,7 +17,9 @@ In:
 - One shared "Reconnect required" message with Reconnect now and a help link, on every account list that flags an expired account
 - Banners, alerts and error messages about expired tokens rewritten to match, with their Reconnect now reconnecting the right account
 - The Composer post is saved before the user leaves to connect or reconnect, and reopens when they come back
-- `+` and settings shortcuts in the main account pickers: Composer, Planner filter, Schedule post modal, Analytics, Inbox filter, Automations
+- **+ New** and settings shortcuts in the main account pickers: Composer, Planner filter, Schedule post modal, Analytics, Inbox filter, Automations
+- **+ New** buttons in place of the round `+` icons in the Connect Social Accounts modal, with a redirecting state after click. Nothing else in the modal changes
+- The Label, Campaign and Templates dropdowns switch from the round `+` to the same **+ New** button
 - The connect permission and the return address checked before the user is sent to the platform
 
 Out:
@@ -26,7 +28,7 @@ Out:
 - Threads and LinkedIn "extra analytics permission" prompts, which are a missing-permission case, not an expired token
 - Small pickers where a connect shortcut is noise: first-comment and carousel dropdowns, planner bulk edit, AI chat account picker, team member access settings
 - The mobile app
-- Publish / Inbox / Analytics columns in the Connect Social Accounts modal. Designed on the canvas (row 3) and drafted, held back for a later epic
+- Publish / Inbox / Analytics columns in the Connect Social Accounts modal. Designed on the canvas (row 4) and drafted, held back for a later epic
 
 ### Stories
 
@@ -36,6 +38,8 @@ Out:
 4. `[FE] Save the Composer post before leaving to connect or reconnect an account`
 5. `[FE] Rewrite expired-token banners and alerts to match, and reconnect the right account`
 6. `[FE] Add connect and settings shortcuts to every account picker`
+7. `[FE] Replace the + icons in the Connect Social Accounts modal with + New buttons that show a redirecting state`
+8. `[FE] Switch the Label, Campaign and Templates dropdowns to the + New button`
 
 ---
 
@@ -43,7 +47,7 @@ Out:
 
 ### Description
 
-As a designer, I want to define the final visuals and interaction states for the new Reconnect required message and the `+` and settings shortcuts in account pickers, so that every build story in this epic works from one agreed reference and the same message looks the same in Composer, Analytics, Inbox, Planner and Automations.
+As a designer, I want to define the final visuals and interaction states for the new Reconnect required message, the **+ New** and settings shortcuts in account pickers, and the **+ New** buttons in the Connect Social Accounts modal, so that every build story in this epic works from one agreed reference and the same message looks the same in Composer, Analytics, Inbox, Planner and Automations.
 
 The design canvas already covers the direction the PO approved. This story turns it into production design: final spacing, the component choices from our library, and the states the canvas only hints at.
 
@@ -55,9 +59,10 @@ The design canvas already covers the direction the PO approved. This story turns
 2. Designer finalises the **Reconnect required** popover: warning icon, heading, the module-specific sentence, the "Why did this happen?" link and the Reconnect now button, plus its loading state ("Opening Facebook...") and the version for users who aren't allowed to reconnect (no button, "Ask a workspace admin to reconnect it.").
 3. Designer defines how the popover opens and stays open: it opens on hover or click of the warning icon and stays open while the pointer moves into it, so the button is reachable.
 4. Designer settles one warning icon colour for every surface. Today some screens use orange and some red.
-5. Designer produces the `+` and settings header for account pickers in both a narrow sidebar (Planner filter, Inbox filter) and a dropdown (Analytics, Schedule post modal), matching the Label and Campaign dropdowns.
-6. Designer produces the banner treatment for Analytics and the header notification using the same heading and icon.
-7. Designer confirms which pieces use existing library components and flags anything that isn't in the library.
+5. Designer produces the **+ New** button and settings header for account pickers in both a narrow sidebar (Planner filter, Inbox filter) and a dropdown (Analytics, Schedule post modal). **+ New** replaces the round `+` icon used so far: a small light button with a plus icon and the word "New".
+6. Designer applies the same **+ New** button to every row of the Connect Social Accounts modal, and designs its redirecting state: disabled, a spinner in place of the plus icon, and the tooltip "Redirecting to Facebook...". Nothing else in the modal changes.
+7. Designer produces the banner treatment for Analytics and the header notification using the same heading and icon.
+8. Designer confirms which pieces use existing library components and flags anything that isn't in the library.
 
 ---
 
@@ -67,7 +72,8 @@ The design canvas already covers the direction the PO approved. This story turns
 - [ ] The popover has designed states for: default, Reconnect now loading, and no permission to reconnect
 - [ ] The popover's open and close behaviour is specified, including that it stays open while the pointer is over it
 - [ ] One warning icon colour is chosen and used on every surface
-- [ ] The `+` and settings header is designed for sidebar pickers and dropdown pickers, with tooltips "Connect a new account" and "Manage accounts in Settings"
+- [ ] The **+ New** and settings header is designed for sidebar pickers and dropdown pickers, with tooltips "Connect a new account" and "Manage accounts in Settings"
+- [ ] The **+ New** button is designed once and reused in the pickers and in every row of the Connect Social Accounts modal, with default, hover, disabled and redirecting states
 - [ ] Analytics banners and the header notification use the same heading and icon as the popover
 - [ ] Every element is mapped to an existing `@contentstudio/ui` component, or flagged as a gap. Known gap: there is no standalone tooltip or popover component in `@contentstudio/ui`, so the popover needs either a library addition or the legacy `CstPopup`
 - [ ] Designs are handed off to the FE stories in this epic
@@ -79,8 +85,9 @@ The design canvas already covers the direction the PO approved. This story turns
 Direction approved by the PO on the design canvas: https://claude.ai/artifact/APzGjGQbTCJn8rYJ5EHtur
 
 - Row 1: Reconnect required in Composer, Analytics and Inbox
-- Row 2: `+` and settings in the Planner filter and the Analytics dropdown
-- Row 3 (the connect modal's capability columns) is not part of this epic
+- Row 2: **+ New** and settings in the Planner filter and the Analytics dropdown
+- Row 3: the Connect Social Accounts modal with **+ New** on every row, the Facebook menu, and the redirecting state
+- Row 4 (the connect modal's capability columns) is not part of this epic
 
 ---
 
@@ -161,7 +168,7 @@ None. No schema changes.
 
 ### Impact on other products:
 
-The Settings > Social Accounts page, onboarding, EasyConnect and every new Reconnect now and `+` shortcut in this epic use the same endpoint, so all of them get the same checks. EasyConnect links run outside the workspace's normal session, so the return address rule must allow the EasyConnect page it already returns to.
+The Settings > Social Accounts page, onboarding, EasyConnect and every new Reconnect now and **+ New** shortcut in this epic use the same endpoint, so all of them get the same checks. EasyConnect links run outside the workspace's normal session, so the return address rule must allow the EasyConnect page it already returns to.
 
 ---
 
@@ -332,7 +339,7 @@ flowchart TD
 3. A confirmation appears: **Your post will be saved**, "We'll save this post as a draft while you reconnect Chkumbalukha, then bring you straight back to it." with **Save and continue** and **Cancel**.
 4. User clicks Save and continue. The post is saved and the user goes to the platform to sign in.
 5. User signs in and comes back. The Composer reopens on the same post, with the reconnected account still selected and no warning on it.
-6. The same happens when the user clicks `+` in the Composer's account list, picks a platform in the Connect Social Accounts modal, and comes back. The new account appears in the account list, ready to select.
+6. The same happens when the user clicks **+ New** in the Composer's account list, picks a platform in the Connect Social Accounts modal, and comes back. The new account appears in the account list, ready to select.
 
 ---
 
@@ -375,7 +382,7 @@ Web app only.
 ### Dependencies:
 
 - **[FE] Show "Reconnect required" with a Reconnect now button on every expired account** (the Reconnect now button in the Composer)
-- **[FE] Add connect and settings shortcuts to every account picker** (the `+` in the Composer)
+- **[FE] Add connect and settings shortcuts to every account picker** (the **+ New** button in the Composer)
 
 ---
 
@@ -487,14 +494,14 @@ Web app only. The Threads and LinkedIn "extra analytics permission" prompts are 
 
 ### Description
 
-As a ContentStudio user, I want a `+` to connect a new account and a settings shortcut in every account list I pick from, the same way the Label and Campaign dropdowns already work, so that when the account I need isn't there I can add it on the spot instead of leaving what I'm doing to find Settings.
+As a ContentStudio user, I want a **+ New** button to connect a new account and a settings shortcut in every account list I pick from, so that when the account I need isn't there I can add it on the spot instead of leaving what I'm doing to find Settings.
 
 ---
 
 ### Workflow
 
 1. User opens the Analytics account dropdown and doesn't see the Instagram account they want to look at.
-2. Next to the "Accounts" heading there's a `+`. Hovering it shows "Connect a new account."
+2. Next to the "Accounts" heading there's a **+ New** button. Hovering it shows "Connect a new account."
 3. User clicks it. The Connect Social Accounts modal opens on top of Analytics.
 4. User connects Instagram and comes back to the same Analytics page, with the new account in the dropdown.
 5. Next to the search box there's a gear. Hovering it shows "Manage accounts in Settings." Clicking it opens Settings > Social Accounts.
@@ -513,9 +520,10 @@ As a ContentStudio user, I want a `+` to connect a new account and a settings sh
 - [ ] Inbox filter sidebar ("Social Platforms")
 - [ ] Automations account selection (RSS, Evergreen, Bulk CSV)
 
-**The `+`:**
+**The + New button:**
 
-- [ ] Sits right after the list's heading, as in the Label and Campaign dropdowns
+- [ ] A small light button with a plus icon and the label "New", not the round `+` icon used in the Label and Campaign dropdowns
+- [ ] Sits right after the list's heading
 - [ ] Tooltip: "Connect a new account"
 - [ ] Opens the Connect Social Accounts modal on top of the current screen, without navigating away
 - [ ] After connecting, the user is back on the same screen and the new account appears in that list without a refresh
@@ -532,13 +540,13 @@ As a ContentStudio user, I want a `+` to connect a new account and a settings sh
 
 **Tracking:**
 
-- [ ] When a connection started from one of these `+` shortcuts completes, a `connected_social_accounts` Usermaven event fires with `{ platform, process: 'connect', source }`, where `source` is `composer`, `planner`, `schedule_modal`, `analytics`, `inbox` or `automations`
+- [ ] When a connection started from one of these **+ New** buttons completes, a `connected_social_accounts` Usermaven event fires with `{ platform, process: 'connect', source }`, where `source` is `composer`, `planner`, `schedule_modal`, `analytics`, `inbox` or `automations`
 
 ---
 
 ### Mock-ups:
 
-Design canvas, rows 1 and 2: https://claude.ai/artifact/APzGjGQbTCJn8rYJ5EHtur. Use `ActionIcon` from `@contentstudio/ui` for both shortcuts, with the same `CirclePlus` and `Settings` icons the Label dropdown uses.
+Design canvas, rows 1 and 2: https://claude.ai/artifact/APzGjGQbTCJn8rYJ5EHtur. Use `Button` from `@contentstudio/ui` in its small light variant with a plus icon for **+ New**, the same button as in **[FE] Replace the + icons in the Connect Social Accounts modal with + New buttons that show a redirecting state**, and `ActionIcon` with the `Settings` icon for the gear.
 
 ---
 
@@ -570,3 +578,174 @@ Web app only. The existing "connect an account" buttons in empty states stay as 
 - [ ] Cross-product impact assessment (web, mobile apps, Chrome extension)
 - [ ] Developer surfaces coverage — N/A, no API changes
 
+---
+
+# [FE] Replace the + icons in the Connect Social Accounts modal with + New buttons that show a redirecting state
+
+### Description
+
+As a ContentStudio user connecting a social account, I want each platform in the Connect Social Accounts modal to have a clear **+ New** button, and to see straight away that ContentStudio is taking me to the platform after I click it, so that I know my click worked and I don't click again while the page is loading.
+
+Today each row ends in a small round `+` icon, and after clicking it nothing visibly happens for a second or two while ContentStudio prepares the platform's sign-in page. People click again, or click a different platform. This story swaps the icon for the same **+ New** button used in the account pickers across the app and adds a redirecting state. Nothing else in the modal changes.
+
+---
+
+### Workflow
+
+1. User opens the Connect Social Accounts modal, from Settings, onboarding or any account picker's **+ New**.
+2. Each platform row shows a **+ New** button where the round `+` icon used to be. Everything else looks as it does today: the EasyConnect banner, the "12 Connected" pills, the X (Twitter) Follow checkbox, Learn more and Cancel.
+3. User clicks **+ New** on LinkedIn. The button greys out, a spinner replaces its plus icon, and a tooltip above it reads "Redirecting to LinkedIn...". The other **+ New** buttons grey out too.
+4. A moment later the user is on LinkedIn's sign-in page.
+5. For Facebook, **+ New** opens the same menu as today (Connect Facebook Page, Connect Facebook Profile, Connect Facebook Group). After the user picks one, the Facebook button shows the redirecting state.
+6. For Instagram, **+ New** opens the same menu as today (Connect via Facebook Account, Connect Directly with Instagram, each with its help icon), then the same redirecting state.
+
+---
+
+### Acceptance criteria
+
+**The button:**
+
+- [ ] Every platform row's round `+` icon is replaced by a **+ New** button: plus icon and the label "New"
+- [ ] It is the same button as the **+ New** in the account pickers, from **[FE] Add connect and settings shortcuts to every account picker**
+- [ ] Its accessible name is "Connect {Platform}", for example "Connect LinkedIn"
+
+**Menus and special rows, unchanged apart from the button:**
+
+- [ ] Facebook's **+ New** opens the existing menu: "Connect Facebook Page", "Connect Facebook Profile", "Connect Facebook Group"
+- [ ] Instagram's **+ New** opens the existing menu: "Connect via Facebook Account" and "Connect Directly with Instagram", with their existing help icons and tooltips
+- [ ] X (Twitter) keeps its current behaviour: the lock icon and its popover when X isn't available on the plan, and the custom-app menu when custom apps are allowed, now opened from **+ New**
+- [ ] Meta Ads and Google Ads keep their lock icon when the plan doesn't include ad analytics
+
+**Redirecting state:**
+
+- [ ] Clicking **+ New** on a platform that goes straight to sign-in, or picking an option from the Facebook, Instagram or X menu, immediately disables that button and replaces its plus icon with a spinner
+- [ ] A tooltip shows above the button straight away, without needing a hover: "Redirecting to {Platform}..." (for example "Redirecting to Facebook...")
+- [ ] While one platform is redirecting, every other **+ New** button in the modal is disabled too, so a second click can't start a second connection
+- [ ] The state stays until the browser leaves for the platform
+- [ ] If ContentStudio can't get the platform's sign-in page, the button goes back to normal, the other buttons are enabled again, and the toast "We couldn't open {Platform}. Please try again." appears
+- [ ] Options that open a ContentStudio dialog instead of leaving the app (Bluesky, Telegram, Facebook Group) open that dialog as today and don't show the redirecting state
+- [ ] If the user comes back to the modal with the browser's Back button, every **+ New** button is enabled again
+
+**Unchanged:**
+
+- [ ] The EasyConnect banner and Create New Link, the "N Connected" pills and their dropdowns, the X (Twitter) Follow checkbox, Learn more and Cancel behave exactly as today
+- [ ] The same button and redirecting state appear on the EasyConnect page and in the guided onboarding connect step, which reuse this modal's rows
+- [ ] No em dashes in the tooltip or toast copy
+
+---
+
+### Mock-ups:
+
+Design canvas, row 3: https://claude.ai/artifact/APzGjGQbTCJn8rYJ5EHtur. The modal with **+ New** on every row, the Facebook menu open, and the redirecting state on LinkedIn. Use `Button` from `@contentstudio/ui` in its small light variant with a plus icon, and its loading state for the spinner. There is no standalone tooltip in `@contentstudio/ui`, so the redirecting tooltip uses the legacy `CstPopup` unless the [Design] story adds one.
+
+---
+
+### Impact on existing data:
+
+None.
+
+---
+
+### Impact on other products:
+
+Web app only, including the EasyConnect page and guided onboarding. The mobile app has its own connect screen.
+
+---
+
+### Dependencies:
+
+- **[Design] Design the Reconnect required message and the account picker shortcuts**
+
+---
+
+### Global quality & compliance (wherever applicable)
+
+- [ ] Mobile responsiveness (frontend only, N/A for backend-only stories)
+- [ ] Multilingual support (frontend + backend, translations available or fallback handled)
+- [ ] UI theming support (default + white-label, design library components are being used)
+- [ ] White-label domains impact review
+- [ ] Cross-product impact assessment (web, mobile apps, Chrome extension)
+- [ ] Developer surfaces coverage — N/A, no API changes
+
+---
+
+# [FE] Switch the Label, Campaign and Templates dropdowns to the + New button
+
+### Description
+
+As a ContentStudio user, I want the Label, Campaign and Templates dropdowns to use the same **+ New** button as the account pickers, so that creating something looks and works the same everywhere in the app and I never have to hunt for a small round icon.
+
+The round `+` icon in these three dropdowns is the pattern this epic is moving away from. Once the account pickers and the Connect Social Accounts modal show **+ New**, leaving these three on the old icon would make the app inconsistent in exactly the places people use most while writing a post.
+
+---
+
+### Workflow
+
+1. User opens the Label dropdown in the Composer header. Next to the "Labels" heading there's a **+ New** button where the round `+` used to be.
+2. User clicks **+ New**. The same inline "Type label name" form opens as it does today. While the form is open, **+ New** looks disabled, as the round `+` does today.
+3. User opens the Campaign dropdown. **+ New** sits next to "Campaign" and opens the same inline new-campaign form as today.
+4. User opens the Templates dropdown in the Composer. **+ New** sits next to "Templates" and opens the same Save post as template dialog as today. From the Planner, the same button opens the Composer to create a new template, as today.
+
+---
+
+### Acceptance criteria
+
+**Where it changes:**
+
+- [ ] Label dropdown, everywhere it appears: Composer header, Planner list and bulk actions bar, plan preview, Bulk CSV automation
+- [ ] Campaign dropdown, in the same places
+- [ ] Templates dropdown in the Composer and in the Planner calendar
+
+**The button:**
+
+- [ ] The round `+` icon next to each dropdown's heading is replaced by the **+ New** button from **[FE] Add connect and settings shortcuts to every account picker**: plus icon and the label "New"
+- [ ] Clicking it does exactly what the round `+` does today: Labels open the inline new-label form, Campaigns open the inline new-campaign form, Templates open "Save post as template" in the Composer and open the Composer to create a template from the Planner
+- [ ] While the Label or Campaign inline form is open, **+ New** shows as disabled, as the round `+` does today
+- [ ] Tooltips stay as today: "Add a new Label", "Add a new Campaign", "Save post as template" (Composer) and "Create a new template" (Planner)
+- [ ] Who can see the button is unchanged
+
+**Empty states that point at the old icon:**
+
+- [ ] The Label empty state reads "No labels yet. Click New to create one." (today it shows the round `+` inline: "No labels yet. Click + to create one.")
+- [ ] The Campaign empty state reads "No campaigns yet. Click New to create one."
+
+**Unchanged:**
+
+- [ ] The settings gear, search, list, colour picker, Create and Cancel buttons behave as today
+- [ ] No em dashes in any copy
+
+---
+
+### Mock-ups:
+
+Design canvas: https://claude.ai/artifact/APzGjGQbTCJn8rYJ5EHtur. The **+ New** button in rows 2 and 3 is the reference; these dropdowns use it unchanged. Use `Button` from `@contentstudio/ui` in its small light variant with a plus icon.
+
+---
+
+### Impact on existing data:
+
+None.
+
+---
+
+### Impact on other products:
+
+Web app only. Other places that still use the round `+` icon (Inbox tags, Discovery folders, Listening views, Media library sidebar, Planner custom views, hashtag sets, content categories) are not changed by this story.
+
+---
+
+### Dependencies:
+
+- **[Design] Design the Reconnect required message and the account picker shortcuts** (the **+ New** button design)
+- **[FE] Add connect and settings shortcuts to every account picker** (builds the shared **+ New** button)
+
+---
+
+### Global quality & compliance (wherever applicable)
+
+- [ ] Mobile responsiveness (frontend only, N/A for backend-only stories)
+- [ ] Multilingual support (frontend + backend, translations available or fallback handled)
+- [ ] UI theming support (default + white-label, design library components are being used)
+- [ ] White-label domains impact review
+- [ ] Cross-product impact assessment (web, mobile apps, Chrome extension)
+- [ ] Developer surfaces coverage — N/A, no API changes

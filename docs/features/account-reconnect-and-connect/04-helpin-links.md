@@ -12,9 +12,13 @@ Pushed 2026-09-29 on the PO's approval. Engineering team, sprint **Oct 05 - Oct 
 | [CONT-4159](https://app.helpin.ai/w/contentstudio/pm/epics/0a8daf97-003d-4440-9d79-a4aabf9cf0ff?task=CONT-4159) | [FE] Save the Composer post before leaving to connect or reconnect an account | frontend |
 | [CONT-4160](https://app.helpin.ai/w/contentstudio/pm/epics/0a8daf97-003d-4440-9d79-a4aabf9cf0ff?task=CONT-4160) | [FE] Rewrite expired-token banners and alerts to match, and reconnect the right account | frontend |
 | [CONT-4161](https://app.helpin.ai/w/contentstudio/pm/epics/0a8daf97-003d-4440-9d79-a4aabf9cf0ff?task=CONT-4161) | [FE] Add connect and settings shortcuts to every account picker | frontend |
+| [CONT-4271](https://app.helpin.ai/w/contentstudio/pm/epics/0a8daf97-003d-4440-9d79-a4aabf9cf0ff?task=CONT-4271) | [FE] Replace the + icons in the Connect Social Accounts modal with + New buttons that show a redirecting state | frontend |
+| [CONT-4272](https://app.helpin.ai/w/contentstudio/pm/epics/0a8daf97-003d-4440-9d79-a4aabf9cf0ff?task=CONT-4272) | [FE] Switch the Label, Campaign and Templates dropdowns to the + New button | frontend |
 
 **Doc:** "Research: Reconnect and connect accounts from wherever they're used" (`b62321a8-caf6-47c6-8af9-570186611dfc`), Research collection, attached to the epic and to CONT-4157.
 
 **Not pushed:** `[FE] Show where each platform works in the Connect Social Accounts modal`, held back by the PO. Draft in `03-deferred-connect-modal-capabilities.md`.
 
 **Design canvas:** https://claude.ai/artifact/APzGjGQbTCJn8rYJ5EHtur (private until shared from its Share menu)
+
+**Update 2026-10-02 (CEO decision: + New instead of the round +):** epic, CONT-4156, CONT-4157, CONT-4159 and CONT-4161 bodies updated to say **+ New**; CONT-4271 created (same sprint, Ready, medium, frontend, no assignee). CONT-4272 created the same day for the Label, Campaign and Templates dropdowns, and the epic description updated to list it.

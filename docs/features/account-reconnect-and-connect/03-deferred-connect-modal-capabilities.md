@@ -7,6 +7,7 @@ Design reference: design canvas row 3, https://claude.ai/artifact/APzGjGQbTCJn8r
 When this is picked up:
 - Add the modal to the design scope (columns at the new width, partial-support notes, the Inbox and Analytics highlighted variants, the Facebook and Instagram menu lines). It was taken out of the epic's [Design] story.
 - Add back to **[FE] Add connect and settings shortcuts to every account picker**: the Inbox filter's `+` opens the modal in its Inbox view, and Analytics' `+` in its Analytics view.
+- Since 2026-10-02 every row's round `+` is a **+ New** button with a redirecting state (CEO decision, story `[FE] Replace the + icons in the Connect Social Accounts modal with + New buttons that show a redirecting state`). Build the columns around that button, and say **+ New** wherever this draft says `+`.
 - Verify the open capability cells in `01-research.md` section 5 (Threads inbox, Instagram direct vs via Facebook, TikTok types).
 
 ---

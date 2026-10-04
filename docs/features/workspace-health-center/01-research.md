@@ -50,7 +50,7 @@ Later candidates: inbox sync stopped, analytics sync failing, feeds or automatio
 
 ## CTO prototype (2026-09-30)
 
-Canvas "Measurement & Health Center": https://claude.ai/artifact/TYrrHhHuzeNtujZtnADRSQ (5 artboards, created 2026-09-29). Summary of what it specifies:
+Canvas "Measurement & Health Center": https://claude.ai/artifact/TYrrHhHuzeNtujZtnADRSQ (5 artboards, created 2026-09-29). Superseded as the working reference by the updated design canvas below. Summary of what it specifies:
 
 **Navigation.** A "Health" item in the desktop rail, between Library and API. PO addition: the rail icon is a heart that fills with workspace health (empty, half, full).
 
@@ -84,3 +84,27 @@ Canvas "Measurement & Health Center": https://claude.ai/artifact/TYrrHhHuzeNtujZ
 - ~~A Slack integration for alerts.~~ **Out of scope (PO, 2026-09-30): no Slack.** Alert channels are in-app, email and mobile push only.
 
 Related: Helpin epic **Notifications architecture** (`ea0a4fe5-...`) and **Reconnect and connect accounts from wherever they're used** (CONT-4156 to 4161).
+
+## Team decisions (PO, 2026-10-01)
+
+After the PO's discussion with the team, the scope was narrowed. Where this and the CTO prototype differ, this wins.
+
+- **Accounts tab:** one row per account. Accounts needing reconnection first, then accounts whose last post failed, then healthy. Repeated failures on one account update the same row ("Last 2 posts failed"), never a new row. Details shows the account's error log and failed posts. Filters: search, platform, status (Reconnect required, Not found, Last post failed, Expiring soon, Healthy).
+- **Post delivery tab:** one entry per account per failed post (a post failing on 5 of 10 accounts = 5 entries). First entry selected by default, details in a side panel. Show only the raw error log and the timeline. Access expired or revoked: Reconnect plus the help doc link. Any other failure: Retry. No "what happened / how to fix" text and no reason categories.
+- **Overview tab:** keep the four top tiles. Needs your attention: reconnect, removed account, Google Business location not found, mobile reminders. Keep delivery rate by platform. Drop "Why posts failed". Failed posts per day and published posts per day in one widget, switched with a `SegmentedControl`.
+- **Dropped:** "Paused by platform" everywhere (platforms send no signal), the Alert settings tab, and all new health alerts (in-app and email notifications already exist and are managed in notification settings). That removes the alerts BE story, the alert settings FE story, the notification panel and Home banner story, and the Flutter push story.
+- **Kept:** the heart rail icon and its thresholds, the research story for Bilal Tariq (now also covering whether posting limits can be detected and failure-reason classification).
+- **Follow-up (PO, 2026-10-01):** no new Home banner, because the existing bottom reconnect banner (`contentstudio-frontend/src/modules/common/components/header-notifications/HeadNotificationSlider.vue`, mounted in `Home.vue`) already covers it. No CSV export for now. One `[Flutter]` story brings the whole Health Center to the app (reuses CONT-4229).
+
+## Design canvas (2026-10-02)
+
+Working reference for every story: https://claude.ai/artifact/VDtqPGHn2VUJm7dComQU26 ("Workspace Health Center"). Built from the CTO prototype, which sits outside our organization and can't be edited, and updated to the team decisions above. Five boards:
+
+- **Overview:** no Alert settings, no paused issue, no "Why posts failed". Delivery rate by platform next to one posts-per-day widget with a working Failed / Published toggle. Healthy accounts tile: reconnect, last post failed, not found, expiring soon.
+- **Accounts:** status filters (Reconnect required, Not found, Last post failed, Expiring soon, Healthy), platform dropdown and search. One row per account in the agreed order, with "Last 2 posts failed" on a single row.
+- **Accounts · Details:** drawer with the account's failed posts (Retry each) and its raw error log.
+- **Post delivery:** one entry per account per failed post, first selected, side panel with raw error log and timeline. Reconnect plus "Why did this happen?" for expired access, Retry for the rest (works on the canvas). No CSV export, no reason pills.
+- **Rail · Heart states:** full, half and empty, unselected and selected, with rules and tooltips.
+
+The Google Business "not found" item no longer says we stop posting to it. That behaviour is still open in the research story.
+

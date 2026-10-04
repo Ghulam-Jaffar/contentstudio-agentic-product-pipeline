@@ -2,20 +2,17 @@
 
 ## Epic description
 
-When something goes wrong in a ContentStudio workspace, the user finds out piece by piece, if at all. An expired Facebook token shows up as a banner in one place and a warning icon in another. A post that Facebook rejected sits in the Planner under a "failed" filter. A partly failed post or a page Facebook has limited only shows if the user goes looking. Nothing puts it all in one place, and nothing tells the user plainly what will fail next and how to fix it.
+When something goes wrong in a ContentStudio workspace, the user finds out piece by piece, if at all. An expired Facebook token shows up as a banner in one place and a warning icon in another. A post that Facebook rejected sits in the Planner under a "failed" filter. An account whose posts keep failing only shows if the user goes looking. Nothing puts it all in one place, and nothing tells the user plainly what needs fixing.
 
-The **Health Center** is a new area that shows everything that could stop a post from going out, in one place. It has four tabs:
+The **Health Center** is a new area that shows everything that could stop a post from going out, in one place. It has three tabs:
 
-- **Overview**: the delivery rate, posts published and failed, healthy accounts, and a **Needs your attention** list sorted by which posts will fail soonest, each issue with a plain explanation and a fix button.
-- **Accounts**: every connected account, whether it can post right now, when its access runs out, and why.
-- **Post delivery**: every post that didn't go out, why, what to do about it, and the technical details for support.
-- **Alert settings**: who hears about problems, where (in-app, email, mobile push) and how often. One alert per issue, never one per post.
+- **Overview**: four headline numbers (delivery rate, posts published, posts failed, healthy accounts), a **Needs your attention** list, delivery rate by platform, and failed and published posts per day.
+- **Accounts**: one row per account that needs reconnecting, whose last post failed, or that is healthy, with filters and a details view of its errors and failed posts.
+- **Post delivery**: one entry per account per failed post, with the error log, the timeline and the right action: reconnect or retry.
 
-It also adds a **Health** item to the desktop rail with a **heart icon that fills with the workspace's health**, tabs to the notification panel, and a health banner on Home.
+It also adds a **Health** item to the desktop rail with a **heart icon that fills with the workspace's health**.
 
-**Prototype (by the CTO):** https://claude.ai/artifact/TYrrHhHuzeNtujZtnADRSQ
-
-**Status:** partly skeleton. Scope will be refined after the PO's discussion with the technical team lead.
+**Design canvas:** https://claude.ai/artifact/VDtqPGHn2VUJm7dComQU26. Updated on 2026-10-02 to the scope the team agreed on 2026-10-01, starting from the CTO's original prototype.
 
 ### Heart icon
 
@@ -29,73 +26,77 @@ It also adds a **Health** item to the desktop rail with a **heart icon that fill
 
 In:
 
-- Account health and post delivery data, and the metrics behind the Overview
-- The four Health Center tabs
-- Health alerts in-app, by email and by mobile push, with recipients, email digests, quiet hours and a weekly summary
-- Notification panel tabs and a Home health banner
+- Account health and post delivery data, and the numbers behind the Overview
+- The Overview, Accounts and Post delivery tabs
 - The Health item and heart icon in the desktop rail
-- Health alerts as push notifications in the mobile app
-- A research story on automatic protection (pausing pages that hit posting limits and similar), before anything is built
+- The same Health Center in the mobile app
+- A research story on how ContentStudio should handle broken accounts and failures automatically
 
 Out:
 
-- **Slack.** Not in scope
+- **Alert settings and health notifications.** In-app and email notifications already exist and are managed in notification settings. No alert settings tab, no new in-app, email or push alerts, no notification panel changes
+- **A new Home banner.** The existing reconnect banner at the bottom of the app already tells users when accounts need reconnecting
+- **CSV export** of failed posts (not for now)
+- **"Paused by platform".** Platforms don't tell us when they limit an account, so it isn't shown anywhere
+- **"Why posts failed" by reason.** We don't classify failure reasons yet. Post delivery shows the raw error log
+- **Slack**
 - Building a second reconnect flow. The Health Center reuses the one from **Reconnect and connect accounts from wherever they're used**
 - Inbox, analytics and automation health (later)
 
 ### Stories
 
-1. `[Design] Finalise the Health Center, notification panel and heart rail icon from the CTO prototype`
-2. `[BE] Track account health: status, access expiry and cause, last successful post and scheduled posts`
-3. `[BE] Track post delivery issues, retries and delivery-rate metrics for the Health Center`
+1. `[Design] Finalise the Health Center tabs and heart rail icon from the design canvas`
+2. `[BE] Track account health: reconnect status, consecutive failed posts, access expiry and error log`
+3. `[BE] Track per-account post failures and delivery-rate metrics for the Health Center`
 4. `[Research] Decide how ContentStudio should protect accounts automatically when platforms limit or break posting`
-5. `[BE] Send health alerts by the workspace's alert settings`
-6. `[FE] Build the Health Center Overview tab`
-7. `[FE] Build the Health Center Accounts tab`
-8. `[FE] Build the Health Center Post delivery tab with issue details and CSV export`
-9. `[FE] Build Health Center alert settings`
-10. `[FE] Add category tabs to the notification panel and a health banner on Home`
-11. `[FE] Add the Health item to the rail with a heart that fills with workspace health`
-12. `[Flutter] Receive Health Center alerts as push notifications`
+5. `[FE] Build the Health Center Overview tab`
+6. `[FE] Build the Health Center Accounts tab`
+7. `[FE] Build the Health Center Post delivery tab with per-account error logs`
+8. `[FE] Add the Health item to the rail with a heart that fills with workspace health`
+9. `[Flutter] Bring the Health Center to the mobile app`
 
 ---
 
-# [Design] Finalise the Health Center, notification panel and heart rail icon from the CTO prototype
+# [Design] Finalise the Health Center tabs and heart rail icon from the design canvas
 
 ### Description
 
-As a designer, I want to turn the CTO's Health Center prototype into final designs, so that devs build the four tabs, the notification panel, the Home banner and the heart rail icon from one agreed reference.
+As a designer, I want to turn the Health Center design canvas into final designs for the scope the team agreed, so that devs build the three tabs and the heart rail icon from one agreed reference.
 
-The prototype covers the structure and copy. This story finalises it against the design system, removes Slack (out of scope), and adds the heart icon states the PO asked for.
+The design canvas already reflects the scope the team agreed: no alert settings, no notification panel changes, no "Paused by platform" state and no "Why posts failed" widget. It shows per-account rows that count consecutive failures, per-account post delivery entries with the raw error log, a failed or published posts per day widget with a toggle, and the heart states. This story turns it into final, handed-off designs.
 
 ---
 
 ### Workflow
 
-1. Designer reviews the CTO prototype and today's related screens: expired-token banners, the social accounts table, the dashboard's failed-posts card, the Planner's failed filter and the notification dropdown.
-2. Designer finalises the Overview, Accounts, Post delivery and Alert settings tabs.
-3. Designer finalises the notification panel with category tabs and the Home health banner.
-4. Designer designs the Health rail item with a heart icon in three states: full, half and empty.
-5. Designer covers empty, loading and error states for every tab.
+1. Designer reviews the design canvas and the scope in this epic.
+2. Designer finalises the Overview tab: four headline numbers, Needs your attention, delivery rate by platform, and posts per day with a Failed and Published toggle.
+3. Designer finalises the Accounts tab: one row per account, the "Last 2 posts failed" pattern, filters, search and the details view.
+4. Designer finalises the Post delivery tab: the list with the first entry selected, and the side panel with the error log, timeline and action.
+5. Designer designs the Health rail item with a heart icon in three states: full, half and empty.
+6. Designer covers empty, loading and error states for every tab.
 
 ---
 
 ### Acceptance criteria
 
-- [ ] Final designs for the Overview, Accounts, Post delivery (list and issue detail) and Alert settings tabs
-- [ ] Alert settings show only in-app, email and mobile push. No Slack column, channel or test button
-- [ ] The notification panel with All, Health, Publishing, Approvals and Mentions tabs, and the Home health banner
-- [ ] The Health rail item with the heart icon in full, half and empty states, plus its tooltip, and how it looks in every rail theme
+- [ ] Final designs for the Overview, Accounts and Post delivery tabs. No Alert settings tab
+- [ ] No "Paused by platform" status, filter or issue anywhere, and no "Why posts failed" widget
+- [ ] The posts-per-day widget switches between **Failed** and **Published** with a `SegmentedControl`
+- [ ] Accounts rows show repeated failures on one account as a single row ("Last 2 posts failed"), never as extra rows
+- [ ] Post delivery shows one entry per account per failed post, and the side panel with error log, timeline and either **Reconnect** plus a help link, or **Retry**
+- [ ] The Health rail item with the heart icon in full, half and empty states, its tooltip, and how it looks in every rail theme
 - [ ] Severity styles for Critical, Warning and Info that stay readable without colour alone
 - [ ] Empty ("Everything's running smoothly"), loading and error states for every tab
 - [ ] Every element is mapped to an existing `@contentstudio/ui` component, or flagged as a gap
-- [ ] Designs are handed off to every `[FE]` story in this epic, and the push notification copy to the `[Flutter]` story
+- [ ] Phone layouts of the three tabs and the health indicator for the mobile app
+- [ ] Designs are handed off to every `[FE]` and `[Flutter]` story in this epic
 
 ---
 
 ### Mock-ups:
 
-CTO prototype: https://claude.ai/artifact/TYrrHhHuzeNtujZtnADRSQ
+Design canvas, updated to the agreed scope: https://claude.ai/artifact/VDtqPGHn2VUJm7dComQU26
 
 ---
 
@@ -107,13 +108,13 @@ None.
 
 ### Impact on other products:
 
-Web app. The mobile app gets push notification copy only.
+Web app, plus the mobile screens for **[Flutter] Bring the Health Center to the mobile app**.
 
 ---
 
 ### Dependencies:
 
-None. Blocks every `[FE]` story in this epic.
+None. Blocks every `[FE]` and `[Flutter]` story in this epic.
 
 ---
 
@@ -128,48 +129,64 @@ None. Blocks every `[FE]` story in this epic.
 
 ---
 
-# [BE] Track account health: status, access expiry and cause, last successful post and scheduled posts
+# [BE] Track account health: reconnect status, consecutive failed posts, access expiry and error log
 
 ### Description
 
-As a ContentStudio user, I want the app to know, for every connected account, whether it can post right now, when its access runs out and why, so that the Health Center can warn me before posts fail instead of after.
+As a ContentStudio user, I want the app to know, for every connected account, whether it needs reconnecting, whether its recent posts are failing, and when its access runs out, so that the Health Center shows me which accounts to fix first.
 
-Account validity is tracked today (valid, expired, expiring soon, invalid), but not the cause, the exact expiry, the last successful post, or how many scheduled posts depend on the account. This story adds that and returns it for the Health Center.
-
-**Skeleton.** Details to follow the tech lead discussion.
+Account validity is tracked today (valid, expired, expiring soon, invalid), but not how many posts in a row have failed on an account, its error log, or the exact expiry. This story adds that and returns it for the Accounts tab and the Overview.
 
 ---
 
 ### Workflow
 
 1. User opens the Health Center Accounts tab.
-2. ContentStudio returns every account with its status, access expiry and cause, last successful post and number of scheduled posts.
-3. Accounts that need action come first.
+2. Accounts that need reconnecting come first.
+3. Next come accounts whose last post failed. An account whose last 2 posts failed shows once, as "Last 2 posts failed", not as two entries.
+4. Then the healthy accounts.
+5. User opens an account's details and sees its error log and the posts that failed on it.
 
 ---
 
 ### Acceptance criteria
 
-- [ ] Each account has a health status: **Reconnect required**, **Paused by platform**, **Not found**, **Expiring soon** (within 14 days) or **Healthy**
-- [ ] Each account has its access expiry date (or "no expiry") and, where known, the cause in plain words (for example "Password changed on Facebook", "LinkedIn access lasts 60 days", "Access removed in Google account settings")
-- [ ] Each account has its last successful post time and its number of scheduled posts, or posts on hold
-- [ ] For X, the remaining posts allowed today is returned where available
-- [ ] The list can be filtered by status, with counts per status, and is sorted with accounts that need action first
-- [ ] Counts for the Overview: healthy accounts out of total, and how many are to reconnect, paused or not found
+**Statuses**
+
+- [ ] Each account has one status: **Reconnect required**, **Not found** (for example a Google Business location that no longer exists), **Last post failed**, **Expiring soon** (within 14 days) or **Healthy**
+- [ ] There is no "Paused by platform" status
+- [ ] Order: Reconnect required first, then Not found, then Last post failed, then Expiring soon, then Healthy
+
+**Consecutive failures**
+
+- [ ] For an account whose most recent post failed, the number of failures in a row since its last successful post is returned (for example 2 for "Last 2 posts failed")
+- [ ] A new failure on the same account increases that number on the same account. It never creates a second entry
+- [ ] A successful post on that account resets it to Healthy
+
+**Details**
+
+- [ ] Each account returns its access expiry date (or "no expiry") and, where known, the cause in plain words (for example "Password changed on Facebook", "LinkedIn access lasts 60 days")
+- [ ] Each account returns its last successful post time and number of scheduled posts
+- [ ] An account's details return its error log (each failed attempt with time, post and the platform's error message) and the posts that failed on it, newest first, paged
+
+**Filters**
+
+- [ ] The list can be searched by account name and filtered by platform and by status, with counts per status
+- [ ] Counts for the Overview: healthy accounts out of total, and how many need reconnecting or are not found
 - [ ] Only accounts the requesting user can access are returned
-- [ ] Reconnecting an account moves it back to Healthy straight away, and its scheduled posts go out as planned
+- [ ] Reconnecting an account moves it out of Reconnect required straight away, and its scheduled posts go out as planned
 
 ---
 
 ### Mock-ups:
 
-None. Backend. Reference: the Accounts tab in the CTO prototype: https://claude.ai/artifact/TYrrHhHuzeNtujZtnADRSQ
+None. Backend. Reference: the Accounts tab on the design canvas: https://claude.ai/artifact/VDtqPGHn2VUJm7dComQU26
 
 ---
 
 ### Impact on existing data:
 
-Adds health fields to connected accounts (status cause, expiry, last successful post). Existing validity values are kept.
+Adds health fields to connected accounts (consecutive failure count, expiry, last successful post). Existing validity values are kept.
 
 ---
 
@@ -197,49 +214,53 @@ Adds health fields to connected accounts (status cause, expiry, last successful 
 
 ---
 
-# [BE] Track post delivery issues, retries and delivery-rate metrics for the Health Center
+# [BE] Track per-account post failures and delivery-rate metrics for the Health Center
 
 ### Description
 
-As a ContentStudio user, I want every post that didn't go out to be recorded with the reason, what we tried and what to do next, and to see my delivery rate over time, so that I can fix what's broken and see whether things are getting better.
+As a ContentStudio user, I want every failed post to be recorded per account, with the platform's error and what to do next, and to see my delivery rate over time, so that I can fix each failure and see whether things are getting better.
 
-Failed posts and their raw platform errors exist today, but there's no grouping by reason, no record of retries, no "preventable" count and no delivery-rate metric. This story adds them and returns them for the Overview and Post delivery tabs.
+A post going to 10 accounts can fail on 5 of them for different reasons, and each of those needs its own retry or reconnect. So this story records failures **per account per post**, not per post. It also adds the numbers behind the Overview.
 
-**Skeleton.** Details to follow the tech lead discussion.
+We don't classify failure reasons yet. Each failure carries the platform's raw error and one of two actions: **reconnect** when access expired or was revoked, or **retry** for any other posting failure.
 
 ---
 
 ### Workflow
 
-1. User opens the Health Center.
-2. The Overview shows the 7-day delivery rate and trend, posts published and failed, failures by reason and by platform, and failures per day.
-3. The Post delivery tab lists every post that didn't go out, and each one explains what happened.
+1. A post goes to 10 accounts and fails on 5.
+2. The Post delivery tab shows 5 entries, one per account, each with its own error and action.
+3. On one entry, access had expired, so it offers Reconnect. On another, the platform rejected the post, so it offers Retry.
+4. The Overview shows the delivery rate, published and failed counts, delivery rate by platform, and failed and published posts per day.
 
 ---
 
 ### Acceptance criteria
 
-**Per post**
+**Per account per post**
 
-- [ ] Every post that didn't go out on time has a status: **Failed**, **On hold** or **Retrying**
-- [ ] Each has a reason category: expired or revoked access, paused by the platform (posting limit), media rejected, account removed from the workspace, location or account not found, or platform outage after retries
-- [ ] Each has a plain "What happened" and "How to fix it", and the two actions to offer
-- [ ] Each has a timeline (scheduled time reached, platform response, retry decision, who was notified), the original platform error code, attempts (for example "1 of 1 (not retryable)" or "2 of 5") and a support reference
-- [ ] The list is filterable by status and exportable as CSV for a chosen date range
+- [ ] Each account a post failed on is its own entry: post, account, platform, scheduled time and status Failed
+- [ ] Each entry has the platform's error message and code as returned, the number of attempts, and a timeline (scheduled time reached, platform response, retries)
+- [ ] Each entry has one action type: **reconnect** when the failure was expired or revoked access, otherwise **retry**
+- [ ] Retrying an entry retries only that account. A successful retry removes the entry from the failed list and counts as published
+- [ ] Entries can be filtered by platform and account, searched by post text, and are returned newest first, paged
 
 **Metrics**
 
-- [ ] Delivery rate for the last 7 days and the change from the previous 7 days
-- [ ] Posts published, posts failed, and how many failures were preventable (expired access or removed accounts)
+- [ ] Delivery rate for the last 7 days and the change from the previous 7 days, counted per account per post
+- [ ] Posts published and posts failed in the last 7 days, and how many failures were on accounts that needed reconnecting or were removed (preventable)
 - [ ] Delivery rate and failed count per platform
-- [ ] Failures by reason
-- [ ] Failed posts and delivery rate per day
+- [ ] Failed posts per day and published posts per day for the last 7 days
 
-**Issues list**
+**Needs your attention**
 
-- [ ] Open issues are grouped (one issue per cause, not one per post) with severity **Critical**, **Warning** or **Info**, the affected accounts, the number of posts affected and when the next one is due
-- [ ] Issues are sorted by which posts will fail soonest
-- [ ] An issue clears on its own when its cause is fixed
+- [ ] Open issues, one per cause, each with severity, the affected accounts, the number of posts affected and when the next one is due:
+    - Accounts that need reconnecting (Critical)
+    - Scheduled posts that still use a removed account (Warning)
+    - A Google Business location that wasn't found (Info)
+    - A teammate isn't getting mobile reminders (Info)
+- [ ] No "paused by platform" issue
+- [ ] Issues are sorted by which posts will fail soonest, and clear on their own when the cause is fixed
 
 **Heart score**
 
@@ -249,19 +270,20 @@ Failed posts and their raw platform errors exist today, but there's no grouping 
 
 ### Mock-ups:
 
-None. Backend. Reference: the Overview and Post delivery tabs in the CTO prototype: https://claude.ai/artifact/TYrrHhHuzeNtujZtnADRSQ
+None. Backend. Reference: the Overview and Post delivery tabs on the design canvas: https://claude.ai/artifact/VDtqPGHn2VUJm7dComQU26
 
 ---
 
 ### Impact on existing data:
 
-Adds a record of delivery attempts and issue history. Existing post and error data is kept.
+Adds a per-account record of failed attempts. Existing post and error data is kept.
 
 ---
 
 ### Impact on other products:
 
 - **Dashboard:** the existing failed-posts card should use the same numbers.
+- **Planner:** a post that failed on some accounts still shows as partly failed there.
 - **Public API and MCP server:** open question, as for account health.
 
 ---
@@ -287,15 +309,16 @@ None.
 
 ### Description
 
-As the ContentStudio team, we want to decide whether and how the system should act on its own when a platform limits or breaks posting, so that users lose fewer posts and accounts don't get restricted further, without ContentStudio doing anything surprising.
+As the ContentStudio team, we want to decide whether and how the system should act on its own when posting breaks, so that users lose fewer posts and accounts don't get restricted further, without ContentStudio doing anything surprising.
 
-The CTO prototype assumes several automatic behaviours that don't exist today. Each needs a decision before it's built:
+The CTO's original prototype assumed behaviours that don't exist today. Each needs a decision before it's built:
 
-- **Pause a page that hit a platform posting limit** (for example Facebook limiting a page after the same post went to many pages at once) until the limit lifts, and hold its posts instead of failing them.
 - **Stop posting to a Google Business location that isn't found**, so it doesn't fail every day.
 - **Flag scheduled posts that still target a removed account**, and let the user pick another account or remove it from the post.
-- **Retry temporary platform errors** up to 5 times with increasing waits, and never retry errors that can't succeed.
+- **Retry temporary platform errors** a set number of times with increasing waits, and never retry errors that can't succeed.
 - **Detect a teammate's phone that stopped accepting reminders** for Facebook group posts.
+- **Pause a page that hit a platform posting limit.** Platforms don't notify us of this today, so it's out of the Health Center for now. The research should say whether there is any reliable way to detect it.
+- **Classify failure reasons** (expired access, media rejected, platform outage and so on) so a "Why posts failed" view could come later.
 
 This is an open question. The outcome is a written recommendation, not code.
 
@@ -312,17 +335,18 @@ This is an open question. The outcome is a written recommendation, not code.
 
 ### Acceptance criteria
 
-- [ ] A written recommendation for each of the five behaviours: do it or not, how it would work, what the user sees, and the risks
+- [ ] A written recommendation for each behaviour above: do it or not, how it would work, what the user sees, and the risks
 - [ ] Data on how often each case happens today, from existing publishing errors
-- [ ] Which platform error codes map to "retry", "hold" and "stop"
+- [ ] Which platform error codes mean "reconnect", "retry" and "stop"
 - [ ] A proposed retry policy (how many tries, how long between them)
+- [ ] Whether posting limits can be detected reliably on any platform
 - [ ] Reviewed with the PO and tech lead, with the agreed build stories listed
 
 ---
 
 ### Mock-ups:
 
-None. Reference: the "Needs your attention" examples in the CTO prototype: https://claude.ai/artifact/TYrrHhHuzeNtujZtnADRSQ
+None. Reference: the "Needs your attention" examples on the design canvas: https://claude.ai/artifact/VDtqPGHn2VUJm7dComQU26
 
 ---
 
@@ -340,7 +364,7 @@ Decisions here change how publishing behaves for everyone, on web and mobile.
 
 ### Dependencies:
 
-None. Informs **[BE] Track post delivery issues, retries and delivery-rate metrics for the Health Center**.
+None. Informs **[BE] Track per-account post failures and delivery-rate metrics for the Health Center**.
 
 ---
 
@@ -355,105 +379,53 @@ None. Informs **[BE] Track post delivery issues, retries and delivery-rate metri
 
 ---
 
-# [BE] Send health alerts by the workspace's alert settings
-
-### Description
-
-As a workspace owner, I want to be told about problems once, through the channels I chose, and by the right people, so that issues get fixed quickly without my team drowning in one email per failed post.
-
-This story sends health alerts in-app, by email and by mobile push, following the workspace's alert settings. It always alerts once per issue, never once per post.
-
-**Skeleton.** Details to follow the tech lead discussion. It should follow the **Notifications architecture** epic.
-
----
-
-### Workflow
-
-1. An account's access expires. ContentStudio sends one "Account needs reconnecting" alert, listing the posts it affects, to the people and channels the settings say.
-2. Several posts fail for the same reason. The user gets one alert for the issue, or one hourly or daily digest email if they chose that.
-3. During quiet hours, email and push wait. Critical alerts still show in the app.
-4. Every Monday at 09:00 the weekly health summary goes out.
-
----
-
-### Acceptance criteria
-
-- [ ] Alert types: Account needs reconnecting (critical), Platform paused posting, Post failed (only failures that need the user; temporary errors are retried first), Access expiring soon (7 days and 1 day before), Mobile reminder not delivered, Post published (grouped into one per hour), Weekly health summary (Mondays 09:00, workspace time zone)
-- [ ] Channels: in-app, email and mobile push only. **No Slack**
-- [ ] In-app alerts for accounts that need reconnecting can't be turned off
-- [ ] One alert per issue, never one per post
-- [ ] Recipients follow the settings: workspace owner (always gets critical alerts), admins, whoever connected the account, whoever scheduled an affected post (only for their own posts), clients with approval access
-- [ ] Email for failed posts follows the chosen frequency: as they happen, hourly digest or daily digest at 09:00. Reconnect alerts are always sent straight away
-- [ ] Quiet hours delay email and push until they end. Critical alerts still appear in the app
-- [ ] Alerts stop once the issue is fixed
-
----
-
-### Mock-ups:
-
-None. Backend. Reference: the Alert settings tab in the CTO prototype, with Slack removed: https://claude.ai/artifact/TYrrHhHuzeNtujZtnADRSQ
-
----
-
-### Impact on existing data:
-
-Adds alert settings per workspace and a record of alerts sent.
-
----
-
-### Impact on other products:
-
-- **Existing expired-account emails** are replaced by these alerts, so users don't get both.
-- **Mobile app:** receives push alerts (see **[Flutter] Receive Health Center alerts as push notifications**).
-
----
-
-### Dependencies:
-
-- **[BE] Track account health: status, access expiry and cause, last successful post and scheduled posts**
-- **[BE] Track post delivery issues, retries and delivery-rate metrics for the Health Center**
-- The **Notifications architecture** epic's research
-
----
-
-### Global quality & compliance (wherever applicable)
-
-- [ ] Mobile responsiveness: N/A, backend only
-- [ ] Multilingual support (frontend + backend, translations available or fallback handled)
-- [ ] UI theming support: N/A, backend only
-- [ ] White-label domains impact review
-- [ ] Cross-product impact assessment (web, mobile apps, Chrome extension)
-- [ ] Developer surfaces coverage (any new or changed API is reflected in the public API, CLI, MCP server and automation apps, N/A when nothing API-facing changes)
-
----
-
 # [FE] Build the Health Center Overview tab
 
 ### Description
 
-As a ContentStudio user, I want one screen that tells me how my publishing is doing and what will fail next, so that I can fix the most urgent problem first.
-
-**Skeleton.** Final layout and copy from the design story.
+As a ContentStudio user, I want one screen that tells me how my publishing is doing and what needs fixing, so that I can deal with the most urgent problem first.
 
 ---
 
 ### Workflow
 
 1. User opens Health from the rail and lands on Overview.
-2. They see the header "Health Center / Everything that could stop a post from going out, in one place." with when it was last updated, and tabs for Overview, Accounts, Post delivery and Alert settings.
+2. They see the header "Health Center / Everything that could stop a post from going out, in one place." with when it was last updated, and tabs for Overview, Accounts and Post delivery.
 3. They see four numbers: delivery rate, posts published, posts failed and healthy accounts.
-4. Under **Needs your attention** they see the issues, most urgent first, and click **Reconnect accounts** on the critical one.
-5. Lower down they see delivery rate by platform, why posts failed, and failures per day.
+4. Under **Needs your attention** they see the open issues, most urgent first, and click **Reconnect accounts** on the critical one.
+5. Lower down they see delivery rate by platform, and a posts-per-day chart. They switch it from **Failed** to **Published** to compare.
 
 ---
 
 ### Acceptance criteria
 
-- [ ] Header, last-updated time, **Alert settings** and **Compose Post** buttons, and the four tabs with counts ("6 need action", "47 failed")
-- [ ] Four cards: Post delivery rate (last 7 days, with change from the previous 7 days), Posts published, Posts failed (with the preventable count), Healthy accounts (with to reconnect, paused and not found)
-- [ ] **Needs your attention** lists open issues sorted by which posts fail soonest, with Critical, Warning and Info counts. Each issue shows severity, explanation, affected accounts, impact and two actions
+**Header and tabs**
+
+- [ ] Header with the last-updated time and a **Compose Post** button
+- [ ] Tabs: Overview, Accounts (with a count of accounts that need action) and Post delivery (with a count of failed posts). No Alert settings tab
+
+**Top cards**
+
+- [ ] Post delivery rate, last 7 days, with the change from the previous 7 days ("Up 0.8 points on the previous 7 days")
+- [ ] Posts published, with "Across {n} connected accounts"
+- [ ] Posts failed, with "{n} were preventable: expired access or removed accounts"
+- [ ] Healthy accounts, "{healthy} of {total}", with how many need reconnecting and how many are not found
+
+**Needs your attention**
+
+- [ ] Lists open issues sorted by which posts fail soonest, with Critical, Warning and Info counts. Each shows severity, explanation, affected accounts, impact and two actions
+- [ ] Shows only these issue types: accounts that need reconnecting, scheduled posts that still use a removed account, a Google Business location that wasn't found, and a teammate not getting mobile reminders
+- [ ] No "paused by platform" issue
 - [ ] Reconnect actions use the reconnect flow from **[FE] Show "Reconnect required" with a Reconnect now button on every expired account**
-- [ ] Delivery rate by platform, Why posts failed (with **See failed posts**) and Failed posts per day
+
+**Charts**
+
+- [ ] Delivery rate by platform for the last 7 days, with the failed count per platform
+- [ ] One posts-per-day chart for the last 7 days with a `SegmentedControl` to switch between **Failed** and **Published**. Default: Failed. Today is marked "Today is still in progress"
+- [ ] No "Why posts failed" widget
+
+**States**
+
 - [ ] All-clear state when there are no issues: "Everything's running smoothly"
 - [ ] Loading and error states as designed
 - [ ] All copy comes from translation keys
@@ -462,7 +434,7 @@ As a ContentStudio user, I want one screen that tells me how my publishing is do
 
 ### Mock-ups:
 
-From **[Design] Finalise the Health Center, notification panel and heart rail icon from the CTO prototype**. CTO prototype: https://claude.ai/artifact/TYrrHhHuzeNtujZtnADRSQ
+From **[Design] Finalise the Health Center tabs and heart rail icon from the design canvas**. Design canvas: https://claude.ai/artifact/VDtqPGHn2VUJm7dComQU26
 
 ---
 
@@ -480,9 +452,9 @@ White-label domains must never show ContentStudio by name here.
 
 ### Dependencies:
 
-- **[BE] Track account health: status, access expiry and cause, last successful post and scheduled posts**
-- **[BE] Track post delivery issues, retries and delivery-rate metrics for the Health Center**
-- **[Design] Finalise the Health Center, notification panel and heart rail icon from the CTO prototype**
+- **[BE] Track account health: reconnect status, consecutive failed posts, access expiry and error log**
+- **[BE] Track per-account post failures and delivery-rate metrics for the Health Center**
+- **[Design] Finalise the Health Center tabs and heart rail icon from the design canvas**
 
 ---
 
@@ -501,36 +473,54 @@ White-label domains must never show ContentStudio by name here.
 
 ### Description
 
-As a ContentStudio user, I want to see every connected account, whether it can post right now and when its access runs out, so that I can reconnect or renew before posts fail.
-
-**Skeleton.** Final layout and copy from the design story.
+As a ContentStudio user, I want to see which accounts need reconnecting, which ones' posts are failing, and which are healthy, so that I can fix the right account before more posts fail.
 
 ---
 
 ### Workflow
 
-1. User opens the Accounts tab.
-2. They see "Every connected account, whether it can post right now, and when its access runs out." with **Connect account** and **Reconnect all**.
-3. They filter to **Reconnect required** and reconnect an account. It moves to Healthy and its posts are kept.
+1. User opens the Accounts tab and sees "Every connected account, whether it can post right now, and when its access runs out." with **Connect account** and **Reconnect all**.
+2. At the top are accounts that need reconnecting. Next are accounts whose last post failed. One shows "Last 2 posts failed".
+3. Then the healthy accounts.
+4. User filters to Instagram and searches "Bakery".
+5. User clicks **Details** on an account and sees its error log and the posts that failed on it.
+6. User reconnects an account and it moves out of Reconnect required.
 
 ---
 
 ### Acceptance criteria
 
-- [ ] Filters with counts: All, Reconnect required, Paused by platform, Not found, Expiring in 14 days, Healthy
-- [ ] The note "Reconnecting keeps your scheduled posts. They go out on time as soon as access is restored."
+**List**
+
+- [ ] One row per account, never more than one. Order: Reconnect required, Not found, Last post failed, Expiring soon, Healthy
+- [ ] An account with repeated failures shows the count on its single row: "Last post failed", "Last 2 posts failed", "Last 3 posts failed" and so on
 - [ ] Columns: Account (name, platform, type), Status, Access (expiry and cause), Last successful post, Scheduled, Actions
-- [ ] Actions per status: Reconnect, View schedule, Check location, Renew access, Details
+- [ ] The note "Reconnecting keeps your scheduled posts. They go out on time as soon as access is restored."
+- [ ] No "Paused by platform" status or filter
+
+**Filters**
+
+- [ ] Search by account name, with placeholder "Search accounts"
+- [ ] Platform filter (`Dropdown`)
+- [ ] Status filter with counts: All, Reconnect required, Not found, Last post failed, Expiring soon, Healthy
+
+**Actions**
+
+- [ ] Reconnect required: **Reconnect**. Not found: **Check location**. Last post failed: **Details**. Expiring soon: **Renew access**. Healthy: **Details**
 - [ ] **Reconnect all** reconnects every account that needs it, one after another
-- [ ] Accounts that need action are listed first. The list is paged
-- [ ] Empty, loading and error states as designed
+- [ ] **Details** opens the account's error log (each failed attempt with time, post and the platform's error message) and the posts that failed on it, newest first. From a failed post, the user can retry it or open it in Post delivery
+
+**States**
+
+- [ ] Paged list
+- [ ] Empty (no accounts match the filters: "No accounts match these filters"), loading and error states as designed
 - [ ] All copy comes from translation keys
 
 ---
 
 ### Mock-ups:
 
-From **[Design] Finalise the Health Center, notification panel and heart rail icon from the CTO prototype**.
+From **[Design] Finalise the Health Center tabs and heart rail icon from the design canvas**. Design canvas: https://claude.ai/artifact/VDtqPGHn2VUJm7dComQU26
 
 ---
 
@@ -548,8 +538,8 @@ Settings > Social Accounts stays as it is.
 
 ### Dependencies:
 
-- **[BE] Track account health: status, access expiry and cause, last successful post and scheduled posts**
-- **[Design] Finalise the Health Center, notification panel and heart rail icon from the CTO prototype**
+- **[BE] Track account health: reconnect status, consecutive failed posts, access expiry and error log**
+- **[Design] Finalise the Health Center tabs and heart rail icon from the design canvas**
 
 ---
 
@@ -564,42 +554,54 @@ Settings > Social Accounts stays as it is.
 
 ---
 
-# [FE] Build the Health Center Post delivery tab with issue details and CSV export
+# [FE] Build the Health Center Post delivery tab with per-account error logs
 
 ### Description
 
-As a ContentStudio user, I want to see every post that didn't go out, why, and what to do about it, so that I can fix each one without guessing and give support the details they need.
+As a ContentStudio user, I want to see every post that failed, account by account, with the platform's error and one clear action, so that I can reconnect or retry each one without guessing.
 
-**Skeleton.** Final layout and copy from the design story.
+A post going to 10 accounts can fail on 5 of them. Each of those 5 is its own entry here, because each needs its own reconnect or retry.
 
 ---
 
 ### Workflow
 
-1. User opens Post delivery and sees "Every post that didn't go out, why, and what to do about it."
-2. They filter to **Failed** and click a post.
-3. The detail panel shows the status, What happened, How to fix it, two actions, the timeline and technical details.
-4. They click **Reconnect account**, and the post goes out after reconnecting.
-5. They click **Export CSV** to share the list.
+1. User opens Post delivery and sees "Every post that didn't go out, and what to do about it."
+2. The first entry is selected, and its details show in the side panel.
+3. Its error says access expired. The panel offers **Reconnect** and a "Why did this happen?" help link.
+4. User clicks another entry. The platform rejected that post, so the panel offers **Retry**.
+5. User retries it. It goes out, and the entry leaves the list.
 
 ---
 
 ### Acceptance criteria
 
-- [ ] Date range (default last 7 days) and **Export CSV**
-- [ ] Filters with counts: All issues, Failed, On hold, Retrying, Published
-- [ ] Rows: post text, account and platform, scheduled time, reason
-- [ ] Detail panel: status, account, time, post text, What happened, How to fix it, primary and secondary actions, timeline, and "Technical details for support" (platform error, attempts, reference)
-- [ ] Actions work: reconnect, retry, edit and retry, move to a later slot, reschedule, check location, remove location, cancel retries
-- [ ] Paged list ("Load more")
-- [ ] Empty, loading and error states as designed
+**List**
+
+- [ ] One entry per account per failed post. A post that failed on 5 of its 10 accounts shows 5 entries
+- [ ] Each entry: post text, account and platform, scheduled time
+- [ ] Newest first, with "Load more"
+- [ ] Search by post text, and filters by platform and account
+
+**Side panel**
+
+- [ ] The first entry is selected by default and its details show in the side panel. Clicking another entry shows its details
+- [ ] The panel shows the post text, account, scheduled time, the platform's error log as returned, and a timeline (scheduled time reached, platform response, each retry)
+- [ ] No "What happened" or "How to fix it" explanations, and no failure-reason categories
+- [ ] Access expired or revoked: **Reconnect** (primary) and a "Why did this happen?" link to the help article
+- [ ] Any other failure: **Retry** (primary). Retrying shows "Retrying..." and then either removes the entry with "Posted to {account}" or shows the new error
+
+**States**
+
+- [ ] Empty: "No failed posts in the last 7 days"
+- [ ] Loading and error states as designed
 - [ ] All copy comes from translation keys
 
 ---
 
 ### Mock-ups:
 
-From **[Design] Finalise the Health Center, notification panel and heart rail icon from the CTO prototype**.
+From **[Design] Finalise the Health Center tabs and heart rail icon from the design canvas**. Design canvas: https://claude.ai/artifact/VDtqPGHn2VUJm7dComQU26
 
 ---
 
@@ -617,140 +619,8 @@ The Planner's failed filter stays. It can link here.
 
 ### Dependencies:
 
-- **[BE] Track post delivery issues, retries and delivery-rate metrics for the Health Center**
-- **[Design] Finalise the Health Center, notification panel and heart rail icon from the CTO prototype**
-
----
-
-### Global quality & compliance (wherever applicable)
-
-- [ ] Mobile responsiveness (frontend only, N/A for backend-only stories)
-- [ ] Multilingual support (frontend + backend, translations available or fallback handled)
-- [ ] UI theming support (default + white-label, design library components are being used)
-- [ ] White-label domains impact review
-- [ ] Cross-product impact assessment (web, mobile apps, Chrome extension)
-- [ ] Developer surfaces coverage: N/A, nothing API-facing changes
-
----
-
-# [FE] Build Health Center alert settings
-
-### Description
-
-As a workspace owner, I want to choose who hears about problems, where and how often, so that the right people fix issues fast without alert noise.
-
-**Skeleton.** Final layout and copy from the design story. No Slack.
-
----
-
-### Workflow
-
-1. Owner opens Alert settings: "Choose who hears about problems, where, and how often. We alert once per issue, never once per post."
-2. They turn email on for "Platform paused posting" and set failed-post emails to an hourly digest.
-3. They add "Whoever connected the account" as a recipient and set quiet hours from 22:00 to 07:00.
-4. They click **Save changes**.
-
----
-
-### Acceptance criteria
-
-- [ ] A table of alert types against In-app, Email and Mobile push, with a short description of each alert. No Slack column
-- [ ] In-app for "Account needs reconnecting" is always on and can't be turned off, with the note explaining why
-- [ ] Who gets health alerts: Workspace owner (always gets critical alerts), Admins, Whoever connected the account, Whoever scheduled an affected post, Clients with approval access
-- [ ] Email frequency for failed posts: As they happen, Hourly digest (recommended), Daily digest at 09:00 (shows the workspace time zone)
-- [ ] Quiet hours with From and To, and the note that critical alerts still appear in the app
-- [ ] **Save changes** and **Cancel**, with a success toast and an unsaved-changes warning
-- [ ] Only users allowed to manage workspace settings can change these
-- [ ] All copy comes from translation keys
-
----
-
-### Mock-ups:
-
-From **[Design] Finalise the Health Center, notification panel and heart rail icon from the CTO prototype**.
-
----
-
-### Impact on existing data:
-
-None beyond saving the settings.
-
----
-
-### Impact on other products:
-
-Existing notification preferences stay. The Notifications architecture epic decides how the two join up.
-
----
-
-### Dependencies:
-
-- **[BE] Send health alerts by the workspace's alert settings**
-- **[Design] Finalise the Health Center, notification panel and heart rail icon from the CTO prototype**
-
----
-
-### Global quality & compliance (wherever applicable)
-
-- [ ] Mobile responsiveness (frontend only, N/A for backend-only stories)
-- [ ] Multilingual support (frontend + backend, translations available or fallback handled)
-- [ ] UI theming support (default + white-label, design library components are being used)
-- [ ] White-label domains impact review
-- [ ] Cross-product impact assessment (web, mobile apps, Chrome extension)
-- [ ] Developer surfaces coverage: N/A, nothing API-facing changes
-
----
-
-# [FE] Add category tabs to the notification panel and a health banner on Home
-
-### Description
-
-As a ContentStudio user, I want my notifications sorted into health, publishing, approvals and mentions, and a clear banner on Home when accounts need fixing, so that urgent problems don't get lost among routine updates.
-
-**Skeleton.** Final layout and copy from the design story.
-
----
-
-### Workflow
-
-1. User opens the notification bell. They see tabs: All, Health, Publishing, Approvals, Mentions, each with a count.
-2. They open Health and see "3 accounts need reconnecting" with **Reconnect accounts**.
-3. On Home, a banner reads "3 accounts need reconnecting / 11 scheduled posts will fail until you do. The next one is in 2h 14m." with **Open Health Center** and **Reconnect**.
-
----
-
-### Acceptance criteria
-
-- [ ] The notification panel has tabs All, Health, Publishing, Approvals and Mentions, with counts
-- [ ] Notifications are grouped Today and Earlier. Each shows an icon, title, body, time, category and one action
-- [ ] **Mark all as read** and **Open Health Center** in the panel
-- [ ] The Home banner shows when any critical health issue is open, with the number of affected posts and when the next one is due, and disappears when fixed
-- [ ] All copy comes from translation keys
-
----
-
-### Mock-ups:
-
-From **[Design] Finalise the Health Center, notification panel and heart rail icon from the CTO prototype**.
-
----
-
-### Impact on existing data:
-
-None.
-
----
-
-### Impact on other products:
-
-Existing expired-token banners should give way to the Home health banner, so users don't see two. Coordinate with **[FE] Rewrite expired-token banners and alerts to match, and reconnect the right account**.
-
----
-
-### Dependencies:
-
-- **[BE] Send health alerts by the workspace's alert settings**
-- **[Design] Finalise the Health Center, notification panel and heart rail icon from the CTO prototype**
+- **[BE] Track per-account post failures and delivery-rate metrics for the Health Center**
+- **[Design] Finalise the Health Center tabs and heart rail icon from the design canvas**
 
 ---
 
@@ -798,7 +668,7 @@ As a ContentStudio user, I want a Health item in the rail whose heart icon shows
 
 ### Mock-ups:
 
-From **[Design] Finalise the Health Center, notification panel and heart rail icon from the CTO prototype**.
+From **[Design] Finalise the Health Center tabs and heart rail icon from the design canvas**. Heart states on the design canvas: https://claude.ai/artifact/VDtqPGHn2VUJm7dComQU26
 
 ---
 
@@ -816,8 +686,8 @@ Should be placed with the **App shell refresh** epic's rail layout in mind.
 
 ### Dependencies:
 
-- **[BE] Track post delivery issues, retries and delivery-rate metrics for the Health Center** (heart state)
-- **[Design] Finalise the Health Center, notification panel and heart rail icon from the CTO prototype**
+- **[BE] Track per-account post failures and delivery-rate metrics for the Health Center** (heart state)
+- **[Design] Finalise the Health Center tabs and heart rail icon from the design canvas**
 
 ---
 
@@ -832,55 +702,82 @@ Should be placed with the **App shell refresh** epic's rail layout in mind.
 
 ---
 
-# [Flutter] Receive Health Center alerts as push notifications
+# [Flutter] Bring the Health Center to the mobile app
 
 ### Description
 
-As a ContentStudio mobile user, I want health alerts on my phone, like an account that needs reconnecting, so that I can fix problems even when I'm away from my desk.
+As a ContentStudio mobile user, I want the same Health Center in the app as on the web, so that I can see which accounts need fixing and which posts failed, and reconnect or retry them from my phone.
 
-**Skeleton.** Follows the **Notifications architecture** epic.
+This story brings the web Health Center to the mobile app with the same data and the same rules: the Overview, Accounts and Post delivery tabs, and the heart that shows workspace health. It uses the same backend as web, so nothing new is needed on the server. No push alerts: notifications already exist.
 
 ---
 
 ### Workflow
 
-1. An account's access expires. The user's phone shows "3 accounts need reconnecting / 11 scheduled posts will fail until you do."
-2. User taps it. The app opens the account list, and the user reconnects from the phone.
+1. User opens the app menu and sees **Health** with a heart icon. The heart is empty because an account needs reconnecting.
+2. User taps it. The Overview shows the four headline numbers and Needs your attention.
+3. User taps **Reconnect accounts** and reconnects from the phone.
+4. User opens Accounts and sees "Last 2 posts failed" on one account. They tap it and see its error log and failed posts.
+5. User opens Post delivery, taps a failed entry, reads the error and taps **Retry**. The post goes out.
 
 ---
 
 ### Acceptance criteria
 
-- [ ] Health alerts the user turned on for mobile push arrive on iOS and Android
-- [ ] Tapping an alert opens the right place in the app (the accounts list for reconnect alerts, the post for a failed post), switching workspace if needed
-- [ ] Quiet hours are respected, except critical alerts where the settings say so
-- [ ] Alerts that are already fixed don't arrive late
-- [ ] Copy is translated in every supported language
+**Entry**
+
+- [ ] A **Health** item in the app menu opens the Health Center, with the heart in full, half or empty state using the same rules as web
+- [ ] The heart state updates when the app comes back to the foreground
+
+**Overview**
+
+- [ ] The four headline numbers: delivery rate (7 days, with change), posts published, posts failed (with preventable count), healthy accounts
+- [ ] Needs your attention with the same issue types as web: accounts that need reconnecting, posts on a removed account, a Google Business location not found, a teammate not getting mobile reminders. Each with its actions
+- [ ] Delivery rate by platform, and posts per day with a Failed and Published toggle
+
+**Accounts**
+
+- [ ] One row per account in the same order as web, with "Last {n} posts failed" on a single row for repeated failures
+- [ ] Search, platform filter and status filter
+- [ ] Tapping an account opens its error log and failed posts. Reconnect works from the app
+
+**Post delivery**
+
+- [ ] One entry per account per failed post, newest first
+- [ ] Tapping an entry opens its error log and timeline, with **Reconnect** and the help link for expired access, or **Retry** for other failures
+
+**General**
+
+- [ ] No "Paused by platform", no "Why posts failed", no alert settings, no CSV export, matching web
+- [ ] Empty ("Everything's running smoothly"), loading, offline and error states
+- [ ] Works on iOS and Android, on small and large phones
+- [ ] All copy is translated in every supported language
 
 ---
 
 ### Mock-ups:
 
-Push copy from **[Design] Finalise the Health Center, notification panel and heart rail icon from the CTO prototype**.
+Phone layouts from **[Design] Finalise the Health Center tabs and heart rail icon from the design canvas**.
 
 ---
 
 ### Impact on existing data:
 
-None.
+None. Uses the same data as web.
 
 ---
 
 ### Impact on other products:
 
-Adds a new notification type to the app, alongside the manual-publish reminder and AI chat notifications.
+Matches the web Health Center. Any later change to the web tabs should be mirrored here.
 
 ---
 
 ### Dependencies:
 
-- **[BE] Send health alerts by the workspace's alert settings**
-- The **Notifications architecture** epic
+- **[BE] Track account health: reconnect status, consecutive failed posts, access expiry and error log**
+- **[BE] Track per-account post failures and delivery-rate metrics for the Health Center**
+- **[Design] Finalise the Health Center tabs and heart rail icon from the design canvas**
 
 ---
 

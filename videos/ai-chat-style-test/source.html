@@ -1,0 +1,201 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@600;700;800&display=block" rel="stylesheet">
+<style>
+:root{--p:#1f6bff;--p50:#eef4ff;--ink:#1d1d1f;--mute:#6e6e73;--line:#e6e8ec}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1080px;overflow:hidden;background:#f2f3f7;font-family:Inter,"Noto Sans",Ubuntu,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+.bg{position:absolute;inset:-200px;background:radial-gradient(1200px 800px at 70% 30%,#ffffff 0%,#f2f3f7 60%,#e9ebf2 100%)}
+.blob{position:absolute;border-radius:50%;filter:blur(160px);opacity:.28}
+#dof{position:absolute;inset:0;pointer-events:none;-webkit-mask-image:radial-gradient(ellipse 62% 58% at 50% 50%,transparent 55%,#000 100%);mask-image:radial-gradient(ellipse 62% 58% at 50% 50%,transparent 55%,#000 100%)}
+#cam{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;will-change:transform}
+/* window (styles from ai-chat-teaser) */
+.win{position:absolute;left:210px;top:80px;width:1500px;height:920px;background:#fff;border-radius:30px;box-shadow:0 0 0 1px rgba(0,0,0,.05),0 110px 220px -70px rgba(24,32,64,.34),0 34px 70px -34px rgba(24,32,64,.16);overflow:hidden}
+.whead{height:76px;display:flex;align-items:center;gap:14px;padding:0 28px;border-bottom:1px solid #eef0f3;font-size:22px;font-weight:700;color:#111827}
+.wlogo{width:42px;height:42px;border-radius:50%;overflow:hidden}
+.wlogo img{width:100%;height:100%;display:block}
+.sp{flex:1}
+.newchat{background:#f3f4f6;color:#374151;border-radius:12px;height:44px;padding:0 18px;display:flex;align-items:center;gap:8px;font-weight:600;font-size:18px}
+.hist{font-size:17px;color:#6b7280;font-weight:600;margin-right:14px}
+.body{position:absolute;top:76px;left:0;right:0;bottom:200px;padding:30px 44px 0;overflow:hidden}
+.urow{display:flex;justify-content:flex-end}
+.ub{background:#eef5ff;border-radius:20px;padding:15px 24px;font-size:22px;color:#111827;line-height:1.4;display:flex;gap:10px;align-items:center}
+.ub .th{width:30px;height:30px;border-radius:7px;background:#f3edff;color:#7c3aed;display:flex;align-items:center;justify-content:center}
+.tlh{display:flex;align-items:center;gap:10px;font-size:19px;color:#6b7280;font-weight:500;height:34px;margin:18px 0 14px}
+.tlh .lbl{background:linear-gradient(90deg,#9ca3af 0%,#9ca3af 40%,#eef0f3 50%,#9ca3af 60%,#9ca3af 100%);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}
+.tlh .ok{width:22px;height:22px;border-radius:50%;background:#e8f7ee;color:#16a34a;display:flex;align-items:center;justify-content:center}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;width:1300px}
+.gi{position:relative;aspect-ratio:1;border-radius:20px;overflow:hidden;background:#f1f2f6}
+.gi img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;will-change:filter,transform}
+.shim{position:absolute;inset:0;background:linear-gradient(110deg,#eceef4 20%,#fafbfd 40%,#eceef4 60%);background-size:300% 100%}
+.abar{position:absolute;left:14px;bottom:14px;display:flex;flex-direction:column;align-items:flex-start;gap:9px}
+.abar span{white-space:nowrap;background:rgba(255,255,255,.95);border-radius:11px;height:40px;padding:0 14px;display:flex;align-items:center;gap:7px;font-size:16px;font-weight:700;color:#111827;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.abar span.pri{background:var(--p);color:#fff}
+/* composer */
+.cwrap{position:absolute;left:32px;right:32px;bottom:28px}
+.glow{position:absolute;inset:-14px;border-radius:38px;background:linear-gradient(100deg,#ffb4c9,#ead9ff 45%,#b6ecff);filter:blur(30px);opacity:.6}
+.cin{position:relative;background:#fff;border-radius:26px;padding:18px 20px 16px;box-shadow:0 0 0 1px rgba(0,0,0,.05)}
+.chips{display:flex;gap:12px;align-items:center;height:44px}
+.mchip{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 16px;border-radius:12px;border:1.5px dashed #c4b5fd;font-weight:600;font-size:17px;color:#1f2937;background:#fff}
+.mchip svg{color:#8b5cf6}
+.opt{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 14px;border-radius:10px;background:#f3f4f6;font-size:16px;font-weight:600;color:#374151}
+.field{height:62px;display:flex;align-items:center;font-size:23px;padding:0 4px;color:#111827;position:relative;white-space:pre}
+.ph{color:#9ca3af;position:absolute;left:4px}
+.caret{display:inline-block;width:2px;height:28px;background:#111827;margin-left:2px}
+.tools{display:flex;align-items:center;gap:12px;height:50px}
+.tb{width:44px;height:44px;border-radius:11px;background:#eef2f7;color:#475569;display:flex;align-items:center;justify-content:center}
+.send{width:52px;height:52px;border-radius:15px;background:#a9c5ff;color:#fff;display:flex;align-items:center;justify-content:center;transform-origin:center}
+/* screen-space copy */
+.copy{position:absolute;left:112px;top:270px;width:600px}
+.eyebrow{font-size:26px;font-weight:600;letter-spacing:-.2px;display:inline-block;background:linear-gradient(90deg,#8b5cf6,#1f6bff);-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:22px}
+.h{font-family:"Inter Tight",Inter,sans-serif;font-size:104px;font-weight:700;letter-spacing:-4px;line-height:1.0;color:#1d1d1f}
+.grad{background:linear-gradient(95deg,#7c5cff 0%,#1f6bff 70%);-webkit-background-clip:text;background-clip:text;color:transparent;padding-bottom:8px}
+.sub{font-size:28px;color:#6e6e73;line-height:1.45;margin-top:34px;font-weight:500;letter-spacing:-.2px}
+.ln{display:block;will-change:transform,opacity,filter}
+</style></head>
+<body>
+<div class="bg"></div>
+<div class="blob" id="b1" style="width:900px;height:900px;left:1150px;top:-300px;background:#d9ccff"></div>
+<div class="blob" id="b2" style="width:800px;height:800px;left:-200px;top:520px;background:#cfe3ff"></div>
+
+<div id="cam">
+  <div class="win">
+    <div class="whead">
+      <div class="wlogo"><img src="../ai-chat-teaser/logo.png"></div>AI Chat<div class="sp"></div>
+      <span class="hist">History</span><div class="newchat">+ New chat</div>
+    </div>
+    <div class="body">
+      <div class="urow" id="ubRow"><div class="ub"><span class="th"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></span>Autumn latte flat lay for Bean &amp; Co., warm morning light</div></div>
+      <div class="tlh" id="tl"><span id="tlIcon"></span><span class="lbl" id="tlLbl">Working</span></div>
+      <div class="grid" id="grid">
+        <div class="gi"><div class="shim"></div><img src="../ai-chat-teaser/media/flatlay-1.png"><div class="abar" id="abar"><span class="pri">+ Add to Composer</span><span>Schedule with this image</span></div></div>
+        <div class="gi"><div class="shim"></div><img src="../ai-chat-teaser/media/flatlay-2.png"></div>
+        <div class="gi"><div class="shim"></div><img src="../ai-chat-teaser/media/flatlay-3.png"></div>
+        <div class="gi"><div class="shim"></div><img src="../ai-chat-teaser/media/flatlay-4.png"></div>
+      </div>
+    </div>
+    <div class="cwrap">
+      <div class="glow" id="glow"></div>
+      <div class="cin">
+        <div class="chips">
+          <span class="mchip"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>Nano Banana Pro</span>
+          <span class="opt">1:1</span><span class="opt">Cinematic</span>
+        </div>
+        <div class="field" id="field"><span class="ph" id="ph">Type your message here, or / for a skill</span><span id="typed"></span><span class="caret" id="caret"></span></div>
+        <div class="tools">
+          <div class="tb"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></div>
+          <div class="tb"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.4 11.1 12.2 20.3a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg></div>
+          <div class="sp"></div>
+          <div class="send" id="send"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="dof"></div>
+
+<div class="copy" id="copy">
+  <span class="ln eyebrow" id="c0">Images</span>
+  <span class="ln h" id="c1">On-brand</span>
+  <span class="ln h" id="c1b">visuals,</span>
+  <span class="ln h grad" id="c2">on demand.</span>
+  <span class="ln sub" id="c3">22 image models. 31 styles. One sentence.</span>
+</div>
+
+<script>
+window.DURATION = 12;
+const $ = id => document.getElementById(id);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, k) => a + (b - a) * k;
+const win = (a, b, t) => clamp((t - a) / (b - a));
+const eOut = k => 1 - Math.pow(1 - clamp(k), 3);
+const eIO = k => { k = clamp(k); return k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; };
+const eExpo = k => (k = clamp(k), k === 1 ? 1 : 1 - Math.pow(2, -10 * k));
+
+// camera keys: time, focal x/y (world px), scale, rotateX, rotateY
+const K = [
+  [0.0,  760, 880, 1.36, 11, -14],
+  [2.3,  830, 876, 1.42,  9, -11],
+  [3.5,  880, 500, 1.22,  6,  -8],
+  [6.0,  820, 520, 1.34,  4,  -6],
+  [7.5,  420, 546, 1.95,  3,  -4],
+  [9.1,  420, 520, 1.02,  4, -12],
+  [10.0, 408, 520, 1.0,   4, -12],
+];
+// centripetal-ish Catmull-Rom through the keys, eased at both ends, so the camera never stops between keys
+function cam(t) {
+  let i = 0; while (i < K.length - 2 && t > K[i + 1][0]) i++;
+  const p0 = K[Math.max(0, i - 1)], p1 = K[i], p2 = K[i + 1], p3 = K[Math.min(K.length - 1, i + 2)];
+  let u = clamp((t - p1[0]) / (p2[0] - p1[0]));
+  const out = [];
+  for (let j = 1; j < 6; j++) {
+    const a = p0[j], b = p1[j], c = p2[j], d = p3[j];
+    out.push(.5 * ((2 * b) + (-a + c) * u + (2 * a - 5 * b + 4 * c - d) * u * u + (-a + 3 * b - 3 * c + d) * u * u * u));
+  }
+  return out;
+}
+
+const PROMPT = 'Autumn latte flat lay for Bean & Co., warm morning light';
+const tiles = [...document.querySelectorAll('.gi')];
+
+window.render = function (T) {
+  const t = T * 10 / 12;          // the cut is authored on a 10 s clock and played 20% slower
+  // camera, with a little motion blur from its own speed and a soft depth-of-field falloff
+  const [fx, fy, s, rx, ry] = cam(t);
+  const a = cam(Math.max(0, t - .02)), b = cam(Math.min(10, t + .02));
+  const speed = Math.abs(b[0] - a[0]) * s + Math.abs(b[1] - a[1]) * s + Math.abs(b[2] - a[2]) * 900 + (Math.abs(b[3] - a[3]) + Math.abs(b[4] - a[4])) * 30;
+  $('cam').style.filter = `blur(${Math.min(1.8, speed * .045).toFixed(2)}px)`;
+  const dof = clamp((s - 1.0) / 1.0) * 7;
+  $('dof').style.backdropFilter = `blur(${dof.toFixed(2)}px)`;
+  $('cam').style.transform = `translate(960px,540px) perspective(2600px) rotateX(${rx}deg) rotateY(${ry}deg) scale(${s}) translate(${-fx}px,${-fy}px)`;
+  $('b1').style.transform = `translate(${(fx - 900) * -.25}px,${(fy - 600) * -.2}px)`;
+  $('b2').style.transform = `translate(${(fx - 900) * -.15}px,${(fy - 600) * -.12}px)`;
+
+  // typing 0.25 -> 2.0, caret blinks after
+  const n = Math.round(PROMPT.length * win(.25, 2.0, t));
+  $('typed').textContent = t < 2.35 ? PROMPT.slice(0, n) : '';
+  $('ph').style.opacity = n > 0 || t >= 2.35 ? 0 : 1;
+  $('caret').style.opacity = (t < 2.0 || t >= 2.35) ? (Math.floor(t * 2.4) % 2 ? .15 : 1) : 1;
+  // send: lights up with the first character, presses at 2.2
+  $('send').style.background = n > 0 && t < 2.4 ? '#1f6bff' : '#a9c5ff';
+  const press = t > 2.15 && t < 2.45 ? Math.sin(win(2.15, 2.45, t) * Math.PI) : 0;
+  $('send').style.transform = `scale(${1 - press * .12})`;
+  $('glow').style.opacity = .85 - .35 * win(2.3, 3.2, t);
+
+  // user bubble rises in as the camera leaves the composer
+  const ub = eOut(win(2.35, 2.95, t));
+  $('ubRow').style.opacity = ub; $('ubRow').style.transform = `translateY(${(1 - ub) * 40}px)`;
+  // status row: Working shimmer, then Worked for 9s
+  const tlIn = eOut(win(2.7, 3.1, t));
+  $('tl').style.opacity = tlIn;
+  if (t < 4.6) { $('tlLbl').textContent = 'Working'; $('tlIcon').innerHTML = ''; $('tlLbl').style.backgroundPosition = `${100 - ((t * 70) % 100) * 1.5}% 0`; }
+  else { $('tlLbl').textContent = 'Worked for 9s'; $('tlLbl').style.backgroundPosition = '0 0'; $('tlIcon').innerHTML = '<span class="ok"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>'; }
+
+  // tiles: shimmer cards arrive, then each image develops from blur, staggered
+  tiles.forEach((el, k) => {
+    const arrive = eOut(win(3.0 + k * .08, 3.5 + k * .08, t));
+    el.style.opacity = arrive; el.style.transform = `translateY(${(1 - arrive) * 30}px)`;
+    el.querySelector('.shim').style.backgroundPosition = `${100 - ((t * 60 + k * 20) % 100) * 1.5}% 0`;
+    const dev = eExpo(win(3.9 + k * .38, 5.1 + k * .38, t));
+    const img = el.querySelector('img');
+    img.style.opacity = clamp(dev * 1.6);
+    img.style.filter = `blur(${(1 - dev) * 28}px) saturate(${.6 + .4 * dev})`;
+    img.style.transform = `scale(${1.12 - .12 * dev})`;
+  });
+  const ab = eOut(win(6.9, 7.5, t));
+  $('abar').style.opacity = ab; $('abar').style.transform = `translateY(${(1 - ab) * 16}px)`;
+  tiles[0].style.boxShadow = `0 0 0 ${3 * ab}px #1f6bff`;
+
+  // screen-space headline lands as the camera pulls out
+  ['c0', 'c1', 'c1b', 'c2', 'c3'].forEach((id, k) => {
+    const c = eOut(win(8.0 + k * .14, 8.95 + k * .14, t));
+    const el = $(id);
+    el.style.opacity = c; el.style.transform = `translateY(${(1 - c) * 34}px)`; el.style.filter = `blur(${(1 - c) * 5}px)`;
+  });
+};
+
+if (!navigator.webdriver) { const t0 = performance.now(); const loop = () => { render(((performance.now() - t0) / 1000) % window.DURATION); requestAnimationFrame(loop); }; loop(); }
+else render(0);
+</script>
+</body></html>

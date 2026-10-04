@@ -70,4 +70,6 @@ Chrome is expected at `/usr/bin/google-chrome`. Set `CHROME_PATH` to override. A
 | [ai-chat-promo](ai-chat-promo/) | AI Chat, full capability overview | 113s | 16x9 |
 | [ai-chat-teaser](ai-chat-teaser/) | AI Chat, short cut of the promo (current and all-light themes) | 66s | 16x9, 16x9 light |
 | [ai-chat-capabilities-promo](ai-chat-capabilities-promo/) | AI Chat, capability tour rebuilt with HyperFrames (voiceover, music, captions) | 59s | 16x9 |
+| [ai-chat-premium-promo](ai-chat-premium-promo/) | AI Chat, premium Apple-style capability film (one continuous camera, music only) | 66s | 16x9 |
+| [ai-chat-style-test](ai-chat-style-test/) | AI Chat, 12s style test of the Images section (approved look for the premium promo) | 12s | 16x9 |
 | [ai-chat-premium-promo-v2](ai-chat-premium-promo-v2/) | AI Chat premium film, v2 rebuilt from the reference library (beat grid, shutter blur, per-word type, string score) | 68s | 16x9 |

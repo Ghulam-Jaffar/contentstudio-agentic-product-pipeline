@@ -16,7 +16,7 @@
 - **What's on the page:**
   - It sits inside the existing Planner shell: same left sidebar, same header with Filters, Accounts, date range, Search, Share and the view dropdown.
   - Below the header: a scope switch (Assigned to me / Requested by me / All approvals), a "N waiting on you" summary, and a hint: "Drag a card to approve it or request changes".
-  - Then four columns: Awaiting approval, Missed review, Changes requested, Approved.
+  - Then four columns: Awaiting approval, Missed review, Rejected, Approved.
 
 ## 2. Workflow Diagram (Overview)
 
@@ -35,7 +35,7 @@ flowchart TD
     Level -->|Yes| Approved[Card moves to Approved]
     Level -->|No| NextLevel[Card stays in Awaiting at the next level]
     Time --> Approved
-    Note --> Changes[Card moves to Changes requested]
+    Note --> Changes[Card moves to Rejected]
 ```
 
 ### Card states
@@ -46,10 +46,10 @@ stateDiagram-v2
     Awaiting --> Awaiting: Level approved, more levels left
     Awaiting --> Approved: Last level approved
     Awaiting --> Missed: Planned time passes with no decision
-    Awaiting --> Changes: Any approver rejects
+    Awaiting --> Rejected: Any approver rejects
     Missed --> Approved: Approved with a new time
-    Missed --> Changes: Rejected
-    Changes --> Awaiting: Author edits and sends again
+    Missed --> Rejected: Rejected
+    Rejected --> Awaiting: Author edits and sends again
     Approved --> [*]
 ```
 
@@ -68,7 +68,7 @@ stateDiagram-v2
 **Submitter, checking on their posts**
 
 1. Bilal switches the scope to **Requested by me**.
-2. He sees 1 Awaiting card, 1 in Changes requested ("Changes requested by Ahmed Raza: Please swap the hero image...") and 2 in Approved. One of those reads "Approved, not scheduled yet" because it was sent for approval as a draft.
+2. He sees 1 Awaiting card, 1 in Rejected ("Rejected by Ahmed Raza: Please swap the hero image...") and 2 in Approved. One of those reads "Approved, not scheduled yet" because it was sent for approval as a draft.
 3. He clicks **Edit and resubmit** on the rejected card (or drags it to Awaiting approval). The Composer opens, he fixes the image, and sends it for approval again. Back on the board, the card is in Awaiting at Level 1.
 4. On the approved draft he clicks **Schedule post**, and the existing scheduling options open.
 
@@ -86,7 +86,7 @@ stateDiagram-v2
 | A8 | **The whole board is empty for this scope and filters** | Empty state across the board, with a "Clear filters" CTA when filters are on, or "Set up an approval workflow" for admins when the workspace has none |
 | A9 | **Loading** | Each column shows 3 skeleton cards. Scrolling to the bottom of a column loads more |
 | A10 | **Phone width** | The columns become tabs with counts. Dragging is off, and the Approve and Reject buttons are the way to act |
-| A11 | **Approver without permission to edit posts** | No "Edit and resubmit" button. Changes requested cards are view-only for them |
+| A11 | **Approver without permission to edit posts** | No "Edit and resubmit" button. Rejected cards are view-only for them |
 | A12 | **External approver approves through a share link** | On the team board the card moves the next time the board refreshes. On the share page the client has their own 3-column Approval board. A missed post they approve shows on the team board as "Approved, needs a new time" |
 | A13 | **Legacy single-level approval** (no workflow) | Card shows "Level 1 of 1". "Anyone" vs "everyone" rules work exactly as today |
 | A14 | **A post not in approval at all** | Never appears on the board |
@@ -136,7 +136,7 @@ stateDiagram-v2
 |---|---|
 | **Planner filters, date range, search, saved views, Share** | Apply on the board the same way they do on other views. A saved custom view can store Approval board as its view type |
 | **Post preview** | Clicking a card opens the existing preview, with comments, approval history and the existing approve and reject actions |
-| **Composer** | "Edit and resubmit" and dragging from Changes requested to Awaiting approval open the existing Composer for that post. "Send for approval" works exactly as today |
+| **Composer** | "Edit and resubmit" and dragging from Rejected to Awaiting approval open the existing Composer for that post. "Send for approval" works exactly as today |
 | **Approval workflows** (Settings) | Level names, rules (anyone/everyone) and members come from the saved workflow. Nothing changes in the workflow builder |
 | **Legacy approvals** | Supported as single-level cards |
 | **Missed review email and notification** | Unchanged in v1 |
@@ -175,7 +175,7 @@ Payload proposals are in PRD §3.1.
 - Saved-view defaults for new workspaces
 - Notification landing (Decision 6)
 - Phone-width tabs
-- The client share-link board: a third view next to List and Calendar, with 3 columns (Awaiting approval, Changes requested, Approved). Missed posts stay in Awaiting with a "Time passed" badge, dragging needs approval actions on the link, and view-only links are read-only
+- The client share-link board: a third view next to List and Calendar, with 3 columns (Awaiting approval, Rejected, Approved). Missed posts stay in Awaiting with a "Time passed" badge, dragging needs approval actions on the link, and view-only links are read-only
 - Empty, error and loading states
 - Usermaven events
 - A [Design] story

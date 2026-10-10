@@ -40,6 +40,16 @@ All three created in the Engineering space (`bc4df642-96cf-44b0-b345-7a3e5c4ac8b
 - **Prototype**, version 43: https://claude.ai/artifact/2RuyPekdyeQheZCdknWfQ8
 - **Spec**, revision 89: https://claude.ai/code/artifact/0eff1388-eb6c-4b8c-b541-28d889edc0e1
 
+### Flow canvas, added 2026-10-06
+
+Built for meeting visibility: every screen on one pannable board, branch logic as wires, and a green build note on each part naming the ticket that delivers it.
+
+https://claude.ai/artifact/DA2AkQqjRLFJzsJYj9frKz
+
+**This one is private.** The prototype and spec are visible to the organisation; the canvas is not until it is shared from its Share menu. Do that before the meeting if anyone else needs to open it.
+
+It reuses the locked prototype's own screen markup and design tokens, so the screens on the canvas are the screens in the prototype rather than a redrawn copy. A copy change in the prototype does not propagate automatically, though, since the canvas holds its own copy of the node list.
+
 ## Notes from the push
 
 - **CONT-4133 needed a second call.** `create_task` returned its description as raw markdown rather than converting it, unlike the other six. It was repaired with `update_task` and hand-built HTML. The body is the longest of the seven, which is the likely cause. Check the returned `description` on any long story rather than assuming conversion happened.

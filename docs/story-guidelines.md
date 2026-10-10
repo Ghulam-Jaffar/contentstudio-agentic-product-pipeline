@@ -23,6 +23,7 @@ A story **ends at the global quality checklist**. Never append a trailing metada
 
 - **No dark mode.** ContentStudio does not have dark mode. Never mention dark mode support, theming toggles, or light/dark variants in stories or acceptance criteria.
 - **No RTL language support.** Do not mention RTL layouts, bidirectional text, or RTL-specific styling.
+- **The marketing website is its own repo.** contentstudio.io lives in `contentstudio-website-v2/` (Next.js), separate from the web app in `contentstudio-frontend/`. Work on the site (landing pages, pricing page, signup/login entry points, screenshots and copy) gets a `[Website]` story. When a change to the app's signup, login, trial or plans breaks or changes how the site hands visitors into the app (`app.contentstudio.io/signup?package=…`, `/login`), write the matching `[Website]` story too.
 - **Mobile is one Flutter app.** iOS and Android ship from the single `contentstudio-flutter/` codebase. All mobile stories use the `[Flutter]` prefix — never `[iOS]` or `[Android]` (see section 13).
 - **Most AI features are web-only — with one exception: AI chat/assistant exists on mobile.** AI *generation* features (e.g., AI image/video/caption generation, AI Content Library) are web-only — scope those to web and don't create mobile AI stories for them. **AI chat / AI assistant ships in the Flutter mobile app** (`contentstudio-flutter/lib/features/ai_assistant/`) and IS in scope for mobile. For a web-only AI generation feature with a non-AI mobile part, note explicitly: _"AI generation is web-only; mobile app gets [specific non-AI scope]."_
 
@@ -129,6 +130,7 @@ The Tailwind config maps `primary-cs-*` shades (50, 100, 200, 500, 600, 700, 800
 - **Backend stories** focus on: API endpoints, data models, validation, business logic, jobs, events
 - **Frontend stories** focus on: UI components, user interactions, copy/labels/tooltips (per section 5 above), responsive behavior
 - **If a feature needs both**, create separate BE and FE stories. Prefix titles: `[BE]` and `[FE]`
+- **Marketing website work** (`contentstudio-website-v2/`) is its own `[Website]` story, never folded into an `[FE]` story: it is a different repo, deploy and team. Like an FE story, it carries all of its own on-page copy. The site does not use `@contentstudio/ui` or `docs/ui-components.md`; reference its own `components/` (`new-design/`, `sections/`) instead
 - **The FE story** is where ALL UI copy lives — labels, tooltips, modals, toasts, error messages, empty states
 - **Never put UI copy in a BE story.** Backend stories deal with data and logic, not what the user sees.
 
@@ -218,6 +220,7 @@ Examples:
 - `[FE] Add link-in-bio analytics dashboard`
 - `[BE] Implement link click tracking and aggregation job`
 - `[Design] Create link-in-bio page templates and component library`
+- `[Website] Add link-in-bio feature landing page with signup CTA`
 
 ---
 

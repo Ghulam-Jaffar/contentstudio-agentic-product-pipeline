@@ -1,6 +1,6 @@
 # Epic + stories: Upload from Phone (Scan QR)
 
-7 stories. Nothing is pushed to any tracker until the PO approves the push.
+8 stories. Nothing is pushed to any tracker until the PO approves the push.
 
 ---
 
@@ -26,7 +26,6 @@ A code can connect a phone for 10 minutes. After that the session stays open whi
 - Several phones or uploaders in one session.
 - A trusted phone that skips scanning.
 - Opening the mobile app from the QR code.
-- A "Recent phone uploads" filter.
 - Virus scanning. Desktop uploads don't have it either.
 - Any Flutter app work.
 - Any public API, CLI or MCP surface.
@@ -40,6 +39,7 @@ A code can connect a phone for 10 minutes. After that the session stays open whi
 5. [FE] Add the From Phone tab and QR code to the upload modal
 6. [FE] Show phone uploads live in the upload modal and use them where it was opened
 7. [FE] Build the mobile upload page for Upload from Phone
+8. [FE] Add an Uploaded from filter to the Content Library
 
 ---
 
@@ -68,8 +68,9 @@ The prototype is final on flow and copy. It still uses hand-drawn elements, not 
    - unsupported file type;
    - upload limit reached;
    - the single-image picker's "Use selected image" selection state.
-5. They show the white-label variant: agency logo, agency name and agency primary color, with no ContentStudio branding on the phone page.
-6. They hand off with every piece of copy exactly as written in the FE stories.
+5. They design the Content Library's new "Uploaded from" filter: its section in the Filters drawer, the active-filter chip, the "No files from a phone yet" empty state, and the "Uploaded from phone" line in a file's details.
+6. They show the white-label variant: agency logo, agency name and agency primary color, with no ContentStudio branding on the phone page.
+7. They hand off with every piece of copy exactly as written in the FE stories.
 
 ### Acceptance criteria
 
@@ -79,6 +80,7 @@ The prototype is final on flow and copy. It still uses hand-drawn elements, not 
   - phone: link ended, not enough space, connection lost, unsupported file type, upload limit reached.
 - [ ] Loading and error states are designed for creating the QR code and for opening the phone page.
 - [ ] The single-image picker variant shows how one received image is selected and how "Use selected image" looks.
+- [ ] The Content Library's "Uploaded from" filter is designed: the Filters drawer section, the active "From phone" chip, the empty state, and the "Uploaded from phone" line in file details.
 - [ ] The phone page is designed at 390 px wide, with touch targets of at least 44 px.
 - [ ] The white-label variant of the phone page uses the agency logo, name and primary color, with no ContentStudio branding.
 - [ ] Colors use the theme's primary color tokens, not fixed blues, so white-label colors apply.
@@ -96,11 +98,12 @@ None.
 ### Impact on other products
 
 - The web app's upload modal gains a tab. If the Content Library upload modal redesign ships first, the new tab follows its sidebar pattern.
+- The Content Library's Filters drawer gains a section.
 - No change to the mobile app or the Chrome extension.
 
 ### Dependencies
 
-None. This story unblocks **[FE] Add the From Phone tab and QR code to the upload modal**, **[FE] Show phone uploads live in the upload modal and use them where it was opened** and **[FE] Build the mobile upload page for Upload from Phone**.
+None. This story unblocks **[FE] Add the From Phone tab and QR code to the upload modal**, **[FE] Show phone uploads live in the upload modal and use them where it was opened**, **[FE] Build the mobile upload page for Upload from Phone** and **[FE] Add an Uploaded from filter to the Content Library**.
 
 ### Global quality & compliance (wherever applicable)
 
@@ -225,14 +228,14 @@ The phone page uploads through the same pipeline as desktop uploads, authenticat
 - the same resumable uploads;
 - the same white-label upload route.
 
-Each file is attributed to the user who started the session.
+Each file is attributed to the user who started the session, and tagged as uploaded from a phone, so the Content Library can filter phone uploads.
 
 ### Workflow
 
 1. The person on the phone picks files.
 2. ContentStudio checks the batch against the workspace's remaining storage and the session's 100-file limit, and checks each file's type.
 3. Accepted files upload in chunks. If the connection drops, the upload resumes from the last finished chunk.
-4. Each finished file is saved to the session's folder in the Content Library, owned by the user who started the session. It gets the same thumbnail and details as a desktop upload.
+4. Each finished file is saved to the session's folder in the Content Library, owned by the user who started the session. It gets the same thumbnail and details as a desktop upload, and it is tagged as uploaded from a phone.
 5. Files that can't be accepted are reported with a reason: not enough space, unsupported type or limit reached. The other files continue.
 
 ### Acceptance criteria
@@ -245,6 +248,10 @@ Each file is attributed to the user who started the session.
 - [ ] Uploads are resumable. A connection dropped mid-file resumes from where it stopped and doesn't restart the file.
 - [ ] Each saved file appears in the session's folder, or Uncategorized when none was picked. It is owned by the user who started the session and counts against that workspace's storage.
 - [ ] Saved files get the same thumbnails and details as a desktop upload of the same file.
+- [ ] Every file saved through a phone session carries the source `phone_upload` and the ID of the session it came from. Files uploaded any other way never carry `phone_upload`.
+- [ ] The tag survives conversion: a HEIC photo saved as JPG, or a MOV saved as MP4, is still tagged `phone_upload`.
+- [ ] Asking the Content Library list for source `phone_upload` returns only phone uploads. It combines with the existing type, usage, folder and sort filters.
+- [ ] A file's details include whether it was uploaded from a phone, so the web app can show it.
 - [ ] On a white-label domain, uploads work end to end through the white-label domain.
 - [ ] Uploads work from iOS Safari, Android Chrome and Samsung Internet. That includes direct-to-storage uploads from the phone page's origin.
 - [ ] An upload request without a valid, active session link is refused.
@@ -256,7 +263,8 @@ N/A. Backend only. For context, see the prototype: https://claude.ai/artifact/Fb
 
 ### Impact on existing data
 
-- New Content Library records are created exactly like desktop uploads. There is no new field on existing media.
+- New Content Library records are created like desktop uploads, plus a `phone_upload` source and a session ID.
+- Existing files are not backfilled. Files uploaded before launch carry no tag and never match the phone filter.
 - Storage usage grows with phone uploads.
 
 ### Impact on other products
@@ -268,6 +276,7 @@ N/A. Backend only. For context, see the prototype: https://claude.ai/artifact/Fb
 
 - Depends on **[BE] Create upload-only phone sessions with QR link, expiry and live updates**.
 - Pairs with **[BE] Convert HEIC and MOV, fix rotation and remove location data on uploaded media**, which is needed before launch.
+- Unblocks **[FE] Add an Uploaded from filter to the Content Library**.
 
 ### Global quality & compliance (wherever applicable)
 
@@ -276,7 +285,7 @@ N/A. Backend only. For context, see the prototype: https://claude.ai/artifact/Fb
 - [ ] UI theming support: N/A, backend only
 - [ ] White-label domains impact review
 - [ ] Cross-product impact assessment (web, mobile apps, Chrome extension)
-- [ ] Developer surfaces coverage: N/A, the upload route is internal to the phone page, and nothing public changes
+- [ ] Developer surfaces coverage (the upload route is internal, but check whether the public API's media list should accept the same `phone_upload` source filter)
 
 ---
 
@@ -671,6 +680,84 @@ None.
 - Depends on **[Design] Design the Upload from Phone modal tab, phone upload page and edge states**.
 - Depends on **[BE] Create upload-only phone sessions with QR link, expiry and live updates**.
 - Depends on **[BE] Accept phone uploads into the Content Library through the session link**.
+
+### Global quality & compliance (wherever applicable)
+
+- [ ] Mobile responsiveness (frontend only, N/A for backend-only stories)
+- [ ] Multilingual support (frontend + backend, translations available or fallback handled)
+- [ ] UI theming support (default + white-label, design library components are being used)
+- [ ] White-label domains impact review
+- [ ] Cross-product impact assessment (web, mobile apps, Chrome extension)
+- [ ] Developer surfaces coverage: N/A, nothing API-facing changes
+
+---
+
+## [FE] Add an Uploaded from filter to the Content Library
+
+### Description
+
+As a ContentStudio user, I want to filter the Content Library to only the files that came from a phone, so I can find what I or a client just sent without scrolling through everything else. This matters most when a client has uploaded through a link I shared and I don't know the file names.
+
+Every file uploaded with From Phone is tagged as coming from a phone. This story adds the filter that uses that tag, a shortcut to it from the upload modal, and a line in each phone file's details. The section is called "Uploaded from" so it can take more sources later, such as Google Drive or Dropbox, without a redesign.
+
+### Workflow
+
+1. The user opens the Content Library on All Uploads, or any folder in it.
+2. They click **Filters**. Below the existing Usage and Type sections, a new **Uploaded from** section has two options: **Anywhere**, which is selected by default, and **From phone**.
+3. They choose **From phone**. The grid shows only files sent from a phone, and the filters bar shows a **From phone** chip with an ✕.
+4. They combine it with the other filters, for example Videos and Unused, to find phone videos that haven't been posted yet.
+5. They click the ✕ on the chip, or choose **Anywhere**, and every file shows again.
+6. Shortcut: they close the upload modal while a phone is still uploading. The toast "Uploads will keep going. Find them in Content Library › [folder name]." has a **View** button. Clicking it opens the Content Library on that folder with **From phone** already applied.
+7. They open a phone file's details and see "Uploaded from phone".
+
+### Acceptance criteria
+
+**Filter**
+- [ ] The Content Library's Filters drawer has a new section titled "Uploaded from", below Usage and Type.
+- [ ] The section uses the `Radio` component with two options:
+  - "Anywhere", selected by default, shows every file, as today;
+  - "From phone" shows only files uploaded with From Phone.
+- [ ] An ℹ icon next to the section title shows on hover: "Show only files sent from a phone with From Phone. Example: photos a client uploaded using a link you shared."
+- [ ] "From phone" combines with every other filter and with the current folder. For example, Videos + Unused + From phone shows only unused phone videos.
+- [ ] While "From phone" is on, the filters bar shows a "From phone" chip with an ✕, using the same active-filter style the bar already uses. Clicking ✕ resets the section to "Anywhere".
+- [ ] The section shows under All Uploads and its folders only. It is hidden under AI Creations and My AI Creations, and switching to either clears it.
+- [ ] The section also appears in the Content Library tab of the upload modal, wherever that tab shows the Filters drawer, so phone files can be picked from inside the Composer.
+- [ ] Files uploaded before this feature launched never match "From phone".
+
+**Empty, loading and error states**
+- [ ] Empty state when "From phone" matches nothing:
+  - headline: "No files from a phone yet";
+  - text: "Files sent with From Phone show up here. Open the upload window, choose From Phone and scan the code.";
+  - a primary `Button` labelled "Upload from phone", which opens the upload modal on the From Phone tab.
+- [ ] While results load, the grid shows the same loading skeleton as the other filters.
+- [ ] If results fail to load, the grid shows the Content Library's existing error state and message.
+
+**Shortcut and details**
+- [ ] The toast from **[FE] Show phone uploads live in the upload modal and use them where it was opened** ("Uploads will keep going. Find them in Content Library › [folder name].") has a **View** action. Clicking it opens the Content Library on that folder with "From phone" applied.
+- [ ] A phone file's details panel shows a phone icon and "Uploaded from phone". Other files show nothing new.
+
+**Components and theming**
+- [ ] The section uses `Radio`. The empty-state button uses `Button`. The chip reuses the filters bar's existing active-filter chip. If the bar has none, use `Badge` with an `ActionIcon` for the ✕, since there is no dedicated chip component.
+- [ ] Colors use theme classes, never fixed blues.
+
+### Mock-ups
+
+See the prototype: https://claude.ai/artifact/FbSZdddf9VP63dHSUsBJGJ, and the designs from **[Design] Design the Upload from Phone modal tab, phone upload page and edge states**.
+
+### Impact on existing data
+
+None. It reads the tag added by **[BE] Accept phone uploads into the Content Library through the session link**.
+
+### Impact on other products
+
+- The Content Library page and the upload modal's Content Library tab gain a filter section.
+- No change to the mobile app or the Chrome extension.
+
+### Dependencies
+
+- Depends on **[BE] Accept phone uploads into the Content Library through the session link**.
+- Depends on **[Design] Design the Upload from Phone modal tab, phone upload page and edge states**.
+- The View shortcut depends on **[FE] Show phone uploads live in the upload modal and use them where it was opened**.
 
 ### Global quality & compliance (wherever applicable)
 

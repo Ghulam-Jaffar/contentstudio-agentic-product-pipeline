@@ -42,3 +42,7 @@ All three docs were created with status `draft`.
 ## Design canvas
 
 https://claude.ai/artifact/ACAtyDsDKYbBGc31FyY69e
+
+## Updates
+
+- 2026-10-05: Renamed the "Changes requested" column to "Rejected". Updated CONT-4258, 4259, 4263, 4266, 4267, 4268, 4270, all three Docs, and the design canvas.

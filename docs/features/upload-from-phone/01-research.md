@@ -40,7 +40,8 @@ No app, no login on the phone, and no emailing files to themselves, using WhatsA
 | Media handling | Remove GPS location data, apply EXIF orientation, convert HEIC to JPG and MOV to MP4, chunked resumable uploads. |
 | Visibility | Hidden on mobile browsers and in the mobile app. Never hidden by role (PO, 2026-09-28). Shown in single-image pickers too. |
 | Mobile app | No Flutter work in phase 1. |
-| Out of scope | PIN on the phone page, phone-side editing or cropping, captions on the phone, a "trusted phone", opening the ContentStudio app from the QR code, a "Recent phone uploads" filter. |
+| Filtering phone uploads | Tag every phone upload `phone_upload` with its session ID, and add an "Uploaded from" filter (Anywhere / From phone) to the Content Library (PO, 2026-10-05). |
+| Out of scope | PIN on the phone page, phone-side editing or cropping, captions on the phone, a "trusted phone", opening the ContentStudio app from the QR code. |
 
 ## 4. Edge cases identified
 
@@ -213,7 +214,14 @@ Paths are relative to the repo root. FE is `contentstudio-frontend/`, BE is `con
 - `useMediaInsertion.insertFile` enforces one video at a time.
 - The "attach up to the limit" behavior should read the same spec, not a new list.
 
-## 14. Mobile app
+## 14. Content Library source filter
+
+- Media records already carry a `source` key. The library list already filters on it: `MediaRepository.php` L1087 does a `whereIn('source', …)` on `filters.source`.
+- Precedent: the **Clips** pill under AI Creations sends `source: 'ai-reel-generator'` (`useMediaLibraryFetch.ts` L44 and L228-233). Canva imports use `canva`.
+- The phone filter is the same shape. Stamp `source: 'phone_upload'` and a session ID on save, and send `source: 'phone_upload'` from a new "Uploaded from" section in `MediaLibraryFilterDrawer.vue` / `MediaLibraryFilters.vue`. Usage, Type and Sort already live there.
+- There is no backfill. Older uploads have other or no `source` values.
+
+## 15. Mobile app
 
 - Not analyzed. The PO confirmed no Flutter work in phase 1, and the option is hidden inside the app.
 

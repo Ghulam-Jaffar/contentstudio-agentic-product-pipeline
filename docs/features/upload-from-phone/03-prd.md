@@ -175,10 +175,10 @@ Anyone who opens the link on a phone. It could be the user themself, a teammate 
 
 - The four Usermaven events in §3.1.
 - The device type in the connected pill ("iPhone connected", "Android phone connected").
+- **Uploaded from filter.** Every phone upload is tagged with the source `phone_upload` and its session ID. The Content Library's Filters drawer gets an "Uploaded from" section (Anywhere / From phone), with an active "From phone" chip, an empty state, a **View** shortcut on the modal-closed toast, and an "Uploaded from phone" line in file details. No backfill: files from before launch carry no tag.
 
 ### **6.3 Nice to Have (P2)**
 
-- A subtle "Uploaded from phone" marker in the file details panel of the Content Library.
 - Tapping the QR code on the web app enlarges it for scanning from a distance.
 
 ### **6.4 Explicitly Out of Scope**
@@ -189,7 +189,6 @@ Anyone who opens the link on a phone. It could be the user themself, a teammate 
 - Several phones or several uploaders in one session.
 - A "trusted phone" that skips scanning.
 - Opening the ContentStudio mobile app from the QR code.
-- A "Recent phone uploads" filter in the Content Library.
 - Virus scanning. Desktop uploads don't have it either. It is tracked as a risk.
 - Any Flutter app work.
 - Any public API, CLI or MCP surface.
@@ -247,6 +246,7 @@ The session lifecycle (state diagram) and the cross-device sequence diagram are 
 | BR-12 | From Phone is hidden on mobile browsers and in the mobile app, and never hidden by role. | The user is already on the phone. There is no upload permission to key off (PO decision, 2026-09-28). |
 | BR-13 | Files arrive only in the browser tab that created the code. | Prevents files landing in the wrong draft when the Composer is open twice. |
 | BR-14 | On white-label domains, every link and the phone page use the white-label domain and branding. | Agencies' clients must never see ContentStudio branding. |
+| BR-15 | Every file saved through a phone session is tagged `phone_upload` with its session ID. Nothing else is ever tagged `phone_upload`, and older files are not backfilled. | Lets the Content Library filter phone uploads, including ones a client sent. |
 
 ---
 
@@ -321,3 +321,4 @@ The session lifecycle (state diagram) and the cross-device sequence diagram are 
 | 2026-09-28 | Product Team | Initial draft from the exploration chat, the finalized prototype and the codebase analysis |
 | 2026-09-28 | Product Team | PO decisions applied: no per-file size cap, no role-based hiding, single-image pickers included |
 | 2026-09-28 | Product Team | PRD approved. Session file limit set to 100, idle timeout to 15 minutes. |
+| 2026-10-05 | Product Team | Added the Uploaded from filter (P1): phone uploads are tagged and filterable in the Content Library. Removed the filter from out of scope. |

@@ -55,6 +55,7 @@ Launch **two subagents in parallel** using the Task tool:
 - Search `contentstudio-backend/` for: related models, controllers, services, routes
 - Search `contentstudio-frontend/` for: related modules, components, composables, routes
 - **If the feature involves mobile:** Also search `contentstudio-flutter/` — the single Flutter app that ships to both iOS and Android, and the only source of truth for mobile. Look in `lib/features/<feature>/` for related screens, widgets, providers/controllers, models, and API clients, plus `lib/core/` and `lib/shared/` for cross-cutting concerns. There is no other mobile codebase — the native iOS/Android repos are retired and no longer mounted.
+- **If the feature touches the marketing website** (pricing or plans, signup/login/trial handoff into the app, onboarding entry points, landing/SEO pages, product screenshots or copy on contentstudio.io, or a launch that needs a feature page): also search `contentstudio-website-v2/` (Next.js). Look in `pages/` for the affected routes, `components/` (`new-design/`, `sections/`, `PricingComponents/`) for reusable sections, and grep for `app.contentstudio.io/signup` / `/login` to map every entry point into the app and the `?package=` plan preset it passes.
 - Be token-efficient: use Grep to find files, then Read only the specific sections needed — don't read entire large files
 - Compile a concise report:
   - **Existing Related Code** — what we already have (with file paths)
@@ -62,6 +63,7 @@ Launch **two subagents in parallel** using the Task tool:
   - **Integration Points** — where the new feature would plug in
   - **Technical Considerations** — database, API, queue, caching implications
   - **Mobile Impact** (if applicable) — existing Flutter screens/flows affected (with `contentstudio-flutter/lib/...` paths), what the app currently supports for this area, and any genuinely platform-specific concerns (permissions, share sheet, notifications, in-app purchase)
+  - **Website Impact** (if applicable) — affected `contentstudio-website-v2/` pages and components, entry points into the app (signup/login links and plan presets) that must keep working, and copy or screenshots on the site that will go stale
 
 **After both complete**, combine into `docs/features/<slug>/01-research.md` and present a summary to the user.
 
@@ -212,7 +214,7 @@ Any FE (or BE) story that introduces a trackable user action listed in PRD §3.1
 Write all tooltips and labels as if for a **non-technical user who has never used a social media management tool**. Include concrete examples in tooltips so the user understands instantly without thinking twice.
 
 **Story splitting (guidelines section 6):**
-- Prefix titles: `[BE]` for backend, `[FE]` for frontend, `[Design]` for design, `[Flutter]` for the mobile app
+- Prefix titles: `[BE]` for backend, `[FE]` for frontend, `[Design]` for design, `[Flutter]` for the mobile app, `[Website]` for the marketing website (`contentstudio-website-v2/`)
 - ALL UI copy lives in the FE story, never in BE stories
 - BE stories cover: API endpoints, data models, validation, business logic, jobs, events
 - **Create one `[Flutter]` story** when the change impacts the mobile app — never a separate iOS story and Android one, since a single Flutter change ships to both. Split only for genuinely platform-specific work (store submission, APNs vs FCM, Apple IAP vs Google Play Billing) and name the platform in the title. (guidelines section 13)
@@ -259,7 +261,7 @@ If the user replies 'done' or skips, the pipeline ends here. If they reply 'impl
 
 ### STEP 6: Implement FE Stories (Optional)
 
-**This step only runs if the user explicitly opts in.** It implements **only `[FE]` stories** — all other story types (`[BE]`, `[Design]`, `[Flutter]`) are skipped.
+**This step only runs if the user explicitly opts in.** It implements **only `[FE]` stories** — all other story types (`[BE]`, `[Design]`, `[Flutter]`, `[Website]`) are skipped.
 
 #### 6a. Setup
 
@@ -376,7 +378,7 @@ Present the PR link to the user.
 7. **Be specific, not generic.** Every PRD section, every story, every acceptance criterion should be specific to ContentStudio and this feature — not boilerplate.
 8. **Reference the codebase.** When describing where something plugs in, reference actual file paths from the codebase analysis.
 9. **No trailing metadata block.** A story ends at the global quality checklist — no template, type, project, group, epic, priority, product area, skill set, estimate, or labels.
-10. **Implementation is optional and FE-only.** Step 6 only runs if the user explicitly opts in. Only `[FE]` stories are implemented — `[BE]`, `[Design]`, `[Flutter]` are left for their respective teams.
+10. **Implementation is optional and FE-only.** Step 6 only runs if the user explicitly opts in. Only `[FE]` stories are implemented — `[BE]`, `[Design]`, `[Flutter]`, `[Website]` are left for their respective teams.
 11. **Follow `contentstudio-frontend/CLAUDE.md` during implementation.** All coding standards (TypeScript, Composition API, i18n, theming, `@contentstudio/ui` usage) must be followed exactly.
 12. **One branch, one commit per story.** All FE stories share a single branch. Each story gets its own descriptive commit.
 13. **Always ask PR target branch.** Don't assume `develop` — confirm with the user.

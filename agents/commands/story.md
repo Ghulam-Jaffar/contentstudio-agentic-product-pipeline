@@ -36,6 +36,7 @@ This contains a description of the change/improvement. It may include context ab
 - Use **Read** only on the specific files/sections you need — read targeted line ranges, not entire 500-line files
 - Identify: key file paths, current behavior, what needs to change, what can be reused
 - **If the story involves mobile:** Also search `contentstudio-flutter/` — the single Flutter app for iOS + Android, and the only source of truth for mobile. Look in `lib/features/<feature>/` for screens, widgets, providers/controllers, models, and API clients, plus `lib/core/` and `lib/shared/`. There is no other mobile codebase — the native iOS/Android repos are retired and no longer mounted.
+- **If the story touches the marketing website** (pricing or plans, signup/login/trial handoff into the app, landing/SEO pages, product screenshots or copy on contentstudio.io): also search `contentstudio-website-v2/` (Next.js) — `pages/` for routes, `components/` for sections, and grep `app.contentstudio.io/signup` / `/login` to find every entry point into the app.
 
 **Light external research** (only if the change involves a UX pattern):
 - Do 1-2 quick WebSearches max — just for UX inspiration, not a full analysis
@@ -46,6 +47,7 @@ This contains a description of the change/improvement. It may include context ab
 - **What Needs to Change** — bullet list of specific changes
 - **UX Reference** (only if applicable) — 1-2 sentence summary of how others do it
 - **Mobile Context** (only if the story involves mobile) — existing Flutter screens/flows affected (with `contentstudio-flutter/lib/...` paths), what the app currently supports
+- **Website Context** (only if the story touches the marketing website) — affected `contentstudio-website-v2/` pages/components and the app entry points (signup/login links, plan presets) involved
 - **Files Involved** — list of files that will be touched
 
 Present a short summary to the user.
@@ -135,7 +137,7 @@ If the user replies 'done' or skips, the pipeline ends here. If they reply 'impl
 
 ### STEP 4: Implement FE Stories (Optional)
 
-**This step only runs if the user explicitly opts in.** It implements **only `[FE]` stories** — all other story types (`[BE]`, `[Design]`, `[Flutter]`) are skipped.
+**This step only runs if the user explicitly opts in.** It implements **only `[FE]` stories** — all other story types (`[BE]`, `[Design]`, `[Flutter]`, `[Website]`) are skipped.
 
 #### 4a. Setup
 
@@ -247,7 +249,7 @@ Present the PR link to the user.
 9. **No estimates, no labels** anywhere in the story.
 10. **No trailing metadata block.** A story ends at the global quality checklist — no project, group, epic, priority, product area, skill set, story type, or template fields.
 11. **Create one `[Flutter]` story** when the change impacts the mobile app — `contentstudio-flutter/` is the only mobile codebase, so no separate iOS/Android stories.
-12. **Implementation is optional and FE-only.** Step 4 only runs if the user explicitly opts in. Only `[FE]` stories are implemented — `[BE]`, `[Design]`, `[Flutter]` are left for their respective teams.
+12. **Implementation is optional and FE-only.** Step 4 only runs if the user explicitly opts in. Only `[FE]` stories are implemented — `[BE]`, `[Design]`, `[Flutter]`, `[Website]` are left for their respective teams.
 13. **Follow `contentstudio-frontend/CLAUDE.md` during implementation.** All coding standards (TypeScript, Composition API, i18n, theming, `@contentstudio/ui` usage) must be followed exactly.
 14. **One branch, one commit per story.** All FE stories share a single branch. Each story gets its own descriptive commit.
 15. **Always ask PR target branch.** Don't assume `develop` — confirm with the user.

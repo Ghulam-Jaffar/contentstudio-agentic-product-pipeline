@@ -178,7 +178,7 @@ sequenceDiagram
 |---|---|
 | **Upload modal** | A new last tab. It reuses the Folder selector, the storage meter and the per-context insert logic. |
 | **Composer** | A new chip in the media box. The final button attaches via the existing insert path, so the Composer's platform validation (carousel limits, one video at a time) applies unchanged. |
-| **Content Library** | Every phone file lands here, in the chosen folder, attributed to the user who started the session. Files are indistinguishable from normal uploads. |
+| **Content Library** | Every phone file lands here, in the chosen folder, attributed to the user who started the session and tagged as uploaded from a phone. The Filters drawer gets an "Uploaded from" section (Anywhere / From phone) to show only those files. |
 | **Storage quota** | The same workspace storage limit applies and is checked before each batch. |
 | **Automation** | The Evergreen and CSV bulk upload modals get the tab. "Use in automation" hands files over the way Content Library selection does today. |
 | **AI chat** | The chat's upload modal gets the tab. "Attach to chat" attaches them the way Content Library selection does today. |
@@ -220,6 +220,7 @@ Proposed payloads, to finalize in the PRD:
 - Edge states A1 to A14.
 - White-label domain and branding.
 - Hidden on mobile browsers and in the app. Shown for every role and in every place the upload modal opens, including single-image pickers.
+- An "Uploaded from" filter in the Content Library (Anywhere / From phone), a View shortcut on the modal-closed toast, and "Uploaded from phone" in file details.
 - Four Usermaven events.
 - One [Design] story covering the prototype handoff to design-system components.
 
@@ -227,7 +228,6 @@ Proposed payloads, to finalize in the PRD:
 
 - A longer connect window.
 - Opening the ContentStudio app instead of the browser when it's installed.
-- A "Recent phone uploads" filter in the Content Library.
 - A named "trusted phone" that skips scanning.
 - Virus scanning for all uploads, not just phone uploads.
 

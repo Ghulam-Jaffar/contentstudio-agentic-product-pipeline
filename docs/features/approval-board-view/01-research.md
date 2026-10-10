@@ -12,14 +12,14 @@
 |---|---|
 | D1 | Approval-only board, not a general post-status kanban. Post statuses are system-driven (you can't drag a post into "Published" or "Failed"), so a status board would be read-only and duplicate List and Calendar |
 | D2 | It is a **Planner view** called **"Approval board"**, picked from the view dropdown at the top right next to Calendar, List, Compact list, Feed, Instagram grid and TikTok grid. The PO renamed it from "Board" so it reads as approval-related |
-| D3 | Columns: **Awaiting approval**, **Missed review**, **Changes requested**, **Approved** |
+| D3 | Columns: **Awaiting approval**, **Missed review**, **Rejected**, **Approved** |
 | D4 | Scope switch: **Assigned to me / Requested by me / All approvals** |
 | D5 | **Drag and drop is required.** Every drag action also exists as a button on the card |
 | D6 | Authors can still approve their own posts. That completes the current level, same as today |
 | D7 | Multi-level workflow posts stay in Awaiting until the last level is approved. The card shows the level and a progress bar |
 | D8 | The Approved column is limited to the planner's date range |
 | D9 | **New** approvers land on Approval board by default. **Existing** users keep their saved view and get an in-app announcement instead |
-| D10 | **The client share-link page also gets Approval board (v1, Must have)**, with 3 columns: Awaiting approval, Changes requested, Approved |
+| D10 | **The client share-link page also gets Approval board (v1, Must have)**, with 3 columns: Awaiting approval, Rejected, Approved |
 
 ---
 
@@ -47,7 +47,7 @@ An approval board is a kanban view of the content planner. Each post is a card, 
 | **Hootsuite** | **No board** | 2 to 3 tier approvals, Approvals tab in Planner and on mobile, recording of external approvals | Unverified | Calendar plus an Approvals tab | Audit trail for approvals given outside the tool |
 | **Buffer** | **No board** | "Awaiting Approval" tab for drafts, single approver role | Team plan | Tab | Simplest model |
 | **Later** | **No board** | Reviewer role, external reviewers without an account | Unverified | Calendar and post-level | Approval without a login |
-| **Loomly** | **No board** (unverified) | Statuses include "Requires Edits" and "Pending Approval", changed from List View | Unverified | List with status filters | "Requires Edits" is the same idea as Changes requested |
+| **Loomly** | **No board** (unverified) | Statuses include "Requires Edits" and "Pending Approval", changed from List View | Unverified | List with status filters | "Requires Edits" is the same idea as our Rejected column |
 | **Sendible** | **No board** | Tasks with "For Me / For Others", bulk send for approval | Unverified | Task list | Approval as tasks |
 | **Agorapulse** | **No board** | Multi-step approval chains (2025), bulk assign and approve | Unverified | Calendar and list | Post stays in the workflow until every step is done |
 | **SocialBee** | **No** | Single-approver Draft to Approved flow | Unverified | Post-level | None |
@@ -56,7 +56,7 @@ Sources: planable.io/guides/content-approvals-in-planable, skedsocial.com/blog/a
 
 ### 1.3 Common Patterns
 
-- **Columns** come down to Pending, Changes requested or Rejected, and Approved. Planable uses 3 approver-centric columns.
+- **Columns** come down to Pending, Rejected and Approved. Planable uses 3 approver-centric columns.
 - **Cards look like the content:** thumbnail, caption preview, channels, scheduled time, requester.
 - **Bulk approve** is standard (Planable "Approve all", Metricool bulk dropdown) and often a paid-tier feature.
 - **A drop changes the status** (Sked, Kontentino). Nobody documents drag restrictions or confirmation dialogs.
@@ -77,7 +77,7 @@ Sources: planable.io/guides/content-approvals-in-planable, skedsocial.com/blog/a
 
 ### 1.6 Recommended Approach
 
-Build it as a Planner view, so it gets the existing filters, saved views and URL params for free. Use the 4 columns with counts. Only allow drops the user is permitted to make, and fade columns they can't drop into as soon as a drag starts. Dropping on Changes requested asks for a note. Dropping a missed post on Approved asks for a new time. Every drag action has a button equivalent. Cards stay in Awaiting until the last level. Approve all only covers posts waiting on you.
+Build it as a Planner view, so it gets the existing filters, saved views and URL params for free. Use the 4 columns with counts. Only allow drops the user is permitted to make, and fade columns they can't drop into as soon as a drag starts. Dropping on Rejected asks for a note. Dropping a missed post on Approved asks for a new time. Every drag action has a button equivalent. Cards stay in Awaiting until the last level. Approve all only covers posts waiting on you.
 
 **Where we differ from the competitor recommendation:** competitors suggest an undo toast after a drop. We use a **confirm step** instead, because a last-level approval schedules the post and can't be revoked (revoke is blocked once fully approved), so an undo would promise something we can't deliver.
 
@@ -103,7 +103,7 @@ Paths are relative to the mounted repos. FE = `contentstudio-frontend/src`, BE =
 |---|---|---|
 | Awaiting approval | `status=review` with a future time, or a draft with `approval.status=pending_approval` | `approval_workflow.status` is `pending` or `partially_approved`, with time in the future or no time set |
 | Missed review | `status=review` and the time has passed | Same |
-| Changes requested | `status=rejected` | `approval_workflow.status=rejected` |
+| Rejected | `status=rejected` | `approval_workflow.status=rejected` |
 | Approved | `approval.status=completed_approval` | `approval_workflow.status=fully_approved` |
 
   Under review and missed review are computed, not stored: `BE/app/Models/Publish/Planner/Plans.php` ~273-311, filters at `PlansRepository.php` ~717-750.

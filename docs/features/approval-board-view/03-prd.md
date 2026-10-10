@@ -9,13 +9,13 @@
 
 ## **1\. Overview**
 
-Approval board is a new Planner view that shows every post going through approval as a card on a kanban board. There are four columns: Awaiting approval, Missed review, Changes requested and Approved.
+Approval board is a new Planner view that shows every post going through approval as a card on a kanban board. There are four columns: Awaiting approval, Missed review, Rejected and Approved.
 
 - **Approvers** see at a glance what is waiting on them, and approve or request changes by dragging a card or clicking a button.
 - **Authors** see where each post they sent is stuck.
 - **Admins** see the whole team's approval pipeline.
 
-Clients reviewing through a share link get the same board on their share page, with three columns: Awaiting approval, Changes requested and Approved.
+Clients reviewing through a share link get the same board on their share page, with three columns: Awaiting approval, Rejected and Approved.
 
 It works with both single-level approvals and multi-level approval workflows. Each card shows its level and progress, and a post stays in Awaiting until its last level is approved. Today approvals are scattered across the Feed and List views, so the board turns ContentStudio's approval workflows into one visible queue. It also puts us level with Planable and Sked Social, and ahead of both on missed reviews and multi-level progress.
 
@@ -94,12 +94,12 @@ Visits to the view itself are already counted by the global `pageview` event on 
 | ID | As a... | I want to... | So that... | Priority |
 | ----- | ----- | ----- | ----- | ----- |
 | US-1 | Approver | see every post waiting on me in one column, with mine marked "Your turn" | I know exactly what to review first | Must Have |
-| US-2 | Approver | drag a card to Approved or Changes requested | I can decide in one motion | Must Have |
+| US-2 | Approver | drag a card to Approved or Rejected | I can decide in one motion | Must Have |
 | US-3 | Approver | approve or reject from buttons on the card | I can act without dragging (keyboard, touch, phone) | Must Have |
 | US-4 | Approver | approve all posts that are my turn at once | I can clear a batch quickly | Must Have |
 | US-5 | Approver | pick a new time when approving a missed post | the post still goes out instead of being lost | Must Have |
 | US-6 | Approver on a multi-level workflow | see which level a post is at and when my turn comes | I understand why a post isn't mine yet | Must Have |
-| US-7 | Author | see my posts split by Awaiting, Missed, Changes requested and Approved | I know the status of everything I sent | Must Have |
+| US-7 | Author | see my posts split by Awaiting, Missed, Rejected and Approved | I know the status of everything I sent | Must Have |
 | US-8 | Author | read the rejection note on the card and resubmit from there | I can fix and resend quickly | Must Have |
 | US-9 | Author | approve my own post when needed | I'm not blocked when an approver is away (existing behaviour) | Must Have |
 | US-10 | Admin | see all approvals in the workspace | I can spot bottlenecks | Must Have |
@@ -107,7 +107,7 @@ Visits to the view itself are already counted by the global `pageview` event on 
 | US-12 | Existing user | be told about the new view without my saved view changing | I can try it on my own terms | Must Have |
 | US-13 | User on a phone browser | switch between columns as tabs and approve with buttons | I can approve on the go | Should Have |
 | US-14 | Developer using the public API | filter posts by approved status | I can build the same view in my own tools | Should Have |
-| US-15 | Client reviewing through a share link | see the shared posts as a board split into Awaiting approval, Changes requested and Approved, and drag to approve or request changes | I can review a batch of posts without a ContentStudio account | Must Have |
+| US-15 | Client reviewing through a share link | see the shared posts as a board split into Awaiting approval, Rejected and Approved, and drag to approve or request changes | I can review a batch of posts without a ContentStudio account | Must Have |
 
 ---
 
@@ -123,7 +123,7 @@ Visits to the view itself are already counted by the global `pageview` event on 
 | ----- | ----- |
 | Awaiting approval | Waiting on a decision, time in the future or no time set |
 | Missed review | Planned time passed, no decision |
-| Changes requested | Rejected |
+| Rejected | Rejected |
 | Approved | Approval complete, within the selected date range, whatever the post status is now |
 
 - **Scope switch:** Assigned to me (the default for approvers), Requested by me (the default for collaborators who need approval), All approvals (the default for admins). Each option shows a count.
@@ -133,7 +133,7 @@ Visits to the view itself are already counted by the global `pageview` event on 
   - A caption preview of up to 3 lines, and a media thumbnail label
   - A level progress bar
   - The requester, and the comment count
-  - The rejection note (in Changes requested), or the outcome (in Approved: scheduled, published, or not scheduled yet)
+  - The rejection note (in Rejected), or the outcome (in Approved: scheduled, published, or not scheduled yet)
 - **Ordering in Awaiting approval:** "Your turn" cards sort first.
 
 **Actions**
@@ -142,8 +142,8 @@ Visits to the view itself are already counted by the global `pageview` event on 
 | Move | Who can do it | What happens |
 | ----- | ----- | ----- |
 | Awaiting approval or Missed review → Approved | Approver on the current level, or the post's author | Approve |
-| Awaiting approval or Missed review → Changes requested | Approver on the current level, or the post's author | Reject, with a required note |
-| Changes requested → Awaiting approval | The author only | Opens the Composer |
+| Awaiting approval or Missed review → Rejected | Approver on the current level, or the post's author | Reject, with a required note |
+| Rejected → Awaiting approval | The author only | Opens the Composer |
 | Anything out of Approved | Nobody | Not allowed |
 
   Columns the card can't go to fade while dragging.
@@ -168,9 +168,9 @@ Visits to the view itself are already counted by the global `pageview` event on 
 **Client share-link board**
 - **The share-link page gets a third view, "Approval board,"** next to List and Calendar, with three columns:
   - **Awaiting approval:** includes posts whose time has passed, marked "Time passed"
-  - **Changes requested**
+  - **Rejected**
   - **Approved**
-- **Dragging follows the link's settings.** On links where approval actions are on, the client can drag Awaiting approval → Approved (approve, optional comment) or Awaiting approval → Changes requested (reject, required comment). Card buttons do the same. Nothing moves out of Approved or Changes requested.
+- **Dragging follows the link's settings.** On links where approval actions are on, the client can drag Awaiting approval → Approved (approve, optional comment) or Awaiting approval → Rejected (reject, required comment). Card buttons do the same. Nothing moves out of Approved or Rejected.
 - **View-only links** show the board read-only, with no drag and no buttons.
 - **Columns reflect the client's own decision** on each post, so one client's choice doesn't hide a post another client still has to answer.
 - **Missed posts on the team board.** A post a client approved after its time passed shows in the team's Approved column as "Approved, needs a new time" with a Schedule post button.
@@ -208,8 +208,8 @@ Visits to the view itself are already counted by the global `pageview` event on 
 2. The user picks a scope (Assigned to me / Requested by me / All approvals) and any filters.
 3. The board loads four columns with counts. "Your turn" cards sort first.
 4. The user drags a card, or clicks a card button, and confirms in the dialog.
-5. The card moves (to the next level, Approved, or Changes requested), the counts update, and a toast confirms.
-6. Authors resubmit from Changes requested through the Composer, and schedule approved drafts from the card.
+5. The card moves (to the next level, Approved, or Rejected), the counts update, and a toast confirms.
+6. Authors resubmit from Rejected through the Composer, and schedule approved drafts from the card.
 
 ```mermaid
 flowchart TD
@@ -226,7 +226,7 @@ flowchart TD
     Level -->|Yes| Approved[Card moves to Approved]
     Level -->|No| NextLevel[Card stays in Awaiting at the next level]
     Time --> Approved
-    Note --> Changes[Card moves to Changes requested]
+    Note --> Changes[Card moves to Rejected]
 ```
 
 The card state diagram is in the workflow document (section 2, "Card states").
@@ -240,7 +240,7 @@ The card state diagram is in the workflow document (section 2, "Card states").
 | BR-1 | A post appears on the board only if it has approvers (legacy) or an approval workflow | The board is for approvals only |
 | BR-2 | **Awaiting approval:** pending, partially approved, or a draft pending approval, with a future time or no time | Matches today's "under review" logic |
 | BR-3 | **Missed review:** still under review and the planned time has passed | Matches today's "missed review" logic |
-| BR-4 | **Changes requested:** rejected by any approver at any level | Any single rejection rejects the post (existing rule) |
+| BR-4 | **Rejected:** rejected by any approver at any level | Any single rejection rejects the post (existing rule) |
 | BR-5 | **Approved:** approval complete. Listed if its planned time (or approval time, for drafts with no time) falls in the selected date range | Keeps the column bounded (PO decision D8) |
 | BR-6 | **Assigned to me:** posts where I'm a member of any level, or a legacy approver, whatever my status | Lets me see posts before my turn and after I've acted |
 | BR-7 | **Requested by me:** posts I sent for approval | Same as the existing "My Approval Requests" filter |
@@ -250,7 +250,7 @@ The card state diagram is in the workflow document (section 2, "Card states").
 | BR-11 | **Approving a missed post requires a new date and time in the future** | Otherwise it would publish immediately or fail |
 | BR-12 | **Rejecting requires a note** | The author needs to know what to change |
 | BR-13 | **Nothing can be moved out of Approved** | Revoke isn't allowed once fully approved |
-| BR-14 | **Only the author can move a post from Changes requested to Awaiting**, and only by editing it in the Composer | Resubmitting means changing the post |
+| BR-14 | **Only the author can move a post from Rejected to Awaiting**, and only by editing it in the Composer | Resubmitting means changing the post |
 | BR-15 | **Approve all only approves "Your turn" posts** in the current scope and filters | Bulk is never an override |
 | BR-16 | **Bulk approve and reject run every workflow post through its levels**, the same as a single approval | Fixes today's level-skipping bug |
 | BR-17 | **A new approver's default Planner view is Approval board**, but only if they have no saved view | No surprise changes for existing users (D9) |
@@ -335,3 +335,4 @@ The card state diagram is in the workflow document (section 2, "Card states").
 | ----- | ----- | ----- |
 | 2026-10-02 | Ghulam Jaffar | Initial draft |
 | 2026-10-02 | Ghulam Jaffar | Client share-link board moved into v1 as Must have, with 3 columns |
+| 2026-10-05 | Ghulam Jaffar | Renamed the "Changes requested" column to "Rejected", on both the Planner and client boards |

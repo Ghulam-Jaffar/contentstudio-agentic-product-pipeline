@@ -19,6 +19,7 @@ Prototype: https://claude.ai/artifact/FbSZdddf9VP63dHSUsBJGJ
 | [CONT-4144](https://app.helpin.ai/w/contentstudio/pm/epics/7284df75-f2c9-43fd-b09b-ef5135247c24?task=CONT-4144) | [FE] Add the From Phone tab and QR code to the upload modal | frontend | PRD, Workflow |
 | [CONT-4145](https://app.helpin.ai/w/contentstudio/pm/epics/7284df75-f2c9-43fd-b09b-ef5135247c24?task=CONT-4145) | [FE] Show phone uploads live in the upload modal and use them where it was opened | frontend | PRD, Workflow |
 | [CONT-4146](https://app.helpin.ai/w/contentstudio/pm/epics/7284df75-f2c9-43fd-b09b-ef5135247c24?task=CONT-4146) | [FE] Build the mobile upload page for Upload from Phone | frontend | PRD, Workflow |
+| [CONT-4300](https://app.helpin.ai/w/contentstudio/pm/epics/7284df75-f2c9-43fd-b09b-ef5135247c24?task=CONT-4300) | [FE] Add an Uploaded from filter to the Content Library | frontend | PRD, Workflow |
 
 ## Docs (Engineering space, all attached to the epic)
 
@@ -32,3 +33,11 @@ Prototype: https://claude.ai/artifact/FbSZdddf9VP63dHSUsBJGJ
 
 - Returned labels matched the request on every story. Helpin added none on its own this time.
 - The research and workflow docs had two stale lines and one local file link fixed before the push. The local copies match what's in Helpin.
+
+## Update, 2026-10-05: Uploaded from filter
+
+- Added **CONT-4300**, with the same fields as the batch: sprint Oct 05 - Oct 18, Ready, Medium, frontend, unassigned. The PRD and Workflow Docs are attached.
+- **CONT-4142** now tags every phone upload `phone_upload` with its session ID, with no backfill. Its owner, Shaharyar Tariq, was kept.
+- **CONT-4140** now covers the filter design. Its owner, Fasih Shaukat, was kept.
+- In the epic description, the "Recent phone uploads" filter is no longer listed as out of scope. The planned start (2026-10-05) and deadline (2026-10-16), which someone set in Helpin, were left as they were.
+- The PRD, Workflow and Research Docs were updated in place to match the local files.

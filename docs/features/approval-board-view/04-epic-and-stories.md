@@ -2,13 +2,13 @@
 
 ## Epic: Approval board view for the Planner and client share links
 
-Approval board is a new Planner view that shows every post going through approval as a card on a kanban board, split into four columns: Awaiting approval, Missed review, Changes requested and Approved.
+Approval board is a new Planner view that shows every post going through approval as a card on a kanban board, split into four columns: Awaiting approval, Missed review, Rejected and Approved.
 
 - **Approvers** see what is waiting on them, with their own posts marked "Your turn", and approve or request changes by dragging a card or clicking a button.
 - **Authors** see where each post they sent is stuck.
 - **Admins** see the whole team's approval pipeline.
 
-It works with both single-level approvals and multi-level approval workflows. Each card shows its level and progress, and a post stays in Awaiting approval until its last level is approved. Clients who review through a share link get the same board on their share page, with three columns: Awaiting approval, Changes requested and Approved.
+It works with both single-level approvals and multi-level approval workflows. Each card shows its level and progress, and a post stays in Awaiting approval until its last level is approved. Clients who review through a share link get the same board on their share page, with three columns: Awaiting approval, Rejected and Approved.
 
 **Goals**
 - Cut the median time from "sent for approval" to the final decision by 30%.
@@ -57,7 +57,7 @@ There is no kanban column or card component in the ContentStudio design library 
 1. Designer starts from the agreed design canvas: the desktop board, the phone-width layout and the announcement.
 2. Designer finalises the board column: header, ℹ icon, count, Approve all, empty state, drop states (allowed, hovered, faded) and the loading skeleton.
 3. Designer finalises the post card:
-   - **Variants:** Your turn, Waiting on an earlier level, Missed, Changes requested, and Approved (Scheduled, Published, Not scheduled yet, Needs a new time)
+   - **Variants:** Your turn, Waiting on an earlier level, Missed, Rejected, and Approved (Scheduled, Published, Not scheduled yet, Needs a new time)
    - **States:** dragging, and read-only
 4. Designer finalises the dialogs: Approve this post?, Request changes, Pick a new time and Approve all.
 5. Designer designs the scope switch, the "waiting on you" summary and the drag hint.
@@ -69,7 +69,7 @@ There is no kanban column or card component in the ContentStudio design library 
 ---
 
 ### Acceptance criteria:
-- [ ] **Desktop Planner board** designed at 1280px and 1440px, with four columns: Awaiting approval, Missed review, Changes requested, Approved
+- [ ] **Desktop Planner board** designed at 1280px and 1440px, with four columns: Awaiting approval, Missed review, Rejected, Approved
 - [ ] **Narrow windows:** columns keep a minimum readable width, and the board scrolls sideways instead of squeezing cards
 - [ ] **Column design covers:**
   - [ ] Header: icon, title, ℹ icon and count badge
@@ -83,7 +83,7 @@ There is no kanban column or card component in the ContentStudio design library 
   - [ ] Your turn
   - [ ] Waiting on an earlier level
   - [ ] Missed (time in red, "Time passed" badge)
-  - [ ] Changes requested (rejection note box)
+  - [ ] Rejected (rejection note box)
   - [ ] Approved: Scheduled, Published, Not scheduled yet, Needs a new time
   - [ ] Author self-approval note
   - [ ] Read-only (no actions)
@@ -94,7 +94,7 @@ There is no kanban column or card component in the ContentStudio design library 
 - [ ] **Phone-width Planner board:** column tabs with counts, a stacked card list, and 44px Approve and Reject buttons
 - [ ] **Announcement popover** anchored to the view dropdown, with the "New" tag on the Approval board option
 - [ ] **Client share-link board:**
-  - [ ] 3 columns: Awaiting approval, Changes requested, Approved
+  - [ ] 3 columns: Awaiting approval, Rejected, Approved
   - [ ] The "Time passed" note for clients
   - [ ] The read-only banner for view-only links
   - [ ] Approve and Request changes dialogs worded for clients
@@ -147,7 +147,7 @@ None. This story should be done before **[FE] Build the Approval board columns, 
 ## [BE] Serve Approval board columns, counts and card approval details
 
 ### Description:
-As an **approver, author or admin**, I want the Planner to return my approval posts already split into Awaiting approval, Missed review, Changes requested and Approved, with counts and the details each card needs, so that Approval board loads fast and shows the right actions for me.
+As an **approver, author or admin**, I want the Planner to return my approval posts already split into Awaiting approval, Missed review, Rejected and Approved, with counts and the details each card needs, so that Approval board loads fast and shows the right actions for me.
 
 Approval board loads each column separately and pages through it, so a busy Approved column doesn't slow down the others. It works for both single-level approvals and multi-level approval workflows.
 
@@ -165,20 +165,20 @@ Approval board loads each column separately and pages through it, so a busy Appr
 ### Acceptance criteria:
 
 **Columns**
-- [ ] **One column per request, paged:** the Planner posts endpoint accepts an Approval board request for one column at a time (Awaiting approval, Missed review, Changes requested or Approved), with page and page-size parameters, and returns that column's posts in pages.
+- [ ] **One column per request, paged:** the Planner posts endpoint accepts an Approval board request for one column at a time (Awaiting approval, Missed review, Rejected or Approved), with page and page-size parameters, and returns that column's posts in pages.
 - [ ] **Only posts in approval** (legacy approvers or an approval workflow) are ever returned.
 - [ ] **Awaiting approval** returns posts waiting on a decision whose planned time is in the future, plus drafts sent for approval with no time.
   - [ ] For workflows, this means pending or partially approved.
   - [ ] For legacy approvals, this means pending approval.
 - [ ] **Missed review** returns posts still waiting on a decision whose planned time has passed.
-- [ ] **Changes requested** returns posts rejected at any level.
+- [ ] **Rejected** returns posts rejected at any level.
 - [ ] **Approved** returns posts whose approval is complete, whether they are now scheduled, published or a draft.
   - [ ] Only posts whose planned time falls in the selected date range are included.
   - [ ] For drafts with no time, the approval time is used instead.
 - [ ] **Sort order:**
   - [ ] Awaiting approval: posts that are the requesting user's turn first, then by planned time, soonest first.
   - [ ] Missed review: by planned time.
-  - [ ] Changes requested: most recently rejected first.
+  - [ ] Rejected: most recently rejected first.
   - [ ] Approved: by planned time, newest first.
 
 **Scope and filters**
@@ -204,7 +204,7 @@ Approval board loads each column separately and pages through it, so a busy Appr
   - [ ] the outcome when approved: scheduled, published, approved but not scheduled, or needs a new time
 - [ ] **Each post includes what the user can do:**
   - [ ] whether they can approve or reject it (on the current level, or the post's author)
-  - [ ] whether they can edit and resubmit it (the author, while it is in Changes requested)
+  - [ ] whether they can edit and resubmit it (the author, while it is in Rejected)
 - [ ] **Legacy single-level approvals** come back as level 1 of 1.
 
 **Access**
@@ -457,7 +457,7 @@ None.
 ## [BE] Serve the client share-link board with each client's own decisions
 
 ### Description:
-As a **client reviewing posts through a share link**, I want the shared posts split into Awaiting approval, Changes requested and Approved based on my own decisions, so that I can see what still needs my answer, even when other clients review the same link.
+As a **client reviewing posts through a share link**, I want the shared posts split into Awaiting approval, Rejected and Approved based on my own decisions, so that I can see what still needs my answer, even when other clients review the same link.
 
 As a **team member**, I want a post that a client approved after its planned time passed to be flagged on our board, so that we pick a new time instead of the post silently never publishing.
 
@@ -474,7 +474,7 @@ As a **team member**, I want a post that a client approved after its planned tim
 ### Acceptance criteria:
 - [ ] **Each post on a share link comes back with a board column** for the client viewing it (identified by their share token):
   - [ ] **Awaiting approval:** this client hasn't decided and the post still needs approval
-  - [ ] **Changes requested:** this client rejected it, or the post is rejected
+  - [ ] **Rejected:** this client rejected it, or the post is rejected
   - [ ] **Approved:** this client approved it, or the post's approval is complete
 - [ ] **Each post is flagged as "time passed"** when its planned time is in the past and it is still awaiting approval.
 - [ ] **The response says whether this client can approve or reject**, following the link's existing approval-actions setting. View-only links return "no actions".
@@ -655,7 +655,7 @@ The other Planner views are unchanged.
 ## [FE] Build the Approval board columns, cards and scope switch
 
 ### Description:
-As an **approver, author or admin**, I want to see posts in approval as cards in four columns (Awaiting approval, Missed review, Changes requested and Approved), with my own posts marked "Your turn", so that I can tell at a glance what needs me, what's stuck and what's done.
+As an **approver, author or admin**, I want to see posts in approval as cards in four columns (Awaiting approval, Missed review, Rejected and Approved), with my own posts marked "Your turn", so that I can tell at a glance what needs me, what's stuck and what's done.
 
 ---
 
@@ -681,7 +681,7 @@ As an **approver, author or admin**, I want to see posts in approval as cards in
 - [ ] **A `SegmentedControl` above the board** with "Assigned to me", "Requested by me" and "All approvals". Each option shows its count as a `Badge`.
 - [ ] **Each option has a tooltip** (`CstPopup`):
   - [ ] Assigned to me: "Posts where you are one of the approvers, at any level. For example, a post waiting on Brand review shows here if you approve at the Legal level."
-  - [ ] Requested by me: "Posts you sent for approval, so you can see which are approved, sent back or still waiting."
+  - [ ] Requested by me: "Posts you sent for approval, so you can see which are approved, rejected or still waiting."
   - [ ] All approvals: "Every post in this workspace that is going through approval."
 - [ ] **The default scope:**
   - [ ] Approvers: Assigned to me
@@ -692,13 +692,13 @@ As an **approver, author or admin**, I want to see posts in approval as cards in
 - [ ] **The hint** at the right of the row reads "Drag a card to approve it or request changes", with a hand icon. It's hidden at phone width.
 
 **Columns**
-- [ ] **Four columns, left to right:** Awaiting approval, Missed review, Changes requested, Approved.
+- [ ] **Four columns, left to right:** Awaiting approval, Missed review, Rejected, Approved.
   - [ ] Each header shows its icon, title, an ℹ icon and a count `Badge`.
   - [ ] Columns use the board column component from **[Design] Design the Approval board for the Planner and the client share page**.
 - [ ] **ℹ tooltips** (`CstPopup`):
   - [ ] Awaiting approval: "Posts that still need a decision. Cards marked Your turn are waiting on you right now."
   - [ ] Missed review: "Posts whose planned time passed before anyone approved them. They won't publish until someone approves them with a new time."
-  - [ ] Changes requested: "Posts an approver sent back with a note. The author can edit them and send them for approval again."
+  - [ ] Rejected: "Posts an approver rejected with a note. The author can edit them and send them for approval again."
   - [ ] Approved: "Posts that finished approval in the selected date range. Change the date range at the top to see older ones."
 - [ ] **The Approved header** shows the selected date range as a subtitle, for example "Oct 1 to Oct 31, 2026".
 - [ ] **Card order in Awaiting approval:** "Your turn" cards come first.
@@ -722,8 +722,8 @@ As an **approver, author or admin**, I want to see posts in approval as cards in
 - [ ] **Missed review cards:**
   - [ ] The time shows in red as "Was due {date, time}", for example "Was due Sep 30, 10:00 AM".
   - [ ] A "Time passed" `Badge` shows.
-- [ ] **Changes requested cards:**
-  - [ ] A note box shows "Changes requested by {name}" (or "You requested changes") with the rejection note.
+- [ ] **Rejected cards:**
+  - [ ] A note box shows "Rejected by {name}" (or "You rejected this post") with the rejection note.
   - [ ] The note is shown in full, up to 4 lines, then "Show more".
 - [ ] **Approved card outcome line:**
   - [ ] "Scheduled for {date, time}"
@@ -746,7 +746,7 @@ As an **approver, author or admin**, I want to see posts in approval as cards in
 - [ ] **Empty column messages:**
   - [ ] Awaiting approval: "No posts awaiting approval"
   - [ ] Missed review: "No missed reviews"
-  - [ ] Changes requested: "No posts sent back for changes"
+  - [ ] Rejected: "No rejected posts"
   - [ ] Approved: "No approved posts in this date range"
 - [ ] **Empty board, no filters applied:**
   - [ ] Headline: "No posts in approval yet"
@@ -767,7 +767,7 @@ As an **approver, author or admin**, I want to see posts in approval as cards in
 - [ ] **Desktop:** columns share the available width with a minimum readable width. On narrow windows the board scrolls sideways instead of squeezing cards. Each column scrolls on its own.
 - [ ] **Phone width:**
   - [ ] The scope switch becomes a select labelled "Show".
-  - [ ] Columns become `Tabs` with counts: "Awaiting", "Missed", "Changes requested", "Approved".
+  - [ ] Columns become `Tabs` with counts: "Awaiting", "Missed", "Rejected", "Approved".
   - [ ] Cards stack in a single list, and drag is turned off.
 
 **Theming**
@@ -812,7 +812,7 @@ None.
 ## [FE] Approve, reject and resubmit posts from Approval board with drag and drop
 
 ### Description:
-As an **approver**, I want to drag a card to Approved or Changes requested, or use the buttons on the card, so that I can make approval decisions in one motion.
+As an **approver**, I want to drag a card to Approved or Rejected, or use the buttons on the card, so that I can make approval decisions in one motion.
 
 As an **author**, I want to resubmit a post that came back with changes, and schedule one that was approved as a draft, right from the board.
 
@@ -825,10 +825,10 @@ stateDiagram-v2
     [*] --> Awaiting
     Awaiting --> Awaiting: Approved, more levels left
     Awaiting --> Approved: Last level approved
-    Awaiting --> Changes: Rejected with a note
+    Awaiting --> Rejected: Rejected with a note
     Missed --> Approved: Approved with a new time
-    Missed --> Changes: Rejected with a note
-    Changes --> Awaiting: Author edits and sends again
+    Missed --> Rejected: Rejected with a note
+    Rejected --> Awaiting: Author edits and sends again
     Approved --> [*]
 ```
 
@@ -836,8 +836,8 @@ stateDiagram-v2
 2. User drops it on **Approved**. "Approve this post?" opens and says exactly what will happen. User adds an optional note and clicks "Approve post".
 3. If more levels remain, the card stays in Awaiting approval at the next level. If it was the last level, it moves to Approved. A toast confirms either way.
 4. User drops a missed card on **Approved**. "Pick a new time" opens, the user picks a future date and time, and clicks "Approve and schedule".
-5. User drops a card on **Changes requested**. "Request changes" opens, the user writes what needs to change, and clicks "Reject post".
-6. The author drags a Changes requested card to **Awaiting approval**, or clicks "Edit and resubmit", and the Composer opens for that post.
+5. User drops a card on **Rejected**. "Request changes" opens, the user writes what needs to change, and clicks "Reject post".
+6. The author drags a Rejected card to **Awaiting approval**, or clicks "Edit and resubmit", and the Composer opens for that post.
 7. User clicks **Approve all** on Awaiting approval, confirms, and every post that is their turn is approved.
 8. Every drag action is also a button on the card: Approve, Reject, Edit and resubmit, Schedule post.
 
@@ -848,17 +848,17 @@ stateDiagram-v2
 **Dragging**
 - [ ] **Which cards can be dragged:**
   - [ ] Awaiting approval and Missed review cards the user can approve or reject (pending approver on the current level, or the author)
-  - [ ] Changes requested cards the user authored
+  - [ ] Rejected cards the user authored
   - [ ] All other cards, and every Approved card, can't be dragged and show a default cursor
 - [ ] **Allowed drops:**
 
 | From | To | Allowed for |
 | ----- | ----- | ----- |
 | Awaiting approval | Approved | Pending approver on the current level, or the author |
-| Awaiting approval | Changes requested | Pending approver on the current level, or the author |
+| Awaiting approval | Rejected | Pending approver on the current level, or the author |
 | Missed review | Approved | Pending approver on the current level, or the author |
-| Missed review | Changes requested | Pending approver on the current level, or the author |
-| Changes requested | Awaiting approval | The author only |
+| Missed review | Rejected | Pending approver on the current level, or the author |
+| Rejected | Awaiting approval | The author only |
 
   Nothing else is allowed.
 - [ ] **While dragging:**
@@ -869,7 +869,7 @@ stateDiagram-v2
 
 **Card buttons**
 - [ ] **Approve** (`Button`, primary, check icon) and **Reject** (`Button`, secondary) show on cards the user can approve or reject.
-- [ ] **Edit and resubmit** (`Button`, secondary, pencil icon) shows on Changes requested cards the user authored, when the user can edit posts.
+- [ ] **Edit and resubmit** (`Button`, secondary, pencil icon) shows on Rejected cards the user authored, when the user can edit posts.
 - [ ] **Schedule post** (`Button`, secondary) shows on Approved cards with the outcome "Approved, not scheduled yet" or "Approved, needs a new time". It opens the existing scheduling options for that post.
 
 **"Approve this post?" dialog** (`Modal`)
@@ -890,8 +890,8 @@ stateDiagram-v2
 - [ ] **Title:** "Request changes"
 - [ ] **Shows the caption** in 2 lines.
 - [ ] **Body copy:**
-  - [ ] Someone else's post: "The post goes back to {author name} with your note, and moves to Changes requested."
-  - [ ] Your own post: "The post moves to Changes requested. You can edit it and send it again."
+  - [ ] Someone else's post: "The post goes back to {author name} with your note, and moves to the Rejected column."
+  - [ ] Your own post: "The post moves to the Rejected column. You can edit it and send it again."
 - [ ] **Note field** (`Textarea`), required:
   - [ ] Label: "What needs to change?"
   - [ ] Placeholder: "For example: Swap the image for the approved product shot."
@@ -924,7 +924,7 @@ stateDiagram-v2
   - [ ] Final level, a draft: "Approved. It stays a draft until someone schedules it."
   - [ ] Missed post approved: "Approved. Scheduled for {new date, time}."
   - [ ] Rejected, someone else's post: "Post rejected. {author name} has been notified with your note."
-  - [ ] Rejected, your own post: "Post moved to Changes requested."
+  - [ ] Rejected, your own post: "Post moved to the Rejected column."
   - [ ] Approve all: "{n} posts approved. Posts on their last level are now scheduled."
   - [ ] Approve all, partly done: "{x} of {n} posts approved. {y} couldn't be approved because they changed. We refreshed the board."
 - [ ] **Post changed by someone else:** if the post changed since the board loaded, the card returns to its column and refreshes, and a toast reads "This post was updated by someone else. We refreshed the board so you see its latest status."
@@ -1001,7 +1001,7 @@ As an **existing ContentStudio user whose team uses approvals**, I want a one-ti
   - [ ] A small board illustration
   - [ ] A "New" `Badge`
   - [ ] Title: "Approval board"
-  - [ ] Body: "See every post that is waiting for approval, missed its time, sent back for changes or approved, all in one board. Drag a card to approve it."
+  - [ ] Body: "See every post that is waiting for approval, missed its time, been rejected or been approved, all in one board. Drag a card to approve it."
   - [ ] Subtext: "You can switch views any time from this menu. Your current view stays as it is."
 - [ ] **Buttons:** "Not now" (`Button`, secondary) and "Try Approval board" (`Button`, primary).
 - [ ] **While the popover is open,** a dot in the primary theme colour shows on the view dropdown button.
@@ -1118,7 +1118,7 @@ None.
 ## [FE] Add Approval board to the client share-link page
 
 ### Description:
-As a **client reviewing posts through a share link**, I want to see the shared posts on a board with Awaiting approval, Changes requested and Approved columns, and drag a card to approve it or request changes, so that I can work through a batch of posts quickly without a ContentStudio account.
+As a **client reviewing posts through a share link**, I want to see the shared posts on a board with Awaiting approval, Rejected and Approved columns, and drag a card to approve it or request changes, so that I can work through a batch of posts quickly without a ContentStudio account.
 
 ---
 
@@ -1133,15 +1133,15 @@ flowchart TD
     Allowed -->|No| ReadOnly[Board is read only with a view only banner]
     Allowed -->|Yes| Act{Client drags a card}
     Act -->|To Approved| Approve[Confirm with an optional comment]
-    Act -->|To Changes requested| Reject[Write what needs to change]
+    Act -->|To Rejected| Reject[Write what needs to change]
     Approve --> MovedA[Card moves to Approved]
-    Reject --> MovedC[Card moves to Changes requested]
+    Reject --> MovedC[Card moves to Rejected]
 ```
 
 1. Client opens the share link and, if asked, enters the password.
 2. Client sees the view switcher with "List", "Calendar" and "Approval board", and picks Approval board.
 3. Client sees three columns, each with a count. Cards waiting on them are in Awaiting approval.
-4. Client drags a card to Approved, adds an optional comment, and confirms. Or they drag it to Changes requested and write what needs to change.
+4. Client drags a card to Approved, adds an optional comment, and confirms. Or they drag it to Rejected and write what needs to change.
 5. A card whose planned time has passed sits in Awaiting approval with a "Time passed" badge and a note. The client can still approve it, and the team will pick a new time.
 6. Clicking a card opens the existing post preview with comments.
 
@@ -1154,10 +1154,10 @@ flowchart TD
 - [ ] **The last view picked** is remembered in this browser for that link.
 
 **Columns**
-- [ ] **Three columns:** Awaiting approval, Changes requested and Approved, each with a count `Badge`, based on this client's own decisions.
+- [ ] **Three columns:** Awaiting approval, Rejected and Approved, each with a count `Badge`, based on this client's own decisions.
 - [ ] **ℹ tooltips** (`CstPopup`):
-  - [ ] Awaiting approval: "Posts your team is waiting for you to review. Drag one to Approved or Changes requested to give your answer."
-  - [ ] Changes requested: "Posts you or another reviewer sent back with a comment. Your team will update them."
+  - [ ] Awaiting approval: "Posts your team is waiting for you to review. Drag one to Approved or Rejected to give your answer."
+  - [ ] Rejected: "Posts you or another reviewer rejected with a comment. Your team will update them."
   - [ ] Approved: "Posts you approved. Your team will publish them at their planned time."
 
 **Cards**
@@ -1167,12 +1167,12 @@ flowchart TD
   - [ ] a caption preview of up to 3 lines
   - [ ] the media thumbnail
   - [ ] the comment count
-  - [ ] the rejection comment (on Changes requested)
+  - [ ] the rejection comment (on Rejected)
 - [ ] **No workflow levels** and no team member names are shown on cards.
 - [ ] **Time passed:** a card whose planned time has passed shows a "Time passed" `Badge` and the line "The planned time has passed. Your team will pick a new time after you approve."
 
 **Actions** (links with approval actions on)
-- [ ] **Allowed drags:** Awaiting approval → Approved, and Awaiting approval → Changes requested. Nothing moves out of Approved or Changes requested.
+- [ ] **Allowed drags:** Awaiting approval → Approved, and Awaiting approval → Rejected. Nothing moves out of Approved or Rejected.
 - [ ] **Card buttons** "Approve" (primary) and "Request changes" (secondary) do the same as dragging.
 - [ ] **Approve dialog** (`Modal`):
   - [ ] Title: "Approve this post?"
@@ -1201,13 +1201,13 @@ flowchart TD
   - [ ] Subtext: "There are no posts on this link right now. Check back later or ask your team for a new link."
 - [ ] **Empty columns:**
   - [ ] Awaiting approval: "Nothing waiting on you"
-  - [ ] Changes requested: "No changes requested"
+  - [ ] Rejected: "No rejected posts"
   - [ ] Approved: "No approved posts yet"
 - [ ] **Loading:** 3 skeleton cards per column.
 - [ ] **Error:** "We couldn't load these posts. Check your connection and try again." with a "Try again" `Button`.
 
 **Phone width**
-- [ ] **Columns become `Tabs`** with counts ("Awaiting", "Changes requested", "Approved"). Drag is off, and the card buttons are used instead.
+- [ ] **Columns become `Tabs`** with counts ("Awaiting", "Rejected", "Approved"). Drag is off, and the card buttons are used instead.
 
 **Theming and branding**
 - [ ] **White-label:** primary colours follow the share link's white-label branding.

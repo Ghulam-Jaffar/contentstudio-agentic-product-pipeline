@@ -6,7 +6,7 @@ This file provides guidance to Codex when working with code in this repository. 
 
 A **Codex-powered product development pipeline** for [ContentStudio](https://contentstudio.io), a social media management platform. It automates the workflow from feature idea → research → PRD → stories → epics and stories created in **Helpin**, the team's tracker, with review gates at every step. Deliverables are authored as local markdown first; once the Product Owner approves them, the pipeline pushes them to Helpin over the **Helpin MCP server** (`https://mcp.helpin.ai/mcp`, configured in `.mcp.json`).
 
-This is **not** a code project. There's no package.json or composer.json at root. The `contentstudio-backend/`, `contentstudio-frontend/`, `contentstudio-flutter/`, `social-inbox-manager/`, and other service directories are **gitignored separate repos** mounted here so the pipeline can analyze the actual codebase when writing stories.
+This is **not** a code project. There's no package.json or composer.json at root. The `contentstudio-backend/`, `contentstudio-frontend/`, `contentstudio-flutter/`, `social-inbox-manager/`, `contentstudio-website-v2/`, and other service directories are **gitignored separate repos** mounted here so the pipeline can analyze the actual codebase (and the marketing website) when writing stories.
 
 ## Three Pipeline Commands
 
@@ -68,7 +68,7 @@ Front-end to the other two pipelines. Pulls feature requests off the public Fril
 The full rules are in `docs/story-guidelines.md`. Key points:
 
 - **Structure stories with the standard sections** from `docs/story-template.md` — Description, Workflow, Acceptance criteria, Mock-ups, Impact on existing data, Impact on other products, Dependencies, Global quality checklist
-- **Titles:** `[BE]` / `[FE]` / `[Flutter]` / `[Design]` prefix + action-oriented title (`[Flutter]` is the only mobile prefix — no more `[iOS]` / `[Android]`)
+- **Titles:** `[BE]` / `[FE]` / `[Flutter]` / `[Website]` / `[Design]` prefix + action-oriented title (`[Flutter]` is the only mobile prefix — no more `[iOS]` / `[Android]`)
 - **Workflow sections:** Written from user's POV, never developer POV
 - **FE stories must include all UI copy:** modal titles, labels, tooltips, placeholders, validation errors, empty/error/loading states — written for non-technical users with concrete examples
 - **No estimates, and no labels written into the story body** — estimates are set by devs during sprint planning; labels, priority, state, sprint and assignee are supplied by the PO and set as **Helpin fields at push time**
@@ -147,8 +147,9 @@ The pipeline analyzes and writes stories for these codebases (mounted but gitign
 - **`contentstudio-ai-agents/`** — Python 3.13 multi-agent platform (Agno framework, FastAPI, Dramatiq + Redis, Kafka, PostgreSQL). Handles AI content generation (captions, images, videos, analytics). Has its own `CLAUDE.md`. Analyzed only when the feature/story involves AI generation or the AI agent pipeline.
 - **`contentstudio-social-analytics-go/`** — Go microservices analytics pipeline (Kafka, ClickHouse, MongoDB). 5-stage pipeline: Scheduler → Fetcher → Parser → Processor → Sink. Analyzed only when the feature/story involves social media analytics data processing.
 - **`social-inbox-manager/`** — Python social inbox service (FastAPI, Kafka, MongoDB, Redis, Pusher). Orchestrates ingestion, sync, and management of social media inbox data across platforms (Facebook, Instagram, LinkedIn, YouTube, GMB). Per-platform workers and strategies, webhook handling with Kafka fan-out, real-time UI updates via Pusher. Analyzed only when the feature/story involves social inbox, conversations, messages, comments, or reviews.
+- **`contentstudio-website-v2/`** — the public marketing website, contentstudio.io (Next.js 16 Pages Router, React 19, TypeScript, Tailwind; redirects live in `vercel.json`). ~170 page routes in `pages/`: feature landing pages, platform schedulers (`instagram-scheduler`, `tiktok-scheduler`…), competitor `*-alternative` / `*-vs-contentstudio` pages and their `-ppc` variants, industry pages, `pricing`, `free-trial`, `integrations/`, `ai-models/`, `tools/` (free tools, Strapi-backed), `customers/`, and the blog (`pages/blog/`, pulled from WordPress over `wp-json`). Components live in `components/` (`new-design/`, `sections/`, `PricingComponents/`, `free-tools/`…). It hands visitors to the web app through `https://app.contentstudio.io/signup` (with `?package=trial-standard|trial-advanced|trial-agency-unlimited|trial-api-centric` plan presets) and `/login`, so **signup, login, trial and plan-selection flows span both repos**. Also carries Usermaven + Helpin SDK tracking, Paddle checkout, `middleware.ts` serving Markdown to AI agents (`/pricing.md`, `pages/api/agents/`), and an in-progress `next-intl` i18n rollout (`docs/translation-rollout-plan.md`). No `CLAUDE.md` of its own. Analyzed when the feature/story touches the marketing site, pricing or plans, the signup/login/auth handoff between website and app, onboarding entry points, SEO/landing pages, product screenshots or copy shown on the site, or a launch that needs a feature page.
 
-When the pipeline does codebase analysis, it searches these directories for relevant models, controllers, services, components, routes, and composables to ground stories in the actual implementation. `contentstudio-flutter/` is included **only when the feature description or request mentions mobile, the app, iOS, or Android**. AI agents and analytics Go codebases are included only when the feature description explicitly involves AI generation or analytics data pipelines.
+When the pipeline does codebase analysis, it searches these directories for relevant models, controllers, services, components, routes, and composables to ground stories in the actual implementation. `contentstudio-flutter/` is included **only when the feature description or request mentions mobile, the app, iOS, or Android**. AI agents and analytics Go codebases are included only when the feature description explicitly involves AI generation or analytics data pipelines. `contentstudio-website-v2/` is included when the work touches the marketing site, pricing/plans, or the website ↔ app signup/login/auth handoff.
 
 ### Mobile: Flutter only
 
@@ -174,7 +175,7 @@ Full contract (the deterministic `window.render(t)` page, render commands, aspec
 
 When implementing stories in the sub-project codebases:
 
-- **Branch from:** `develop` (in `contentstudio-flutter/` the integration branch is **`develop-cs`**, and branches are named `feat/<task>` — see its `WORKFLOW.md`)
+- **Branch from:** `develop` (in `contentstudio-flutter/` the integration branch is **`develop-cs`**, and branches are named `feat/<task>` — see its `WORKFLOW.md`). In `contentstudio-website-v2/` branch from `develop` and PR into `develop`, which is merged to `main` for production. Never branch from its `qa` branch, which has diverged
 - **Branch naming:** `feature/{story-title-slug}` (or a feature slug when multiple FE stories share one branch)
 - **Commit format:** `{description}` — a plain descriptive message. Stories don't exist in a tracker at implementation time, so there is no ticket ID to prefix
 - **PR base:** `develop` (`develop-cs` for `contentstudio-flutter/`) — never push directly to `develop-cs` or `main`

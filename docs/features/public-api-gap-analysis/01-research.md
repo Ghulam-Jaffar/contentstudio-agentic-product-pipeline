@@ -61,7 +61,7 @@ Ranked by user value and effort. "Who has it" lists competitors that document th
 - Ask: stop metering deliveries, or at least queue them until credits return, and email the owner when that happens.
 
 **4. Account health and lifecycle events**
-- Gap: there is no `account.connected`, `account.disconnected` or `account.reauth_required` event and no account health endpoint. An integrator only finds a dead token when a post fails.
+- Gap: there is no `account.connected`, `account.disconnected` or `account.reconnect_required` event and no account health endpoint. An integrator only finds a dead token when a post fails.
 - Who has it: Zernio, Ayrshare, Upload-Post, bundle.social, Outstand.
 - Ask: add a health endpoint per account, plus the three events. The in-app reconnect flow already knows the state.
 

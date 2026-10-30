@@ -1,0 +1,451 @@
+<title>AI App Access Mockups</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a mockup board. Each screen sits on the app's own grey canvas, framed and labelled, with state switchers above it.
+   Single light theme on purpose: ContentStudio has no dark mode, and these mockups show the real product. */
+:root{
+  --canvas:#f2f4f8;        /* app background */
+  --board:#e9ecf2;         /* board behind frames */
+  --surface:#ffffff;
+  --soft:#f6f7f9;          /* code blocks, segmented track */
+  --line:#e4e7ec;
+  --ink:#1d2433;
+  --ink-2:#4a5263;
+  --ink-3:#7a8294;
+  --primary:#1f6fff;       /* --cstu-primary-500 stand-in */
+  --primary-50:#eaf2ff;
+  --primary-700:#1653c4;
+  --warn-bg:#fff6ea;
+  --warn-line:#f6d6a8;
+  --warn-ink:#8a4b00;
+  --danger:#d93838;
+  --danger-50:#fdecec;
+  --ok:#15803d;
+  --note:#fffbe6;
+  --note-line:#f0dc8a;
+  --f-ui:"Roboto",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  --f-mono:"Roboto Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--board);color:var(--ink);font-family:var(--f-ui);font-size:14px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:36px}
+h1{font-size:24px;margin:0;text-wrap:balance}
+h2{font-size:18px;margin:0;text-wrap:balance}
+p{margin:0}
+.intro{display:flex;flex-direction:column;gap:10px;max-width:760px}
+.intro p{color:var(--ink-2)}
+.meta{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-size:12px;padding:3px 9px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--ink-2)}
+.chip b{color:var(--ink);font-weight:500}
+.notebox{background:var(--note);border:1px solid var(--note-line);border-radius:10px;padding:12px 14px;color:#5b4a00;max-width:760px}
+.notebox strong{color:#3d3200}
+
+section.screen{display:flex;flex-direction:column;gap:12px}
+.screen-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.screen-head .label{display:flex;flex-direction:column;gap:4px}
+.eyebrow{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:500}
+.story{font-size:12px;color:var(--ink-3)}
+.switch{display:inline-flex;flex-wrap:wrap;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px}
+.switch button{font:inherit;font-size:13px;border:0;background:transparent;color:var(--ink-2);padding:6px 11px;border-radius:7px;cursor:pointer}
+.switch button[aria-pressed="true"]{background:var(--primary-50);color:var(--primary-700);font-weight:500}
+.switch button:focus-visible,.btn:focus-visible,.tab:focus-visible,.radio:focus-within{outline:2px solid var(--primary);outline-offset:2px}
+
+.frame{background:var(--canvas);border:1px solid #d6dbe4;border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(20,30,50,.06)}
+.frame-bar{display:flex;align-items:center;gap:6px;padding:8px 12px;background:#e4e8ef;border-bottom:1px solid #d6dbe4;font-size:12px;color:var(--ink-3)}
+.frame-bar i{width:9px;height:9px;border-radius:50%;background:#c6ccd7;display:inline-block}
+.frame-bar span{margin-left:8px;font-family:var(--f-mono);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+
+/* App shell */
+.app{display:grid;grid-template-columns:72px minmax(0,1fr);min-height:640px}
+.rail{background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:14px;padding:14px 0}
+.rail .ri{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--ink-2)}
+.rail .ri svg{width:18px;height:18px;stroke:var(--ink-3)}
+.rail .ri.on .ico{background:var(--primary);border-radius:12px;width:34px;height:34px;display:grid;place-items:center}
+.rail .ri.on svg{stroke:#fff}
+.rail .ri.on{color:var(--ink);font-weight:500}
+.avatar{width:30px;height:30px;border-radius:50%;background:#d94b6a}
+.main{padding:20px clamp(12px,4vw,56px);display:flex;flex-direction:column;gap:14px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.pagehead{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:14px 18px}
+.pagehead .ic{width:30px;height:30px;border-radius:8px;background:var(--primary-50);display:grid;place-items:center;color:var(--primary);font-family:var(--f-mono);font-size:13px;font-weight:500}
+.pagehead .t{flex:1;min-width:180px}
+.pagehead .t b{display:block;font-size:15px}
+.pagehead .t small{color:var(--ink-2);font-size:12px}
+.usage{font-size:12px;color:var(--ink-2);text-align:right}
+.usage .pill{display:inline-block;background:var(--primary-50);color:var(--primary-700);border-radius:999px;padding:2px 8px;font-weight:500;margin-left:6px;font-variant-numeric:tabular-nums}
+.btn{font:inherit;font-size:13px;font-weight:500;border-radius:8px;padding:8px 14px;border:1px solid transparent;cursor:pointer;white-space:nowrap}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-subtle{background:var(--soft);color:var(--ink-2);border-color:var(--line)}
+.btn-subtle:hover{background:#eef0f4}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-ghost{background:transparent;color:var(--ink-2);border-color:var(--line)}
+.btn[disabled]{opacity:.6;cursor:not-allowed}
+.tabs{display:inline-flex;gap:2px;background:var(--soft);border-radius:10px;padding:4px}
+.tab{font:inherit;font-size:13px;border:0;background:transparent;color:var(--ink-2);padding:7px 14px;border-radius:7px;cursor:default;display:inline-flex;align-items:center;gap:6px}
+.tab.on{background:var(--surface);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
+.new{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--primary);color:#fff;border-radius:4px;padding:1px 5px}
+.tabcard{padding:12px 14px}
+.panel{padding:20px 22px;display:flex;flex-direction:column;gap:16px}
+.panel-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:12px}
+.panel-head h3{margin:0 0 4px;font-size:15px}
+.panel-head p{color:var(--ink-2);max-width:68ch;font-size:13px}
+.link{color:var(--primary);font-size:13px;text-decoration:none;white-space:nowrap}
+
+/* Table */
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:720px}
+th{text-align:left;font-weight:500;color:var(--ink-3);font-size:12px;background:var(--soft);padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums;color:var(--ink-2);white-space:nowrap}
+.appcell{display:flex;align-items:center;gap:10px}
+.mark{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px;flex:none}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:500;border-radius:999px;padding:2px 8px;white-space:nowrap}
+.b-rw{background:var(--primary-50);color:var(--primary-700)}
+.b-r{background:#eef0f4;color:var(--ink-2)}
+.b-unv{background:var(--warn-bg);color:var(--warn-ink);border:1px solid var(--warn-line)}
+.domain{font-family:var(--f-mono);font-size:12.5px;color:var(--ink-2)}
+.info{display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;border:1px solid var(--ink-3);color:var(--ink-3);font-size:10px;font-style:normal;font-weight:700;cursor:help;position:relative;vertical-align:-2px}
+.tip{position:absolute;z-index:5;top:22px;left:-12px;width:min(300px,70vw);background:var(--ink);color:#fff;font-weight:400;font-size:12px;line-height:1.45;padding:9px 11px;border-radius:8px;text-align:left;text-transform:none;letter-spacing:0;visibility:hidden;opacity:0;transition:opacity .12s}
+.info:hover .tip,.info:focus .tip{visibility:visible;opacity:1}
+
+/* Cards (narrow) */
+.cards{display:none;flex-direction:column;gap:10px}
+.appcard{border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.appcard .row{display:flex;justify-content:space-between;gap:10px;font-size:12.5px}
+.appcard .row span:first-child{color:var(--ink-3)}
+.narrow .tablewrap{display:none}
+.narrow .cards{display:flex}
+
+/* States */
+.empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:40px 16px}
+.empty .art{width:64px;height:64px;border-radius:16px;background:var(--primary-50);display:grid;place-items:center}
+.empty h4{margin:4px 0 0;font-size:15px}
+.empty p{color:var(--ink-2);max-width:52ch;font-size:13px}
+.skel{height:12px;border-radius:6px;background:linear-gradient(90deg,#eceef2,#f6f7f9,#eceef2);background-size:200% 100%;animation:sh 1.3s linear infinite}
+@keyframes sh{to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){.skel{animation:none}}
+.alert{display:flex;gap:10px;align-items:flex-start;border-radius:10px;padding:12px 14px;font-size:13px}
+.alert-err{background:var(--danger-50);color:#8f1d1d;border:1px solid #f4c4c4}
+.alert-warn{background:var(--warn-bg);color:var(--warn-ink);border:1px solid var(--warn-line)}
+
+/* Dialog + toast inside the frame */
+.stage{position:relative}
+.scrim{position:absolute;inset:0;background:rgba(18,25,40,.42);display:grid;place-items:center;padding:16px;z-index:20}
+.dialog{background:var(--surface);border-radius:14px;width:min(440px,100%);padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 16px 40px rgba(10,20,40,.25)}
+.dialog h4{margin:0;font-size:16px}
+.dialog p{color:var(--ink-2);font-size:13px}
+.dialog .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
+.toast{position:absolute;right:16px;bottom:16px;z-index:30;background:var(--ink);color:#fff;border-radius:10px;padding:10px 14px;font-size:13px;display:flex;gap:8px;align-items:center;box-shadow:0 8px 24px rgba(10,20,40,.25)}
+.toast i{width:8px;height:8px;border-radius:50%;background:#4ade80}
+
+/* Consent */
+.consent-stage{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+.consent-bg{background:var(--canvas);padding:40px 16px;display:grid;place-items:center;min-height:620px}
+.consent{background:var(--surface);border:1px solid var(--line);border-radius:16px;width:min(460px,100%);padding:26px 24px;display:flex;flex-direction:column;gap:18px;box-shadow:0 2px 10px rgba(20,30,50,.05)}
+.brandrow{display:flex;align-items:center;justify-content:center;gap:12px}
+.brandlogo{height:34px;padding:0 10px;border-radius:9px;background:var(--primary);color:#fff;display:grid;place-items:center;font-weight:700;font-size:13px;letter-spacing:.01em}
+.dots{display:flex;gap:4px}
+.dots i{width:4px;height:4px;border-radius:50%;background:var(--ink-3)}
+.consent h3{margin:0;font-size:18px;text-align:center;text-wrap:balance;line-height:1.35}
+.consent .who{text-align:center;color:var(--ink-3);font-size:12.5px;margin-top:4px}
+.dest{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--ink-2)}
+.dest b{font-family:var(--f-mono);color:var(--ink);font-weight:500}
+.fieldlabel{font-size:13px;font-weight:500;margin-bottom:8px}
+.radios{display:flex;flex-direction:column;gap:8px}
+.radio{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:12px;cursor:pointer}
+.radio.sel{border-color:var(--primary);background:var(--primary-50)}
+.radio input{margin:2px 0 0;accent-color:var(--primary)}
+.radio b{font-weight:500;display:block}
+.radio small{color:var(--ink-2);font-size:12.5px;display:block;margin-top:2px}
+.disclaimer{color:var(--ink-3);font-size:12px;text-align:center}
+.cacts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cacts .btn{padding:10px}
+.side{display:flex;flex-direction:column;gap:12px}
+.side .card{padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.side h4{margin:0;font-size:13px}
+.side ul{margin:0;padding-left:18px;color:var(--ink-2);font-size:12.5px;display:flex;flex-direction:column;gap:4px}
+.phone{width:375px;max-width:100%;border:8px solid #1d2433;border-radius:28px;overflow:hidden;background:var(--canvas)}
+.phone .consent-bg{min-height:0;padding:20px 12px}
+.phone-wrap{display:flex;flex-direction:column;align-items:center;gap:8px}
+
+@media (max-width:900px){
+  .consent-stage{grid-template-columns:minmax(0,1fr)}
+  .app{grid-template-columns:minmax(0,1fr)}
+  .rail{display:none}
+}
+</style>
+
+<div class="wrap">
+  <header class="intro">
+    <span class="eyebrow">Open the ContentStudio MCP server to any AI app, safely</span>
+    <h1>AI app access mockups</h1>
+    <p>Mockups for the three UI stories in the MCP epic. They follow the live Settings → API page. Click the switches above each screen to see every state, and click <b>Disconnect</b> to try the confirmation dialog.</p>
+    <div class="meta">
+      <span class="chip"><b>CONT-4639</b> AI app access tab</span>
+      <span class="chip"><b>CONT-4638</b> Approval screen</span>
+      <span class="chip"><b>CONT-4637</b> Design story</span>
+    </div>
+    <div class="notebox"><strong>Naming and placement.</strong> The page header becomes <i>API &amp; AI apps</i> (the sidebar still says API). The new tab is <i>AI app access</i>, a third top-level tab beside <i>API</i> and <i>Webhooks</i>. It is not called "Connected apps", because Workspace settings → Other integrations already uses that name for Canva, Feedly and Replug. Those are services ContentStudio uses. This tab lists apps that use your account. The two pages link to each other.</div>
+  </header>
+
+  <!-- ============ CONNECTED APPS TAB ============ -->
+  <section class="screen" aria-labelledby="s1">
+    <div class="screen-head">
+      <div class="label">
+        <span class="eyebrow">Screen 1 · CONT-4639</span>
+        <h2 id="s1">API &amp; AI apps → AI app access</h2>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <div class="switch" role="group" aria-label="Tab state" id="stateSwitch">
+          <button type="button" data-state="list" aria-pressed="true">List</button>
+          <button type="button" data-state="empty" aria-pressed="false">Empty</button>
+          <button type="button" data-state="loading" aria-pressed="false">Loading</button>
+          <button type="button" data-state="error" aria-pressed="false">Error</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="frame">
+      <div class="frame-bar"><i></i><i></i><i></i><span>app.contentstudio.io/casper/api?tab=ai-app-access</span></div>
+      <div class="stage" id="appStage">
+        <div class="app">
+          <nav class="rail" aria-label="App navigation (mock)">
+            <div class="ri"><div class="avatar"></div>Casper</div>
+            <div class="ri"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"/></svg>Home</div>
+            <div class="ri"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 3l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/></svg>AI Studio</div>
+            <div class="ri"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Publisher</div>
+            <div class="ri"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M4 13l3-8h10l3 8v6H4z"/><path d="M4 13h5l1 2h4l1-2h5"/></svg>Inbox</div>
+            <div class="ri"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M12 4v8h8"/></svg>Analytics</div>
+            <div class="ri on"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M9 7l-5 5 5 5M15 7l5 5-5 5"/></svg></div>API</div>
+          </nav>
+
+          <div class="main" id="mainArea">
+            <div class="card pagehead">
+              <div class="ic">&lt;&gt;</div>
+              <div class="t"><b>API &amp; AI apps</b><small>Connect AI apps, automation tools and your own code to ContentStudio.</small></div>
+              <div class="usage">Requests Used:<span class="pill">25 / 7,500</span><br><small>Resets on November 1, 2026</small></div>
+              <button class="btn btn-primary" type="button">Increase Limit</button>
+            </div>
+
+            <div class="card tabcard">
+              <div class="tabs" role="tablist" aria-label="API sections">
+                <span class="tab" role="tab" aria-selected="false">API</span>
+                <span class="tab" role="tab" aria-selected="false">Webhooks</span>
+                <span class="tab on" role="tab" aria-selected="true">AI app access <span class="new">New</span></span>
+              </div>
+            </div>
+
+            <div class="card panel">
+              <div class="panel-head">
+                <div>
+                  <h3>AI app access</h3>
+                  <p>AI apps you've allowed to use your ContentStudio account, like Claude, ChatGPT or Gemini. Disconnecting an app stops it straight away and doesn't affect your API key or your other apps.</p>
+                  <p style="margin-top:6px;font-size:12.5px;color:var(--ink-3)">Looking for Canva, Feedly or Replug? They're in <a class="link" href="#" onclick="return false">Workspace settings → Other integrations</a>.</p>
+                </div>
+                <a class="link" href="https://docs.contentstudio.io/article/1171" target="_blank" rel="noopener">Learn how to connect an AI app ↗</a>
+              </div>
+
+              <!-- LIST -->
+              <div data-view="list">
+                <div class="tablewrap">
+                  <table>
+                    <thead><tr>
+                      <th>App</th><th>Website</th>
+                      <th>Access <span class="info" tabindex="0" aria-label="About access">i<span class="tip">Read only apps can look at your content but can't post, change or delete anything. To change an app's access, disconnect it and connect it again from the app.</span></span></th>
+                      <th>Connected</th><th>Last used</th><th><span class="sr" style="position:absolute;left:-9999px">Actions</span></th>
+                    </tr></thead>
+                    <tbody id="rows"></tbody>
+                  </table>
+                </div>
+                <div class="cards" id="cards"></div>
+              </div>
+
+              <!-- EMPTY -->
+              <div data-view="empty" hidden>
+                <div class="empty">
+                  <div class="art"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#1f6fff" stroke-width="1.8"><rect x="3" y="7" width="8" height="10" rx="2"/><rect x="13" y="7" width="8" height="10" rx="2"/><path d="M11 12h2"/></svg></div>
+                  <h4>No AI apps have access yet</h4>
+                  <p>When you connect an AI app like Claude, ChatGPT or Gemini to ContentStudio, it shows up here, so you can see what it can do and disconnect it anytime.</p>
+                  <button class="btn btn-subtle" type="button">Learn how to connect an AI app</button>
+                  <small style="color:var(--ink-3);font-size:11.5px">Hidden on white-label domains</small>
+                </div>
+              </div>
+
+              <!-- LOADING -->
+              <div data-view="loading" hidden>
+                <div class="tablewrap">
+                  <table aria-busy="true"><thead><tr><th>App</th><th>Website</th><th>Access</th><th>Connected</th><th>Last used</th><th></th></tr></thead>
+                    <tbody>
+                      <tr><td><div class="skel" style="width:140px"></div></td><td><div class="skel" style="width:120px"></div></td><td><div class="skel" style="width:90px"></div></td><td><div class="skel" style="width:80px"></div></td><td><div class="skel" style="width:70px"></div></td><td><div class="skel" style="width:80px"></div></td></tr>
+                      <tr><td><div class="skel" style="width:110px"></div></td><td><div class="skel" style="width:100px"></div></td><td><div class="skel" style="width:70px"></div></td><td><div class="skel" style="width:80px"></div></td><td><div class="skel" style="width:60px"></div></td><td><div class="skel" style="width:80px"></div></td></tr>
+                      <tr><td><div class="skel" style="width:130px"></div></td><td><div class="skel" style="width:130px"></div></td><td><div class="skel" style="width:90px"></div></td><td><div class="skel" style="width:80px"></div></td><td><div class="skel" style="width:70px"></div></td><td><div class="skel" style="width:80px"></div></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- ERROR -->
+              <div data-view="error" hidden>
+                <div class="alert alert-err" role="alert">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+                  <div style="flex:1">We couldn't load your AI apps. Refresh the page or try again.</div>
+                  <button class="btn btn-ghost" type="button" id="retryBtn" style="background:#fff">Try again</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="scrim" id="scrim" hidden>
+          <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">
+            <h4 id="dlgTitle">Disconnect Gemini?</h4>
+            <p id="dlgBody">Gemini will lose access to your ContentStudio account straight away. To use it again, connect it again from Gemini.</p>
+            <div class="acts">
+              <button class="btn btn-ghost" type="button" id="dlgCancel">Cancel</button>
+              <button class="btn btn-danger" type="button" id="dlgOk">Disconnect</button>
+            </div>
+          </div>
+        </div>
+        <div class="toast" id="toast" hidden><i></i><span id="toastText">Gemini disconnected.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen" aria-labelledby="s1b">
+    <div class="screen-head"><div class="label"><span class="eyebrow">Screen 1b · CONT-4639</span><h2 id="s1b">Cross-link on Workspace settings → Other integrations</h2></div></div>
+    <div class="frame">
+      <div class="frame-bar"><i></i><i></i><i></i><span>app.contentstudio.io/casper/settings/integrations</span></div>
+      <div style="padding:20px clamp(12px,4vw,56px)">
+        <div class="card panel">
+          <div><h3 style="margin:0 0 4px;font-size:15px">Connected apps</h3><p style="color:var(--ink-2);font-size:13px">Manage services available across ContentStudio.</p></div>
+          <div class="alert" style="background:var(--primary-50);color:var(--primary-700);border:1px solid #cfe0ff">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex:none;margin-top:1px"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+            <div>Looking for AI apps like Claude or ChatGPT? Manage them in <a class="link" href="#" onclick="return false">API &amp; AI apps → AI app access</a>.</div>
+          </div>
+          <div class="tablewrap"><table><thead><tr><th>App Name</th><th>Status</th><th>User</th><th>Actions</th></tr></thead><tbody>
+            <tr><td><b style="font-weight:500">Replug</b><br><small style="color:var(--ink-3)">Advanced link tracking and retargeting.</small></td><td><span class="badge b-rw">Connected</span></td><td class="num">checkly@replug.io</td><td></td></tr>
+            <tr><td><b style="font-weight:500">Feedly</b><br><small style="color:var(--ink-3)">Discover and share content seamlessly.</small></td><td><span class="badge b-r">Not connected</span></td><td class="num">—</td><td><button class="btn btn-subtle" type="button">Connect</button></td></tr>
+            <tr><td><b style="font-weight:500">Canva</b><br><small style="color:var(--ink-3)">Browse and use Canva designs in ContentStudio.</small></td><td><span class="badge b-rw">Connected</span></td><td class="num">Ghulam Jaffar</td><td></td></tr>
+          </tbody></table></div>
+          <small style="color:var(--ink-3);font-size:11.5px">Only the blue note is new. The rest of this page is unchanged.</small>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ APPROVAL SCREEN ============ -->
+  <section class="screen" aria-labelledby="s2">
+    <div class="screen-head">
+      <div class="label">
+        <span class="eyebrow">Screen 2 · CONT-4638</span>
+        <h2 id="s2">AI app approval screen</h2>
+      </div>
+      <div class="switch" role="group" aria-label="Approval variant" id="variantSwitch">
+        <button type="button" data-v="rw" aria-pressed="true">Verified, asks read and write</button>
+        <button type="button" data-v="r" aria-pressed="false">Verified, asks read only</button>
+        <button type="button" data-v="unv" aria-pressed="false">Unverified app</button>
+      </div>
+    </div>
+
+    <div class="consent-stage">
+      <div class="frame">
+        <div class="frame-bar"><i></i><i></i><i></i><span>app.contentstudio.io/oauth/consent?request=…</span></div>
+        <div class="consent-bg" id="consentDesktop"></div>
+      </div>
+      <aside class="side">
+        <div class="card">
+          <h4>What changed from today's screen</h4>
+          <ul>
+            <li>New destination line with the exact domain that receives access</li>
+            <li>Permission list replaced by a Read only / Read and write choice</li>
+            <li>Unverified badge and warning for apps not on our known list</li>
+            <li>Disclaimer no longer says the API key is provisioned</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Rules shown here</h4>
+          <ul>
+            <li>The option the app asked for is preselected</li>
+            <li>If the app asked for read only, Read and write is not offered</li>
+            <li>{brand} is the white-label name on tenant domains</li>
+            <li>Approve fires <code style="font-family:var(--f-mono);font-size:11.5px">ai_app_connected</code></li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var apps=[
+    {id:'claude',name:'Claude',letter:'C',color:'#c2643c',domain:'claude.ai',access:'rw',verified:true,connected:'Sep 14, 2026',used:'2 hours ago'},
+    {id:'gemini',name:'Gemini',letter:'G',color:'#3f6fd8',domain:'gemini.google.com',access:'r',verified:true,connected:'Oct 22, 2026',used:'Yesterday'},
+    {id:'chatgpt',name:'ChatGPT',letter:'C',color:'#1b8a6b',domain:'chatgpt.com',access:'rw',verified:true,connected:'Aug 30, 2026',used:'3 weeks ago'},
+    {id:'postbot',name:'PostBot Assistant',letter:'P',color:'#7a6af0',domain:'postbot-tools.io',access:'rw',verified:false,connected:'Oct 25, 2026',used:'Never'}
+  ];
+  var accessBadge=function(a){return a==='rw'?'<span class="badge b-rw">Read and write</span>':'<span class="badge b-r">Read only</span>'};
+  var unv='<span class="badge b-unv">Unverified</span>';
+
+  function render(){
+    var rows=document.getElementById('rows'),cards=document.getElementById('cards');
+    rows.innerHTML=apps.map(function(a){return '<tr><td><div class="appcell"><span class="mark" style="background:'+a.color+'">'+a.letter+'</span><b style="font-weight:500">'+a.name+'</b>'+(a.verified?'':' '+unv)+'</div></td><td class="domain">'+a.domain+'</td><td>'+accessBadge(a.access)+'</td><td class="num">'+a.connected+'</td><td class="num">'+a.used+'</td><td style="text-align:right"><button class="btn btn-subtle" type="button" data-dis="'+a.id+'">Disconnect</button></td></tr>'}).join('');
+    cards.innerHTML=apps.map(function(a){return '<div class="appcard"><div class="appcell"><span class="mark" style="background:'+a.color+'">'+a.letter+'</span><b style="font-weight:500">'+a.name+'</b>'+(a.verified?'':' '+unv)+'</div><div class="row"><span>Website</span><span class="domain">'+a.domain+'</span></div><div class="row"><span>Access</span>'+accessBadge(a.access)+'</div><div class="row"><span>Connected</span><span>'+a.connected+'</span></div><div class="row"><span>Last used</span><span>'+a.used+'</span></div><button class="btn btn-subtle" type="button" data-dis="'+a.id+'">Disconnect</button></div>'}).join('');
+    if(!apps.length) setState('empty');
+  }
+
+  function setState(s){
+    document.querySelectorAll('[data-view]').forEach(function(v){v.hidden=v.getAttribute('data-view')!==s});
+    document.querySelectorAll('#stateSwitch button').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.state===s)});
+  }
+  document.getElementById('stateSwitch').addEventListener('click',function(e){var b=e.target.closest('button');if(b)setState(b.dataset.state)});
+  document.getElementById('retryBtn').addEventListener('click',function(){setState('loading');setTimeout(function(){setState(apps.length?'list':'empty')},900)});
+
+  var pending=null,scrim=document.getElementById('scrim'),toast=document.getElementById('toast'),tt;
+  document.getElementById('appStage').addEventListener('click',function(e){var b=e.target.closest('[data-dis]');if(!b)return;
+    pending=apps.find(function(a){return a.id===b.dataset.dis});
+    document.getElementById('dlgTitle').textContent='Disconnect '+pending.name+'?';
+    document.getElementById('dlgBody').textContent=pending.name+' will lose access to your ContentStudio account straight away. To use it again, connect it again from '+pending.name+'.';
+    scrim.hidden=false;document.getElementById('dlgCancel').focus();});
+  document.getElementById('dlgCancel').addEventListener('click',function(){scrim.hidden=true});
+  document.getElementById('dlgOk').addEventListener('click',function(){var ok=this;ok.disabled=true;ok.textContent='Disconnecting…';
+    setTimeout(function(){apps=apps.filter(function(a){return a!==pending});render();scrim.hidden=true;ok.disabled=false;ok.textContent='Disconnect';
+      document.getElementById('toastText').textContent=pending.name+' disconnected.';toast.hidden=false;clearTimeout(tt);tt=setTimeout(function(){toast.hidden=true},2600);},700);});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')scrim.hidden=true});
+
+  // Consent
+  var variants={
+    rw:{app:'Gemini',domain:'gemini.google.com',asked:'rw',verified:true},
+    r:{app:'Perplexity',domain:'perplexity.ai',asked:'r',verified:true},
+    unv:{app:'PostBot Assistant',domain:'postbot-tools.io',asked:'rw',verified:false}
+  };
+  function consentHTML(v,uid){
+    var rw='<label class="radio'+(v.asked==='rw'?' sel':'')+'"><input type="radio" name="acc'+uid+'" value="rw"'+(v.asked==='rw'?' checked':'')+'><span><b>Read and write</b><small>Can also create and schedule posts, change or delete them, and reply to comments and messages for you. For example: "Schedule next week\'s posts from this list."</small></span></label>';
+    var r='<label class="radio'+(v.asked==='r'?' sel':'')+'"><input type="radio" name="acc'+uid+'" value="r"'+(v.asked==='r'?' checked':'')+'><span><b>Read only</b><small>Can see your workspaces, social accounts, posts and analytics. Can\'t create, change or delete anything.</small></span></label>';
+    return '<div class="consent">'+
+      '<div class="brandrow"><span class="mark" style="background:'+(v.verified?'#3f6fd8':'#7a6af0')+';width:34px;height:34px;border-radius:9px">'+v.app[0]+'</span><span class="dots"><i></i><i></i><i></i></span><span class="brandlogo">ContentStudio</span></div>'+
+      '<div><h3><b>'+v.app+'</b>'+(v.verified?'':' <span class="badge b-unv" style="vertical-align:3px">Unverified app</span>')+' wants to access your ContentStudio account</h3><div class="who">Signed in as casper@agency.co</div></div>'+
+      '<div class="dest">After you approve, access is sent to <b>'+v.domain+'</b> <span class="info" tabindex="0" aria-label="About this website">i<span class="tip">This is the website that will be able to use your account. Only approve if you recognise it. For example, Gemini should send access to gemini.google.com.</span></span></div>'+
+      '<div><div class="fieldlabel">Access</div><div class="radios">'+(v.asked==='r'?r:r+rw)+'</div></div>'+
+      (v.verified?'':'<div class="alert alert-warn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex:none;margin-top:1px"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></svg><div>ContentStudio hasn\'t verified this app. Only continue if you started this connection yourself and you recognise '+v.domain+'.</div></div>')+
+      '<div class="cacts"><button class="btn btn-ghost" type="button">Deny</button><button class="btn btn-primary" type="button">Approve</button></div>'+
+      '<p class="disclaimer">Your API key isn\'t shared with this app. You can disconnect it anytime from Settings → API &amp; AI apps → AI app access.</p>'+
+    '</div>';
+  }
+  function showVariant(k){
+    var v=variants[k];
+    document.getElementById('consentDesktop').innerHTML=consentHTML(v,'d');
+    document.querySelectorAll('#variantSwitch button').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.v===k)});
+  }
+  document.getElementById('variantSwitch').addEventListener('click',function(e){var b=e.target.closest('button');if(b)showVariant(b.dataset.v)});
+  document.querySelector('.consent-stage').addEventListener('change',function(e){if(e.target.type!=='radio')return;
+    var box=e.target.closest('.radios');box.querySelectorAll('.radio').forEach(function(l){l.classList.toggle('sel',l.contains(e.target))});});
+
+  render();setState('list');showVariant('rw');
+})();
+</script>

@@ -256,7 +256,18 @@
       "Bash(mkdir -p /home/casper/code/contentstudio-agentic-product-pipeline/docs/stories/multi-workspace-analytics-report)",
       "Bash(sed 's/^[0-9. `]*//')",
       "Bash(cd *)",
-      "Bash(exit 1)"
+      "Bash(exit 1)",
+      "Bash(awk -F- '{n=$NF; sub\\(\".jpg\",\"\",n\\); if \\(n+0>=73\\) print n}')",
+      "mcp__claude_ai_Figma__use_figma",
+      "mcp__claude_ai_Figma__upload_assets",
+      "mcp__claude_ai_Figma__get_figjam",
+      "Bash(flutter devices *)",
+      "Bash(flutter emulators *)",
+      "Bash(adb devices *)",
+      "Bash(flutter test *)",
+      "mcp__claude_ai_Figma__create_session",
+      "mcp__claude_ai_Figma__get_screenshot",
+      "Bash(sort -u -k2)"
     ],
     "additionalDirectories": [
       "/home/tehreem/code/contentstudio-agentic-product-pipeline/docs/stories",

@@ -1,0 +1,510 @@
+<title>ContentStudio Plan Locks</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column, billing-system tabs on top, a sticky filter bar per tab, grouped plan comparison tables */
+:root {
+  --bg: #f6f8fb;
+  --surface: #ffffff;
+  --fg: #172033;
+  --muted: #5b6579;
+  --line: #e1e6ef;
+  --accent: #1f7ae0;
+  --accent-soft: #e6f0fc;
+  --yes: #1b8a5a;
+  --yes-soft: #e3f4ec;
+  --no: #b4233a;
+  --no-soft: #fbe8eb;
+  --addon: #8a5a00;
+  --addon-soft: #fdf1d8;
+  --warn-soft: #fff6e0;
+  --font-display: "Bricolage Grotesque", "Figtree", system-ui, sans-serif;
+  --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f141d; --surface: #161d29; --fg: #e6ebf3; --muted: #9aa5b8; --line: #263043;
+    --accent: #5aa2f0; --accent-soft: #1a2b42;
+    --yes: #5fd09a; --yes-soft: #15302a; --no: #f0788a; --no-soft: #3a1d25;
+    --addon: #f0c060; --addon-soft: #362a12; --warn-soft: #2e2715;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f141d; --surface: #161d29; --fg: #e6ebf3; --muted: #9aa5b8; --line: #263043;
+  --accent: #5aa2f0; --accent-soft: #1a2b42;
+  --yes: #5fd09a; --yes-soft: #15302a; --no: #f0788a; --no-soft: #3a1d25;
+  --addon: #f0c060; --addon-soft: #362a12; --warn-soft: #2e2715;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 64px;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.wrap { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+.panel { display: flex; flex-direction: column; gap: 28px; }
+h1, h2 { font-family: var(--font-display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(28px, 4vw, 38px); line-height: 1.1; }
+h2 { font-size: 21px; }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 72ch; }
+.meta { font-family: var(--font-mono); font-size: 12px; color: var(--muted); letter-spacing: 0.02em; }
+header { display: flex; flex-direction: column; gap: 10px; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 13px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+.tab {
+  font: 600 15px var(--font-body); color: var(--muted); background: none; border: 0;
+  border-bottom: 3px solid transparent; padding: 10px 14px 9px; cursor: pointer; white-space: nowrap;
+}
+.tab small { display: block; font-weight: 500; font-size: 12px; color: var(--muted); }
+.tab[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+.tab:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+.bar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: var(--bg); padding-block: 10px;
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  border-bottom: 1px solid var(--line);
+}
+.chip {
+  font: 500 13px var(--font-body); color: var(--fg);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+  padding: 6px 12px; cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.chip:focus-visible, .q:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.q {
+  flex: 1 1 200px; min-width: 0;
+  font: 14px var(--font-body); color: var(--fg);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px;
+}
+
+section.group { display: flex; flex-direction: column; gap: 10px; }
+.scroll { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+table { width: 100%; border-collapse: collapse; min-width: 780px; }
+table.wide { min-width: 980px; }
+th, td { padding: 10px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: 0; }
+thead th {
+  font: 600 11px var(--font-body); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted);
+  background: var(--surface);
+}
+th.plan, td.plan { text-align: center; }
+td.feat { width: 28%; }
+td.feat strong { font-weight: 600; display: block; }
+td.feat small { color: var(--muted); font-size: 13px; display: block; margin-top: 2px; }
+td.feat small.disagree { color: var(--addon); font-weight: 500; }
+td.enf { font-size: 12.5px; color: var(--muted); }
+.pill {
+  display: inline-block; font: 500 12.5px var(--font-body); border-radius: 6px; padding: 2px 8px;
+  font-variant-numeric: tabular-nums; line-height: 1.5;
+}
+.y { color: var(--yes); background: var(--yes-soft); }
+.n { color: var(--no); background: var(--no-soft); }
+.a { color: var(--addon); background: var(--addon-soft); }
+.t { color: var(--fg); background: transparent; padding: 0; }
+.mark { color: var(--addon); font-weight: 600; margin-left: 3px; }
+.empty { padding: 14px; color: var(--muted); font-size: 14px; }
+
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.note { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.note.warn { background: var(--warn-soft); }
+.note h3 { margin: 0; font: 600 15px var(--font-body); }
+.note ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+code { font-family: var(--font-mono); font-size: 12.5px; overflow-wrap: anywhere; }
+.sources { font-size: 13px; color: var(--muted); display: flex; flex-direction: column; gap: 6px; }
+.sources h2 { font-size: 17px; color: var(--fg); }
+.sources ul { padding-left: 18px; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="meta">BILLING REFERENCE · VERIFIED 6 NOV 2026 · BACKEND, WEB APP, MOBILE APP, WEBSITE</p>
+    <h1>ContentStudio plan locks</h1>
+    <p class="lede">What each plan includes and what it locks, for plans on Paddle Billing and for older plans on Paddle Classic. Every row was checked against the backend plan definitions, the code that enforces the lock in the web and mobile apps, and the pricing tables. Cells show what the product actually does. Where a pricing table says something different, the row is marked.</p>
+    <div class="legend" aria-label="Legend">
+      <span><span class="pill y">Yes</span> included</span>
+      <span><span class="pill n">No</span> locked</span>
+      <span><span class="pill a">Add-on</span> can be bought on this plan</span>
+      <span><span class="mark">†</span> a pricing table says otherwise; the row names which</span>
+    </div>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="Billing system">
+    <button class="tab" role="tab" id="tab-billing" aria-controls="billing" aria-selected="true" data-tab="billing">Paddle Billing<small>Standard, Advanced, Agency Unlimited, API</small></button>
+    <button class="tab" role="tab" id="tab-classic" aria-controls="classic" aria-selected="false" data-tab="classic">Paddle Classic<small>Starter, Growth, Pro, Business &amp; Agency, lifetime</small></button>
+  </div>
+
+  <!-- ===================== PADDLE BILLING ===================== -->
+  <div class="panel" id="billing" role="tabpanel" aria-labelledby="tab-billing">
+    <div class="bar" role="toolbar" aria-label="Filter Paddle Billing features">
+      <button class="chip" aria-pressed="true" data-filter="all">All features</button>
+      <button class="chip" aria-pressed="false" data-filter="entry">Locked on Standard</button>
+      <button class="chip" aria-pressed="false" data-filter="top">Agency Unlimited only</button>
+      <button class="chip" aria-pressed="false" data-filter="dis">Sources disagree</button>
+      <input class="q" id="q-billing" type="search" placeholder="Search features" aria-label="Search Paddle Billing features">
+    </div>
+    <div class="tables"></div>
+
+    <section class="group">
+      <h2>Notes</h2>
+      <div class="notes">
+        <div class="note">
+          <h3>Add-ons</h3>
+          <ul>
+            <li><strong>Standard can't buy any feature unlock.</strong> Its workspaces, social accounts, users, automation campaigns and storage are fixed by the plan. It can buy more API requests and AI credits.</li>
+            <li><strong>Advanced</strong> can buy extra workspaces, users and social accounts, and Social Listening.</li>
+            <li><strong>Agency Unlimited</strong> can buy extra social accounts, Social Listening, White-label and SAML SSO.</li>
+            <li><strong>API requests</strong> can be topped up on any plan, 1,000 requests for $5.</li>
+            <li><strong>Campaign &amp; Label and Competitor Analytics can't be bought</strong> on these plans. The account flags that unlock them are set by hand.</li>
+          </ul>
+        </div>
+        <div class="note">
+          <h3>Trials</h3>
+          <ul>
+            <li>Trials can't buy add-ons, and Social Listening is off on every trial.</li>
+            <li><strong>Standard trial:</strong> as Standard, with fewer AI credits. Connecting Canva in Settings and the custom link shortener in the mobile app are also locked. The Canva button in the web composer still works.</li>
+            <li><strong>Advanced trial:</strong> as Advanced, with fewer AI credits.</li>
+            <li><strong>Agency Unlimited trial:</strong> fewer AI credits, capped workspaces and users, and no Looker Studio, dedicated onboarding, concierge setup, priority support or live training.</li>
+          </ul>
+        </div>
+        <div class="note">
+          <h3>Where locks are enforced</h3>
+          <ul>
+            <li><strong>The app's own backend doesn't check the plan for any feature.</strong> Locks live in the web app and the mobile app, which read the same plan flags. This applies to Classic plans too.</li>
+            <li><strong>The mobile app</strong> locks the Inbox, approval workflows, EasyConnect, share links, grid views and Evergreen by plan. It doesn't block API-centric accounts from signing in.</li>
+            <li><strong>The public API</strong> (and the CLI, MCP server, Zapier, Make and n8n on top of it) checks the plan for Ads, Competitor and Campaign &amp; Label Analytics, the Inbox, Bulk CSV, RSS and Evergreen.</li>
+            <li><strong>Approval workflows are not checked on the public API</strong>, so a Standard workspace can probably create them through the API or MCP server. Not tested.</li>
+            <li><strong>API access</strong> is decided only by the plan's monthly API requests. The old <code>api_access</code> flag is still <code>false</code> on Standard, but nothing reads it.</li>
+          </ul>
+        </div>
+        <div class="note warn">
+          <h3>Where the sources disagree</h3>
+          <ul>
+            <li><strong>API-centric in the in-app comparison is stale.</strong> It says 5 social accounts, 10 GB and 10,000 API requests. The backend and the website's API pricing both say 10 accounts, 15 GB and 3,000 requests. It also marks publishing tools such as calendar, first comment, Canva, grid view, collab posts and shareable links as No, but the plan switches them on and the app shows them.</li>
+            <li><strong>Content categories:</strong> the website's comparison marks Standard as No, but nothing in the app locks them on any plan.</li>
+            <li><strong>Curated content automation:</strong> the in-app comparison advertises it on Advanced and Agency Unlimited. The website no longer lists it, and the app has no such page.</li>
+            <li><strong>Card-trial plans (<code>-cc</code>), per code:</strong> the Advanced and Agency Unlimited plans for card-first signups were created without the <code>looker_studio</code> and Social Listening flags, so Looker Studio and Social Listening would show as locked for those paying customers. Needs checking in the live database.</li>
+            <li><strong>Mobile apps on API-centric:</strong> the in-app comparison says No, but nothing in the mobile app blocks API-centric accounts.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===================== PADDLE CLASSIC ===================== -->
+  <div class="panel" id="classic" role="tabpanel" aria-labelledby="tab-classic" hidden>
+    <section class="group">
+      <h2>Which plan is which</h2>
+      <p class="lede">The 2024 pricing page sold Starter, Pro and Agency Small, Medium and Large. In the app the same Agency plans are called Business &amp; Agency, and in the database Pro is <code>basic</code> and Business &amp; Agency Small is <code>professional</code>. Growth was sold separately and never appeared on the pricing page.</p>
+      <div class="scroll"><table>
+        <thead><tr><th>Plan</th><th>2024 pricing page</th><th>Name in the app</th><th>Slugs</th><th>List price, July 2024</th></tr></thead>
+        <tbody>
+          <tr><td class="feat"><strong>Starter</strong></td><td class="enf">Starter</td><td class="enf">ContentStudio - Starter</td><td class="enf"><code>contentstudio-starter-monthly</code>, <code>contentstudio-starter-annual</code></td><td class="enf">$25 a month, or $20 a month billed yearly</td></tr>
+          <tr><td class="feat"><strong>Growth</strong></td><td class="enf">Not listed</td><td class="enf">ContentStudio Growth</td><td class="enf"><code>contentstudio-growth-yearly</code></td><td class="enf">Yearly only. Not on the 2024 page</td></tr>
+          <tr><td class="feat"><strong>Pro</strong></td><td class="enf">Pro</td><td class="enf">Professional</td><td class="enf"><code>basic</code>, <code>basic-annual</code>. Variant: <code>professional-annual-bf</code></td><td class="enf">$49 a month, or $40 a month billed yearly</td></tr>
+          <tr><td class="feat"><strong>Business &amp; Agency Small</strong></td><td class="enf">Agency (Small)</td><td class="enf">Business &amp; Agency - Small</td><td class="enf"><code>professional</code>, <code>professional-annual</code>. Variants: <code>business-agency-small-bf</code>, <code>business-agency-small-semi-annual</code></td><td class="enf">$99 a month, or $80 a month billed yearly</td></tr>
+          <tr><td class="feat"><strong>Business &amp; Agency Medium</strong></td><td class="enf">Agency (Medium)</td><td class="enf">Business &amp; Agency - Medium</td><td class="enf"><code>agency</code>, <code>agency-annual</code></td><td class="enf">$199 a month, or $160 a month billed yearly</td></tr>
+          <tr><td class="feat"><strong>Business &amp; Agency Large</strong></td><td class="enf">Agency (Large)</td><td class="enf">Business &amp; Agency - Large</td><td class="enf"><code>business-large</code>, <code>business-large-annual</code>. Variants: <code>business-large-1</code>, <code>business-agency-large-annual-custom</code></td><td class="enf">$299 a month, or $240 a month billed yearly</td></tr>
+        </tbody>
+      </table></div>
+      <p class="lede">Customers keep the price they signed up at, so many pay less than these list prices. The Medium and Large prices come from the app's own upgrade list; the archived page only rendered the Small price. The variants have the same features but can carry different limits.</p>
+    </section>
+
+    <div class="bar" role="toolbar" aria-label="Filter Paddle Classic features">
+      <button class="chip" aria-pressed="true" data-filter="all">All features</button>
+      <button class="chip" aria-pressed="false" data-filter="entry">Locked on Starter</button>
+      <button class="chip" aria-pressed="false" data-filter="top">Business &amp; Agency only</button>
+      <button class="chip" aria-pressed="false" data-filter="dis">Sources disagree</button>
+      <input class="q" id="q-classic" type="search" placeholder="Search features" aria-label="Search Paddle Classic features">
+    </div>
+    <div class="tables"></div>
+
+    <section class="group">
+      <h2>Other Classic plans</h2>
+      <div class="scroll"><table>
+        <thead><tr><th>Plan family</th><th>Slugs</th><th>Credits match</th><th>Locked</th></tr></thead>
+        <tbody>
+          <tr><td class="feat"><strong>Enterprise, Max Agency</strong></td><td class="enf"><code>contentstudio-enterprise-monthly-plan</code>, <code>contentstudio-enterprise-yearly-plan</code>, <code>contentstudio-max-monthly-plan</code>, <code>contentstudio-max-annual-plan</code></td><td class="enf">Business &amp; Agency: 7,500 API, 250 AI auto-replies, 500 AI videos</td><td>Data Studio and Social Listening. Both rollouts left these plans out</td></tr>
+          <tr><td class="feat"><strong>Empowerers</strong></td><td class="enf"><code>empowerers-monthly</code>, <code>empowerers-yearly</code></td><td class="enf">Starter: 1,500 API, no AI auto-replies, 100 AI videos</td><td>Competitor Analytics (can be bought), Data Studio, Social Listening. Inbox, automations and Ads Analytics are included</td></tr>
+          <tr><td class="feat"><strong>Monthly</strong></td><td class="enf"><code>monthly</code></td><td class="enf">Not covered by the credit updates</td><td>Competitor Analytics (can be bought), Data Studio, Social Listening</td></tr>
+          <tr><td class="feat"><strong>ContentStudio Pro, ContentStudio Agency Small, Medium, Large</strong></td><td class="enf"><code>contentstudio-pro-monthly</code>, <code>contentstudio-pro-annual</code>, <code>contentstudio-agency-{small,medium,large}-{monthly,annual}</code></td><td class="enf">Pro: like Pro. Agency: like Business &amp; Agency, with Data Studio and the Social Listening add-on</td><td>Unknown. Their feature flags exist only in the live database</td></tr>
+          <tr><td class="feat"><strong>Lifetime deals</strong></td><td class="enf">26 one-off plans, see below</td><td class="enf">250 API. No AI video, video clipping or AI auto-reply credits</td><td>Data Studio. Inbox and Competitor Analytics depend on the deal</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="scroll"><table>
+        <thead><tr><th>Lifetime deal</th><th>Slugs</th><th class="plan">Inbox</th><th class="plan">Competitor Analytics</th></tr></thead>
+        <tbody>
+          <tr><td class="feat"><strong>Prime, Bee, COVID with add-ons</strong></td><td class="enf"><code>prime-pro-lifetime</code>, <code>prime-agency-{small,medium,large}-lifetime</code>, <code>bruce-contentstudio-large-agency-bee-lifetime</code>, <code>contentstudio-covid-professional-with-addons-lifetime</code></td><td class="plan"><span class="pill y">Yes</span></td><td class="plan"><span class="pill y">Yes</span></td></tr>
+          <tr><td class="feat"><strong>Business &amp; Agency lifetimes, COVID, AppSumo Small Agency, JVZoo Agency</strong></td><td class="enf"><code>bruce-contentstudio-business-agency-{small,medium,large}-lifetime</code>, <code>contentstudio-covid-professional-lifetime</code>, <code>contentstudio-covid-business-agency-{small,medium,large}-lifetime</code>, <code>contentstudio-medium-agency-lifetime</code>, <code>appsumo_small_agency</code>, <code>jvzoo_agency</code>, <code>jvzoo_agency_upgrade</code></td><td class="plan"><span class="pill n">No</span></td><td class="plan"><span class="pill y">Yes</span></td></tr>
+          <tr><td class="feat"><strong>Lifetime, Starter, Pro and other entry deals</strong></td><td class="enf"><code>lifetime</code>, <code>contentstudio-bundle-lifetime</code>, <code>contentstudio-business-small-lifetime</code>, <code>contentstudio-starter-lifetime</code>, <code>contentstudio-starter-lifetime-unlimited-automations</code>, <code>bruce-contentstudio-pro-lifetime</code>, <code>appsumo_pro</code>, <code>jvzoo_lite</code>, <code>jvzoo_pro</code></td><td class="plan"><span class="pill n">No</span></td><td class="plan"><span class="pill n">No</span></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="group">
+      <h2>Notes</h2>
+      <div class="notes">
+        <div class="note">
+          <h3>Across all Classic plans</h3>
+          <ul>
+            <li><strong>Classic plans have much more than their price suggests.</strong> Every one, Starter and lifetime deals included, has approval workflows, Campaign &amp; Label Analytics, PDF reports, white-label reports, EasyConnect and client management, and can buy White-label and SAML SSO.</li>
+            <li><strong>Ads Analytics</strong> is on every Classic plan except Starter.</li>
+            <li><strong>Social Listening</strong> can be bought only on Business &amp; Agency, the ContentStudio Agency plans and lifetime deals (5 topics, 10,000 mentions, per code).</li>
+            <li><strong>X posting on lifetime deals</strong> runs through the pay-per-use X wallet. The plans themselves have X switched off.</li>
+          </ul>
+        </div>
+        <div class="note">
+          <h3>How Classic billing differs</h3>
+          <ul>
+            <li><strong>Classic recurring plans</strong> buy add-ons through the old Classic checkout. Only these accounts are offered Competitor Analytics as an add-on.</li>
+            <li><strong>Lifetime deals</strong> buy add-ons through a separate Paddle Billing add-ons subscription. They can now buy the Inbox.</li>
+            <li><strong>Classic subscribers can't change plan themselves.</strong> The app sends them to support, because Paddle Billing can't move a Classic subscription.</li>
+            <li><strong>Old lifetime add-ons</strong> (Inbox, Competitor Analytics, Influencers) are no longer sold. Customers who bought them keep them.</li>
+            <li><strong>Old per-account add-ons still unlock features:</strong> team members (team and approvals), automations (Evergreen, RSS, Bulk CSV), Bulk CSV, grid view and collab posts. Nothing sells them any more.</li>
+            <li><strong>AppSumo stacked codes</strong> multiply every limit on the plan.</li>
+          </ul>
+        </div>
+        <div class="note warn">
+          <h3>Where the 2024 pricing page disagrees</h3>
+          <ul>
+            <li><strong>Starter</strong> was sold without approval workflows, team members, PDF reports or white-label reports. The plan has all four switched on. Starter Annual can invite team members; Starter Monthly can't.</li>
+            <li><strong>Client management</strong> was listed on Agency only. Every Classic plan has it.</li>
+            <li><strong>Users on Business &amp; Agency:</strong> the page said 5 users on Agency Small. The plan allows the owner plus 5 members, so 6 people.</li>
+            <li><strong>Curated content automation</strong> was sold on Pro and Agency. The app no longer has it.</li>
+            <li><strong>AI credits</strong> were raised in May 2025 on Starter, Pro and Business &amp; Agency. Growth was left out of that update.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="sources">
+    <h2>Sources</h2>
+    <ul>
+      <li>Paddle Billing plans: <code>SubscriptionsSeeder.php</code> and the plan migrations through Oct 2026. Social Listening topics on Advanced (3) are confirmed from the live database; the migration sets 2.</li>
+      <li>Classic plans: the plan snapshot in <code>SubscriptionsSeeder.php</code> (taken around mid-2025) plus every later plan migration, the in-app upgrade list in <code>contentstudio-frontend/src/modules/common/constants/pricing.ts</code>, and the archived pricing page of 23 July 2024 (web.archive.org).</li>
+      <li>Enforcement: <code>useFeatures().canAccess</code>, route <code>access</code> rules and <code>useApiCentricPlan.ts</code> in <code>contentstudio-frontend</code>; <code>lib/features/entitlements</code> in <code>contentstudio-flutter</code>; <code>PlanFeatureMiddleware</code> on <code>routes/api/v1.php</code> and <code>ApiKeyMiddleware</code> in <code>contentstudio-backend</code>.</li>
+      <li>Website: <code>PricingSectionNew.tsx</code>, <code>ComparePlansNew.tsx</code> and <code>ApiPricingSection.tsx</code> in <code>contentstudio-website-v2</code>. In-app comparison: <code>plansComparison.ts</code>.</li>
+      <li>Everything except the Advanced listening topics comes from code. The live database can differ, so check it before quoting a specific customer. The Chrome extension isn't in these repos and wasn't checked.</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+// Cell values: true = Yes, false = No, "+text" = add-on, other string = plain text.
+// enf: where the lock is enforced. dis: a pricing table disagrees with what the product does.
+const BILLING = {
+  plans: [["s", "Standard"], ["a", "Advanced"], ["u", "Agency Unlimited"], ["p", "API-centric"]],
+  entry: "s", mid: "a", top: "u",
+  groups: [
+    { name: "Limits", limits: true, rows: [
+      { f: "Workspaces", s: "1", a: "2 (+$10 each extra)", u: "Unlimited", p: "1" },
+      { f: "Social accounts", s: "5", a: "10 (+$5 each extra)", u: "25 (+$5 to $1 each extra)", p: "10 (+$5 each extra)", dis: "In-app table says 5 on API-centric" },
+      { f: "Users", s: "1", a: "2 (+$10 each extra)", u: "Unlimited", p: "1" },
+      { f: "Media storage", s: "10 GB", a: "15 GB", u: "25 GB", p: "15 GB", dis: "In-app table says 10 GB on API-centric" },
+      { f: "API requests per month", n: "Top up 1,000 for $5 on any plan", s: "1,500", a: "3,000", u: "7,500", p: "3,000", dis: "In-app table says 10,000 on API-centric" },
+      { f: "AI text credits (words)", s: "25,000", a: "50,000", u: "125,000", p: false, n: "Agency Unlimited figures are for 25 accounts and grow with more" },
+      { f: "AI image credits", s: "25", a: "50", u: "125", p: false },
+      { f: "AI video and video clipping credits", s: "100", a: "200", u: "500", p: false },
+    ]},
+    { name: "Analytics", rows: [
+      { f: "Social analytics", n: "Overview, per network, history, demographics, boosted post insights", s: true, a: true, u: true, p: false, enf: "Web app" },
+      { f: "Web Analytics (Usermaven)", n: "No plan lock. Hidden on white-label domains", s: true, a: true, u: true, p: false, enf: "Web app" },
+      { f: "Ads Analytics", n: "Meta Ads and Google Ads", s: false, a: true, u: true, p: false, enf: "Web app, public API" },
+      { f: "Competitor Analytics", s: false, a: true, u: true, p: false, enf: "Web app, public API" },
+      { f: "Campaign & Label Analytics", s: false, a: true, u: true, p: false, enf: "Web app, public API" },
+      { f: "Export, email and schedule PDF reports", n: "The Top Posts CSV export is not locked", s: false, a: true, u: true, p: false, enf: "Web app" },
+      { f: "White-label reports", s: false, a: true, u: true, p: false, enf: "Web app" },
+      { f: "Data Studio (Looker Studio)", n: "Facebook, Instagram, LinkedIn, TikTok, YouTube. Connects with the account's API key", s: false, a: false, u: true, p: false, enf: "Web app page only" },
+    ]},
+    { name: "Publishing and automation", rows: [
+      { f: "Composer, calendar, list and feed views", n: "Also first comment, recurring posts, best time to post, hashtags, planner notes", s: true, a: true, u: true, p: true, dis: "In-app table says No on API-centric" },
+      { f: "Content categories", s: true, a: true, u: true, p: true, dis: "Website table says No on Standard", enf: "Not locked" },
+      { f: "Canva", s: true, a: true, u: true, p: true, dis: "In-app table says No on API-centric" },
+      { f: "Custom link shortener and video thumbnails", s: true, a: true, u: true, p: true, dis: "In-app table says No on API-centric" },
+      { f: "Instagram and TikTok grid view", s: false, a: true, u: true, p: true, dis: "In-app table says No on API-centric", enf: "Web app, mobile app" },
+      { f: "Instagram collab posts", s: false, a: true, u: true, p: true, dis: "In-app table says No on API-centric", enf: "Web app" },
+      { f: "Shareable post link", s: false, a: true, u: true, p: true, dis: "In-app table says No on API-centric", enf: "Web app, mobile app" },
+      { f: "Evergreen campaigns", s: false, a: true, u: true, p: false, enf: "Web app, mobile app, public API" },
+      { f: "RSS auto-posting", s: false, a: true, u: true, p: false, enf: "Web app, public API" },
+      { f: "Bulk upload via CSV", s: false, a: true, u: true, p: false, enf: "Web app, public API" },
+      { f: "Curated content automation", n: "No such page exists in the app", s: false, a: false, u: false, p: false, dis: "In-app table says Yes on Advanced and Agency Unlimited", enf: "Doesn't exist" },
+      { f: "Custom X (Twitter) app", s: false, a: true, u: true, p: false, enf: "Web app" },
+      { f: "Feedly integration", s: false, a: true, u: true, p: false, enf: "Web app" },
+    ]},
+    { name: "Team and clients", rows: [
+      { f: "Team collaboration", n: "Invite team members, clients and approvers, approver dashboard", s: false, a: true, u: true, p: false, enf: "Web app" },
+      { f: "Approval workflows", n: "Including multi-level, up to 5 levels", s: false, a: true, u: true, p: false, enf: "Web app, mobile app. Not the public API" },
+      { f: "Shared media library folders", s: false, a: true, u: true, p: true, enf: "Web app" },
+      { f: "Client management", s: false, a: false, u: true, p: false, enf: "Web app" },
+      { f: "EasyConnect", s: false, a: false, u: true, p: true, dis: "In-app table says No on API-centric", enf: "Web app, mobile app" },
+    ]},
+    { name: "Inbox and listening", rows: [
+      { f: "Social inbox", n: "Messages, comments, assignment, tagging, saved replies, internal notes, mobile", s: false, a: true, u: true, p: false, enf: "Web app, mobile app, public API" },
+      { f: "AI auto-replies", s: false, a: "100 credits / mo", u: "250 credits / mo", p: false, enf: "Web app" },
+      { f: "Social Listening", s: false, a: "+3 topics, 5,000 mentions", u: "+5 topics, 10,000 mentions", p: false, enf: "Web app" },
+    ]},
+    { name: "AI, discovery and apps", rows: [
+      { f: "AI Studio, AI assistant and AI content library", s: true, a: true, u: true, p: false, enf: "Web app" },
+      { f: "Content discovery", n: "Search feeds, OPML import, follow topics", s: false, a: true, u: true, p: false, enf: "Web app" },
+      { f: "API access (public API, CLI, MCP, Zapier, Make, n8n)", n: "Limited by API requests per month", s: true, a: true, u: true, p: true, enf: "Public API" },
+      { f: "iOS and Android app", s: true, a: true, u: true, p: true, dis: "In-app table says No on API-centric" },
+    ]},
+    { name: "Agency and support", rows: [
+      { f: "White-label", s: false, a: false, u: "+Add-on", p: false, enf: "Web app" },
+      { f: "SAML SSO", s: false, a: false, u: "+Add-on", p: false, enf: "Web app" },
+      { f: "Live training", s: "On demand", a: "On demand", u: "Onboarding session for the team", p: "On demand" },
+      { f: "Customer support", s: "Standard", a: "Standard", u: "Priority", p: "Standard" },
+      { f: "Dedicated onboarding and concierge setup", s: false, a: false, u: true, p: false },
+    ]},
+  ],
+};
+
+// Classic: st = Starter, gr = Growth, pr = Pro, bs/bm/bl = Business & Agency Small/Medium/Large.
+const BA = (v) => ({ bs: v, bm: v, bl: v });
+const ALL = (v) => ({ st: v, gr: v, pr: v, bs: v, bm: v, bl: v });
+const CLASSIC = {
+  plans: [["st", "Starter"], ["gr", "Growth"], ["pr", "Pro"], ["bs", "B&A Small"], ["bm", "B&A Medium"], ["bl", "B&A Large"]],
+  entry: "st", mid: "pr", top: "bs", wide: true,
+  groups: [
+    { name: "Limits", limits: true, rows: [
+      { f: "Workspaces", st: "1", gr: "1", pr: "1", bs: "5", bm: "10", bl: "20" },
+      { f: "Social accounts", st: "5", gr: "5", pr: "10", bs: "25", bm: "50", bl: "150" },
+      { f: "Users", n: "The plan counts team members besides the owner", st: "Owner only", gr: "Owner + 1", pr: "Owner + 1", bs: "Owner + 5", bm: "Owner + 10", bl: "Owner + 20", dis: "2024 page says 5 users on Agency Small" },
+      { f: "Media storage", st: "10 GB", gr: "10 GB", pr: "10 GB", bs: "20 GB", bm: "50 GB", bl: "100 GB" },
+      { f: "API requests per month", st: "1,500", gr: "1,500", pr: "3,000", ...BA("7,500") },
+      { f: "AI text credits (words)", n: "Raised in May 2025. The 2024 page said 10,000, 20,000 and 50,000", st: "25,000", gr: "2,000", pr: "50,000", bs: "125,000", bm: "250,000", bl: "500,000" },
+      { f: "AI image credits", st: "25", gr: "5", pr: "50", bs: "125", bm: "250", bl: "500" },
+      { f: "AI video and video clipping credits", st: "100", gr: "100", pr: "200", ...BA("500") },
+      { f: "Automation campaigns", st: "0", gr: "100,000", pr: "10", ...BA("2,500") },
+    ]},
+    { name: "Analytics", rows: [
+      { f: "Social analytics", n: "Overview, per network, history, demographics, boosted post insights", ...ALL(true), enf: "Web app" },
+      { f: "Web Analytics (Usermaven)", n: "No plan lock. Hidden on white-label domains", ...ALL(true), enf: "Web app" },
+      { f: "Ads Analytics", n: "Meta Ads and Google Ads. Added in 2026", st: false, gr: true, pr: true, ...BA(true), enf: "Web app, public API" },
+      { f: "Competitor Analytics", n: "Classic accounts can buy it as an add-on", st: "+Add-on", gr: "+Add-on", pr: "+Add-on", ...BA(true), enf: "Web app, public API" },
+      { f: "Campaign & Label Analytics", n: "Not on the 2024 page", ...ALL(true), enf: "Web app, public API" },
+      { f: "Export, email and schedule PDF reports", n: "The Top Posts CSV export is not locked", ...ALL(true), dis: "2024 page says No on Starter", enf: "Web app" },
+      { f: "White-label reports", ...ALL(true), dis: "2024 page says No on Starter", enf: "Web app" },
+      { f: "Data Studio (Looker Studio)", st: false, gr: false, pr: false, ...BA(true), enf: "Web app page only" },
+    ]},
+    { name: "Publishing and automation", rows: [
+      { f: "Composer, calendar, list and feed views", n: "Also first comment, recurring posts, best time to post, hashtags, planner notes", ...ALL(true) },
+      { f: "Content categories", ...ALL(true), enf: "Not locked" },
+      { f: "Canva", ...ALL(true) },
+      { f: "Custom link shortener and video thumbnails", ...ALL(true) },
+      { f: "Instagram and TikTok grid view", ...ALL(true), enf: "Web app, mobile app" },
+      { f: "Instagram collab posts", ...ALL(true), enf: "Web app" },
+      { f: "Shareable post link", ...ALL(true), enf: "Web app, mobile app" },
+      { f: "Evergreen campaigns", st: false, gr: true, pr: true, ...BA(true), enf: "Web app, mobile app, public API" },
+      { f: "RSS auto-posting", st: false, gr: true, pr: true, ...BA(true), enf: "Web app, public API" },
+      { f: "Bulk upload via CSV", st: false, gr: true, pr: true, ...BA(true), enf: "Web app, public API" },
+      { f: "Curated content automation", n: "No such page exists in the app any more", ...ALL(false), dis: "2024 page says Yes on Pro and Agency", enf: "Doesn't exist" },
+      { f: "Custom X (Twitter) app", ...ALL(true), enf: "Web app" },
+      { f: "Feedly integration", ...ALL(true), enf: "Web app" },
+    ]},
+    { name: "Team and clients", rows: [
+      { f: "Team collaboration", n: "Invite team members, clients and approvers, approver dashboard", st: "Annual only", gr: true, pr: true, ...BA(true), dis: "2024 page says No on Starter", enf: "Web app" },
+      { f: "Approval workflows", n: "Including multi-level, up to 5 levels. Starter Monthly can't invite anyone to approve", ...ALL(true), dis: "2024 page says No on Starter", enf: "Web app, mobile app. Not the public API" },
+      { f: "Shared media library folders", ...ALL(true), enf: "Web app" },
+      { f: "Client management", ...ALL(true), dis: "2024 page lists it on Agency only", enf: "Web app" },
+      { f: "EasyConnect", n: "Released after these plans were sold", ...ALL(true), enf: "Web app, mobile app" },
+    ]},
+    { name: "Inbox and listening", rows: [
+      { f: "Social inbox", n: "Messages, comments, assignment, tagging, saved replies, internal notes, mobile", st: false, gr: true, pr: true, ...BA(true), enf: "Web app, mobile app, public API" },
+      { f: "AI auto-replies", st: false, gr: "+Add-on", pr: "100 credits / mo", ...BA("250 credits / mo"), enf: "Web app" },
+      { f: "Social Listening", n: "Per code. The live database may differ, as it did on Advanced", st: false, gr: false, pr: false, ...BA("+5 topics, 10,000 mentions"), enf: "Web app" },
+    ]},
+    { name: "AI, discovery and apps", rows: [
+      { f: "AI Studio, AI assistant and AI content library", ...ALL(true), enf: "Web app" },
+      { f: "Content discovery", n: "Search feeds, OPML import, follow topics", ...ALL(true), enf: "Web app" },
+      { f: "API access (public API, CLI, MCP, Zapier, Make, n8n)", n: "Limited by API requests per month", ...ALL(true), enf: "Public API" },
+      { f: "iOS and Android app", ...ALL(true) },
+    ]},
+    { name: "Agency and support", rows: [
+      { f: "White-label", ...ALL("+Add-on"), dis: "2024 page lists it on Agency only, as coming soon", enf: "Web app" },
+      { f: "SAML SSO", n: "Offered wherever White-label is", ...ALL("+Add-on"), enf: "Web app" },
+      { f: "Live training", st: "On demand", gr: "Not listed", pr: "On demand", ...BA("2-hour onboarding session") },
+      { f: "Customer support", st: "Standard", gr: "Not listed", pr: "Standard", ...BA("Priority") },
+    ]},
+  ],
+};
+
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+function cell(v) {
+  if (v === true) return '<span class="pill y">Yes</span>';
+  if (v === false) return '<span class="pill n">No</span>';
+  if (typeof v === "string" && v.startsWith("+")) return '<span class="pill a">' + esc(v === "+Add-on" ? "Add-on" : "Add-on: " + v.slice(1)) + "</span>";
+  return '<span class="pill t">' + esc(v) + "</span>";
+}
+function locked(v) { return v === false || (typeof v === "string" && (v.startsWith("+") || v === "Annual only")); }
+
+function setup(panelId, data) {
+  const panel = document.getElementById(panelId);
+  const out = panel.querySelector(".tables");
+  const q = panel.querySelector(".q");
+  let filter = "all";
+  function render() {
+    const term = q.value.trim().toLowerCase();
+    const html = data.groups.map(g => {
+      const rows = g.rows.filter(r => {
+        if (term && !(r.f + " " + (r.n || "")).toLowerCase().includes(term)) return false;
+        if (filter === "entry") return !g.limits && locked(r[data.entry]);
+        if (filter === "top") return !g.limits && locked(r[data.mid]) && !locked(r[data.top]);
+        if (filter === "dis") return !!r.dis;
+        return true;
+      });
+      if (!rows.length) return "";
+      const body = rows.map(r =>
+        '<tr><td class="feat"><strong>' + esc(r.f) + (r.dis ? '<span class="mark" title="A pricing table says otherwise">†</span>' : "") + "</strong>" +
+        (r.n ? "<small>" + esc(r.n) + "</small>" : "") +
+        (r.dis ? '<small class="disagree">† ' + esc(r.dis) + "</small>" : "") + "</td>" +
+        data.plans.map(([k]) => '<td class="plan">' + cell(r[k]) + "</td>").join("") +
+        '<td class="enf">' + esc(r.enf || "") + "</td></tr>").join("");
+      return '<section class="group"><h2>' + esc(g.name) + '</h2><div class="scroll"><table' + (data.wide ? ' class="wide"' : "") + "><thead><tr><th>Feature</th>" +
+        data.plans.map(([, n]) => '<th class="plan">' + esc(n) + "</th>").join("") +
+        "<th>Locked by</th></tr></thead><tbody>" + body + "</tbody></table></div></section>";
+    }).join("");
+    out.innerHTML = html || '<p class="empty">No features match that search.</p>';
+  }
+  panel.querySelectorAll(".chip").forEach(b => b.addEventListener("click", () => {
+    filter = b.dataset.filter;
+    panel.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", String(c === b)));
+    render();
+  }));
+  q.addEventListener("input", render);
+  render();
+}
+setup("billing", BILLING);
+setup("classic", CLASSIC);
+
+const tabs = [...document.querySelectorAll(".tab")];
+function show(name) {
+  if (!["billing", "classic"].includes(name)) name = "billing";
+  tabs.forEach(t => t.setAttribute("aria-selected", String(t.dataset.tab === name)));
+  document.getElementById("billing").hidden = name !== "billing";
+  document.getElementById("classic").hidden = name !== "classic";
+}
+tabs.forEach(t => t.addEventListener("click", () => { location.hash = t.dataset.tab; show(t.dataset.tab); }));
+tabs.forEach((t, i) => t.addEventListener("keydown", e => {
+  if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+    const next = tabs[(i + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length];
+    next.focus(); next.click();
+  }
+}));
+window.addEventListener("hashchange", () => show(location.hash.slice(1)));
+show(location.hash.slice(1));
+</script>

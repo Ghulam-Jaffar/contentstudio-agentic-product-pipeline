@@ -224,7 +224,9 @@ Base: `https://app.helpin.ai/w/contentstudio`
 
 **The `/pm/` segment is required.** The `helpin://tasks/<id>` URI the API returns is *not* the web path — deriving the URL from it produces a dead link. PM objects live under `/pm/`, and a story is addressed by its **task key** (`CONT-4048`), not its UUID.
 
-Not yet confirmed: the Docs URL, and how to link a story that has no epic. Ask the PO rather than guessing.
+A story with no epic: `<base>/pm/tasks?team=<team_id>&task=<TASK_KEY>`, with the Engineering team `f6b7c16a-8278-48f8-9d31-ffa89ee2cb87` (seen in a teammate's link, 2026-10-30).
+
+Not yet confirmed: the Docs URL. Ask the PO rather than guessing.
 
 When writing `0N-helpin-links.md`, use these patterns so every link is clickable.
 

@@ -4,14 +4,31 @@ contentstudio-flutter/
 contentstudio-ai-agents/
 contentstudio-social-analytics-go/
 contentstudio-social-analytics-go-main/
+contentstudio-chrome-extension-v2/
+contentstudio-mcp/
+contentstudio-feed-api/
+platforms-observer/
 social-inbox-manager/
 contentstudio-website-v2/
 contentstudio-ios-v2/
 contentstudio-android-v2/
 cs-prototypes/
+
+# Secrets and local settings
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+*.pem
+*.key
+.claude/settings.local.json
+.codex/auth.json
+
+# Deps, builds and OS files (sites and anywhere else)
+node_modules/
+dist/
+.next/
+.DS_Store
+
 docs/frill/cache/
 
 # Video tooling deps, preview frames and generated media working files (the rendered videos are committed)

@@ -1,0 +1,106 @@
+<h3>Description:</h3>
+<p>As a <strong>client reviewing posts through a share link</strong>, I want to see the shared posts as a feed, the way they'll look on each network, so that I can judge them as my followers will see them.</p>
+<p>Feed is a new view only. Every link setting and client action works exactly as it does in List and Calendar today. Requested by Purplex Marketing, an agency moving from Vista, whose clients review posts in a feed today.</p>
+<hr />
+<h3>Workflow:</h3>
+<ol>
+<li><p>Client opens the share link and, if asked, enters the password.</p></li>
+<li><p>Client sees the view switcher with <strong>Feed</strong> after the existing views, and picks Feed.</p></li>
+<li><p>Client scrolls the shared posts as a feed, each shown as it will look on its network.</p></li>
+<li><p>Client opens a post to see its comments, then approves, rejects or comments, as in List, when the link allows it.</p></li>
+<li><p>Client uses the status filters to see what's left.</p></li>
+</ol>
+<hr />
+<h3>Acceptance criteria:</h3>
+<p><strong>View switcher</strong></p>
+<ul>
+<li><p>Feed shows in the share page's view switcher (<code>SegmentedControl</code>) after the existing views (Calendar, List, Approval board), with the same Feed icon as the Planner's view menu.</p></li>
+<li><p>The last view picked is remembered in this browser, the same way List, Calendar and Approval board are remembered today. Reopening a share link in the same browser opens it on Feed if Feed was the last view picked.</p></li>
+<li><p>Feed has the same sort menu as List, and uses the same sort order the client picked there.</p></li>
+</ul>
+<p><strong>Posts</strong></p>
+<ul>
+<li><p>Feed shows exactly the posts the link shares, as List and Calendar do, including new posts on links with "Share future updates" on.</p></li>
+<li><p>Cards reuse the in-app Planner Feed card and its network previews. No new card design on desktop.</p></li>
+<li><p>On the share page the card shows only the post. Hidden:</p>
+<ul>
+<li><p>the left action column: Edit, Duplicate, Delete and the "…" menu with Download PDF</p></li>
+<li><p>the right panel: the team's Approve and Reject buttons and the in-app comments and notes list</p></li>
+</ul></li>
+<li><p>Each card shows the network, account, status, scheduled date and time, and comment count:</p>
+<ul>
+<li><p>On posts going to several accounts, the account picker stays so the client can switch the preview between networks, as in the Planner.</p></li>
+<li><p>The comment count is a comment icon with the number of comments on the post, for example "3". Tooltip: "3 comments". Shown when the post has at least one comment.</p></li>
+</ul></li>
+<li><p>Clicking the card's expand icon opens the same post panel as List, with the post's preview, comments and the approve, reject and comment buttons the link allows. Next and previous in the panel move through the Feed's posts in order.</p></li>
+<li><p>Posts load 10 at a time as the client scrolls near the bottom, as in List, and never stop without saying so:</p>
+<ul>
+<li><p><strong>Loading the first page:</strong> the same page loader as List.</p></li>
+<li><p><strong>Loading more:</strong> "Loading more..." with a <code>Loader</code> under the last card.</p></li>
+<li><p><strong>End of the feed:</strong> "That's every post on this link." under the last card.</p></li>
+<li><p><strong>A page fails to load:</strong> "We couldn't load more posts. Check your connection and try again." with a "Try again" <code>Button</code> that loads that page again. Posts already shown stay on screen.</p></li>
+<li><p><strong>With a filter on:</strong> Feed keeps loading pages until the screen is full or there are no more posts, so a filter never leaves the client on a short feed that can't scroll to load more.</p></li>
+</ul></li>
+<li><p><strong>Empty states</strong> are the same as List: "No posts found" when the link has no posts, and "No posts found for the selected filters" when a filter hides them all.</p></li>
+</ul>
+<p><strong>Same settings and actions as List and Calendar</strong></p>
+<ul>
+<li><p>Password, allow comments, allow approve or reject, external emails and Send for Approval (Anyone or Everyone) behave exactly as in List and Calendar.</p></li>
+<li><p>When the link allows approval, the client can approve or reject from Feed, through the same post panel and the same name and email step as List.</p></li>
+<li><p>When the link allows comments, the client can comment from Feed.</p></li>
+<li><p>On view-only links, no approve, reject or comment controls show.</p></li>
+<li><p>For a Send for Approval reviewer, approve and reject disappear once the post's approval is finished, as in List.</p></li>
+<li><p>The All, Approved, Rejected and Commented filters work in Feed.</p></li>
+<li><p>Bulk actions work in Feed as in List:</p>
+<ul>
+<li><p>Each card has a <code>Checkbox</code> labelled "Select" in its header row. It shows when the link allows approve or reject, or comments.</p></li>
+<li><p>Selecting one or more cards shows the same floating bulk actions bar as List, with the same Approve, Reject and Comment actions and the same select all and clear options.</p></li>
+</ul></li>
+</ul>
+<p><strong>Impact in the app</strong></p>
+<ul>
+<li><p>A decision or comment made from Feed updates the post in ContentStudio exactly as one made from List: approval status, Planner, approval workflow and notifications.</p></li>
+<li><p>A post rejected by a Send for Approval reviewer from Feed does not publish, as from List.</p></li>
+</ul>
+<p><strong>Screen sizes</strong></p>
+<ul>
+<li><p><strong>Laptop and desktop:</strong> one centred feed column.</p></li>
+<li><p><strong>Phone width:</strong> to be designed by Tamim Rizvi. The share page switches to its phone layout below 900px wide, which is where List turns into cards. The design must show how Feed differs there (for example the full network preview against List's compact card), and where the Select checkbox goes.</p></li>
+<li><p>The Planner Feed card is fixed at about 500px wide today, so it must narrow to fit smaller screens. At 375px, cards fit the width with no sideways scroll and no clipped preview (see CONT-4505).</p></li>
+</ul>
+<p><strong>Theming and language</strong></p>
+<ul>
+<li><p><strong>White-label:</strong> links use the link's brand colours, as the rest of the share page does.</p></li>
+<li><p>The "Feed" label and all new text in this story follow the page language, in every language the share page supports.</p></li>
+</ul>
+<hr />
+<h3>Mock-ups:</h3>
+<p>Desktop: the in-app Planner Feed view, without its left action column and right panel. Phone width: from <strong>Tamim Rizvi</strong>.</p>
+<hr />
+<h3>Impact on existing data:</h3>
+<p>None.</p>
+<hr />
+<h3>Impact on other products:</h3>
+<ul>
+<li><p><strong>The share page's List, Calendar and Approval board views</strong> are unchanged.</p></li>
+<li><p><strong>The in-app Planner Feed view</strong> is unchanged. The card's share-page mode only hides parts of it.</p></li>
+<li><p><strong>Client decisions from Feed</strong> show in the Planner exactly as decisions from List do.</p></li>
+<li><p><strong>Backend:</strong> no change. Feed uses the same share-link posts, approve, reject and comment requests as List.</p></li>
+<li><p><strong>Mobile app:</strong> share links made in the app (CONT-4092) open this same web page, so they get Feed too.</p></li>
+</ul>
+<hr />
+<h3>Dependencies:</h3>
+<ul>
+<li><p><strong>[FE] Add Approval board to the client share-link page</strong> (CONT-4270): same view switcher, build on top of it. As of 23 Nov 2026 it is merged to the <code>features</code> branch but not yet to <code>develop</code> or production.</p></li>
+<li><p>Phone-width layout from <strong>Tamim Rizvi</strong>.</p></li>
+</ul>
+<hr />
+<h3>Global quality &amp; compliance (wherever applicable)</h3>
+<ul>
+<li><p>Mobile responsiveness (frontend only, N/A for backend-only stories)</p></li>
+<li><p>Multilingual support (frontend + backend, translations available or fallback handled)</p></li>
+<li><p>UI theming support (default + white-label, design library components are being used)</p></li>
+<li><p>White-label domains impact review</p></li>
+<li><p>Cross-product impact assessment (web, mobile apps, Chrome extension)</p></li>
+<li><p>Developer surfaces coverage: N/A, share links aren't part of the public API</p></li>
+</ul>
